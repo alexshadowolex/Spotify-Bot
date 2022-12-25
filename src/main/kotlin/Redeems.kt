@@ -4,7 +4,7 @@ import redeems.songRequestRedeem
 
 data class Redeem(
     val id: String, // Will initially hold the name of the redeem
-    val handler: suspend RedeemHandlerScope.() -> Unit
+    val handler: suspend RedeemHandlerScope.(arguments: String) -> Unit
 )
 
 data class RedeemHandlerScope(

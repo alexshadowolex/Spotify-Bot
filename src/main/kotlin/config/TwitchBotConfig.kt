@@ -1,8 +1,7 @@
-package Config
+package config
 
 import java.io.File
 import java.util.*
-import kotlin.time.Duration.Companion.seconds
 
 object TwitchBotConfig {
     private val properties = Properties().apply {

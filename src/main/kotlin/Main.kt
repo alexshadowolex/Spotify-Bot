@@ -1,42 +1,86 @@
-import Config.TwitchBotConfig
+import config.TwitchBotConfig
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import com.adamratzman.spotify.SpotifyClientApi
+import com.adamratzman.spotify.models.Token
+import com.adamratzman.spotify.spotifyClientApi
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
 import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.TwitchClientBuilder
-import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
-import com.github.twitch4j.common.enums.CommandPermission
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.io.*
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
-import javax.management.remote.JMXConnectorFactory.connect
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.seconds
 
 val logger: org.slf4j.Logger = LoggerFactory.getLogger("Bot")
 
 val backgroundCoroutineScope = CoroutineScope(Dispatchers.IO)
 
+lateinit var spotifyClient: SpotifyClientApi
+
+val httpClient = HttpClient(CIO) {
+    install(Logging) {
+        logger = Logger.DEFAULT
+        level = LogLevel.INFO
+    }
+
+    install(ContentNegotiation) {
+        json()
+    }
+}
 suspend fun main() = try {
     setupLogging()
     val twitchClient = setupTwitchBot()
+    val initialToken: Token = Json.decodeFromString(File("data/spotifytoken.json").readText())
 
     application {
         DisposableEffect(Unit) {
+            spotifyClient = runBlocking {
+                spotifyClientApi(
+                    clientId = TwitchBotConfig.spotifyClientId,
+                    clientSecret = TwitchBotConfig.spotifyClientSecret,
+                    redirectUri = "https://www.example.com",
+                    token = initialToken
+                ) {
+                    onTokenRefresh = {
+                        logger.info("Token refreshed")
+                    }
+                    afterTokenRefresh = {
+                        it.token.refreshToken = initialToken.refreshToken
+                        try {
+                            File("data/spotifytoken.json").writeText(json.encodeToString(it.token.copy(refreshToken = initialToken.refreshToken)))
+                        } catch(e: Exception) {
+                            logger.error("Error occured while saving new token", e)
+                        }
+                    }
+                    enableLogger = true
+                }.build()
+            }
+
+            logger.info("Spotify client built successfully.")
+
             onDispose {
                 twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Bot shutting down peepoLeave")
                 logger.info("App shutting down...")
@@ -97,7 +141,7 @@ private suspend fun setupTwitchBot(): TwitchClient {
         )
 
         backgroundCoroutineScope.launch {
-            redeem.handler(redeemHandlerScope)
+            redeem.handler(redeemHandlerScope, redeemEvent.redemption.userInput)
         }
     }
 
