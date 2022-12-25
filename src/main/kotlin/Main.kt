@@ -1,27 +1,47 @@
+import Config.TwitchBotConfig
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
+import com.github.twitch4j.TwitchClient
+import com.github.twitch4j.TwitchClientBuilder
+import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
+import com.github.twitch4j.common.enums.CommandPermission
+import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import org.slf4j.LoggerFactory
-import java.io.FileOutputStream
-import java.io.PrintStream
-import java.io.PrintWriter
-import java.io.StringWriter
+import java.io.*
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
+import javax.management.remote.JMXConnectorFactory.connect
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
 val logger: org.slf4j.Logger = LoggerFactory.getLogger("Bot")
 
-fun main() = try {
+val backgroundCoroutineScope = CoroutineScope(Dispatchers.IO)
+
+suspend fun main() = try {
     setupLogging()
+    val twitchClient = setupTwitchBot()
 
     application {
+        DisposableEffect(Unit) {
+            onDispose {
+                twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Bot shutting down peepoLeave")
+                logger.info("App shutting down...")
+            }
+        }
         Window(
             state = WindowState(size = DpSize(350.dp, 250.dp)),
             title = "SovereignsBot",
@@ -34,6 +54,55 @@ fun main() = try {
     JOptionPane.showMessageDialog(null, e.message + "\n" + StringWriter().also { e.printStackTrace(PrintWriter(it)) }, "InfoBox: File Debugger", JOptionPane.INFORMATION_MESSAGE)
     logger.error("Error while executing program.", e)
     exitProcess(0)
+}
+
+private suspend fun setupTwitchBot(): TwitchClient {
+    val chatAccountToken = File("data/twitchtoken.txt").readText()
+    val oAuth2Credential = OAuth2Credential("twitch", chatAccountToken)
+
+    val twitchClient = TwitchClientBuilder.builder()
+        .withEnableHelix(true)
+        .withEnableChat(true)
+        .withEnablePubSub(true)
+        .withChatAccount(oAuth2Credential)
+        .build()
+
+    twitchClient.chat.run {
+        connect()
+        joinChannel(TwitchBotConfig.channel)
+        sendMessage(TwitchBotConfig.channel, "Bot running peepoArrive")
+    }
+
+    val channelId = twitchClient.helix.getUsers(chatAccountToken, null, listOf(TwitchBotConfig.channel)).execute().users.first().id
+    twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
+        oAuth2Credential,
+        channelId
+    )
+
+    twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelId)
+
+    twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { redeemEvent ->
+
+        val redeem = redeems.find { redeemEvent.redemption.reward.id in it.id || redeemEvent.redemption.reward.title in it.id }.also {
+            if (it != null) {
+                if(redeemEvent.redemption.reward.title in it.id) {
+                    logger.warn("Redeem ${redeemEvent.redemption.reward.title}. Please use following ID in the properties file instead of the name: ${redeemEvent.redemption.reward.id}")
+                }
+            }
+        } ?: return@onEvent
+
+        val redeemHandlerScope = RedeemHandlerScope(
+            chat = twitchClient.chat,
+            redeemEvent = redeemEvent
+        )
+
+        backgroundCoroutineScope.launch {
+            redeem.handler(redeemHandlerScope)
+        }
+    }
+
+    logger.info("Twitch client started.")
+    return twitchClient
 }
 
 private const val LOG_DIRECTORY = "logs"
