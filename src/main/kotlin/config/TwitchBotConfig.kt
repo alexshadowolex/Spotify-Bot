@@ -12,4 +12,5 @@ object TwitchBotConfig {
     val spotifyClientId: String = properties.getProperty("spotify_client_id")
     val spotifyClientSecret: String = properties.getProperty("spotify_client_secret")
     val songRequestRedeemId: String = properties.getProperty("song_request_redeem_id")
+    val songRequestEmotes: List<String> = properties.getProperty("song_request_emotes").split(",")
 }
