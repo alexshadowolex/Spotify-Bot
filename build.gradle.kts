@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.compose") version "1.1.1"
 }
 
-group = "alex.sovereignsbot"
+group = "alex.spotify.bot"
 version = "1.0.1"
 
 repositories {
@@ -56,7 +56,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "SovereignsBot"
+            packageName = "Spotify Bot"
             packageVersion = version.toString()
         }
     }
