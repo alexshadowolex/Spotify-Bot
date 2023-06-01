@@ -17,7 +17,7 @@ val songRequestRedeem: Redeem = Redeem(
         logger.info("query: $query")
 
         val result = try {
-            Url(query).takeIf { it.host == "open.spotify.com" && it.encodedPath.startsWith("/track/") }?.let {
+            Url(query).takeIf { it.host == "open.spotify.com" && it.encodedPath.contains("/track/") }?.let {
                 val songId = it.encodedPath.substringAfter("/track/")
                 logger.info("Song ID from link: $songId")
                 spotifyClient.tracks.getTrack(
