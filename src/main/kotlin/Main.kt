@@ -6,16 +6,24 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyClientApi
+import com.adamratzman.spotify.endpoints.pub.SearchApi
 import com.adamratzman.spotify.models.Token
+import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
+import com.adamratzman.spotify.utils.Market
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
 import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.TwitchClientBuilder
+import com.github.twitch4j.chat.TwitchChat
+import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import handler.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +31,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
@@ -33,6 +40,8 @@ import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
+import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.seconds
 
 val logger: org.slf4j.Logger = LoggerFactory.getLogger("Bot")
 
@@ -117,6 +126,9 @@ private suspend fun setupTwitchBot(): TwitchClient {
         sendMessage(TwitchBotConfig.channel, "Bot running peepoArrive")
     }
 
+    val nextAllowedCommandUsageInstantPerUser = mutableMapOf<Pair<Command, /* user: */ String>, Instant>()
+    val nextAllowedCommandUsageInstantPerCommand = mutableMapOf<Command, Instant>()
+
     val channelId = twitchClient.helix.getUsers(chatAccountToken, null, listOf(TwitchBotConfig.channel)).execute().users.first().id
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
         oAuth2Credential,
@@ -145,9 +157,144 @@ private suspend fun setupTwitchBot(): TwitchClient {
         }
     }
 
+    twitchClient.eventManager.onEvent(ChannelMessageEvent::class.java) { messageEvent ->
+        val message = messageEvent.message
+        if (!message.startsWith(TwitchBotConfig.commandPrefix)) {
+            return@onEvent
+        }
+
+        val parts = message.substringAfter(TwitchBotConfig.commandPrefix).split(" ")
+
+        val command = commands.find { parts.first().substringAfter(TwitchBotConfig.commandPrefix).lowercase() in it.names } ?: return@onEvent
+
+        logger.info("User '${messageEvent.user.name}' tried using command '${command.names.first()}' with arguments: ${parts.drop(1).joinToString()}")
+
+        val nextAllowedCommandUsageInstant = nextAllowedCommandUsageInstantPerCommand.getOrPut(command) {
+            Clock.System.now()
+        }
+
+        val nextAllowedCommandUsageInstantForUser = nextAllowedCommandUsageInstantPerUser.getOrPut(command to messageEvent.user.name) {
+            Clock.System.now()
+        }
+        if((Clock.System.now() - nextAllowedCommandUsageInstant).isNegative() && messageEvent.user.name != TwitchBotConfig.channel) {
+            val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstant - Clock.System.now()).inWholeSeconds.seconds
+
+            twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Command is still on cooldown. Please try again in $secondsUntilTimeoutOver")
+
+            return@onEvent
+        }
+
+        if ((Clock.System.now() - nextAllowedCommandUsageInstantForUser).isNegative() && messageEvent.user.name != TwitchBotConfig.channel) {
+            val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstantForUser - Clock.System.now()).inWholeSeconds.seconds
+
+            twitchClient.chat.sendMessage(TwitchBotConfig.channel, "You are still on cooldown. Please try again in $secondsUntilTimeoutOver")
+
+            return@onEvent
+        }
+
+        val commandHandlerScope = CommandHandlerScope(
+            chat = twitchClient.chat,
+            messageEvent = messageEvent,
+        )
+
+        backgroundCoroutineScope.launch {
+            command.handler(commandHandlerScope, parts.drop(1))
+
+            val key = command to messageEvent.user.name
+            nextAllowedCommandUsageInstantPerUser[key] = Clock.System.now() + commandHandlerScope.addedUserCoolDown
+
+            nextAllowedCommandUsageInstantPerCommand[command] = Clock.System.now() + commandHandlerScope.addedCommandCoolDown
+        }
+    }
+
     logger.info("Twitch client started.")
     return twitchClient
 }
+
+suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
+    var success = true
+    try {
+        chat.sendMessage(
+            TwitchBotConfig.channel,
+            updateQueue(query).let { response ->
+                val track = response.track
+                if(track != null) {
+                    "Song '${track.name}' by ${
+                        track.artists.map { "'${it.name}'" }.let { artists ->
+                            listOf(
+                                artists.dropLast(1).joinToString(),
+                                artists.last()
+                            ).filter { it.isNotBlank() }.joinToString(" and ")
+                        }
+                    } has been added to the playlist ${TwitchBotConfig.songRequestEmotes.random()}"
+                } else {
+                    success = false
+                    "Couldn't add song to the queue. ${response.songRequestResultExplanation}"
+                }
+            }
+        )
+    } catch (e: Exception) {
+        logger.error("Something went wrong with songrequests", e)
+        success = false
+    }
+
+    return success
+}
+
+private suspend fun updateQueue(query: String): SongRequestResult {
+    val result = try {
+        Url(query).takeIf { it.host == "open.spotify.com" && it.encodedPath.contains("/track/") }?.let {
+            val songId = it.encodedPath.substringAfter("/track/")
+            logger.info("Song ID from link: $songId")
+            spotifyClient.tracks.getTrack(
+                track = songId,
+                market = Market.DE
+            )
+        } ?: run {
+            spotifyClient.search.search(
+                query = query,
+                searchTypes = arrayOf(
+                    SearchApi.SearchType.Artist,
+                    SearchApi.SearchType.Album,
+                    SearchApi.SearchType.Track
+                ),
+                market = Market.DE
+            ).tracks?.firstOrNull()
+        } ?: return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "No Result when searching for song."
+        )
+    } catch (e: Exception) {
+        logger.error("Error while searching for track:", e)
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
+        )
+    }
+
+    logger.info("Result after search: $result")
+
+    try {
+        spotifyClient.player.addItemToEndOfQueue(result.uri)
+        logger.info("Result URI: ${result.uri.uri}")
+    } catch (e: Exception) {
+        logger.error("Spotify is probably not set up.", e)
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "Adding the song to the playlist failed."
+        )
+    }
+
+    return SongRequestResult(
+        track = result,
+        songRequestResultExplanation = "Successfully added the song to the playlist."
+    )
+}
+
+private data class SongRequestResult(
+    val track: Track?,
+    val songRequestResultExplanation: String
+)
 
 private const val LOG_DIRECTORY = "logs"
 
