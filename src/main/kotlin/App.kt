@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 @Preview
-fun App() {
+fun app() {
     MaterialTheme {
 
     }

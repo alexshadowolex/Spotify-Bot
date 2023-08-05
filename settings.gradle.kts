@@ -6,5 +6,5 @@ pluginManagement {
     }
     
 }
-rootProject.name = "SovereignsBot"
+rootProject.name = "Spotify-Bot"
 

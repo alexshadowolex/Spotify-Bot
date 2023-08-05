@@ -3,10 +3,10 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("jvm") version "1.8.20"
+    kotlin("plugin.serialization") version "1.8.20"
 
-    id("org.jetbrains.compose") version "1.1.1"
+    id("org.jetbrains.compose") version "1.4.1"
 }
 
 group = "alex.spotify.bot"
@@ -19,14 +19,14 @@ repositories {
 }
 
 dependencies {
-    val ktorVersion = "2.2.1"
+    val ktorVersion = "2.3.2"
 
     implementation(compose.desktop.currentOs)
 
     implementation("org.slf4j:slf4j-simple:2.0.5")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.2")
 
     implementation("com.github.twitch4j:twitch4j:1.14.0")
     implementation("com.adamratzman:spotify-api-kotlin-core:3.8.8")

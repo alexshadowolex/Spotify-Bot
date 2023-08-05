@@ -91,7 +91,7 @@ suspend fun main() = try {
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,
         ) {
-            App()
+            app()
         }
     }
 } catch (e: Throwable) {
