@@ -1,4 +1,3 @@
-import config.TwitchBotConfig
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -17,19 +16,15 @@ import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import config.TwitchBotConfig
 import handler.*
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -39,8 +34,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
 import javax.swing.JOptionPane
+import kotlin.collections.set
 import kotlin.system.exitProcess
-import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.seconds
 
 val logger: org.slf4j.Logger = LoggerFactory.getLogger("Bot")
@@ -49,16 +44,6 @@ val backgroundCoroutineScope = CoroutineScope(Dispatchers.IO)
 
 lateinit var spotifyClient: SpotifyClientApi
 
-val httpClient = HttpClient(CIO) {
-    install(Logging) {
-        logger = Logger.DEFAULT
-        level = LogLevel.INFO
-    }
-
-    install(ContentNegotiation) {
-        json()
-    }
-}
 suspend fun main() = try {
     setupLogging()
     val twitchClient = setupTwitchBot()

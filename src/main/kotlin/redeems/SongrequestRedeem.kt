@@ -1,16 +1,10 @@
 package redeems
 
-import handler.Redeem
-import com.adamratzman.spotify.endpoints.pub.SearchApi
-import com.adamratzman.spotify.utils.Market
-import httpClient
-import io.ktor.client.request.*
-import io.ktor.http.*
-import logger
-import spotifyClient
 import config.TwitchBotConfig
 import handleSongRequestQuery
+import handler.Redeem
 import isSongRequestRedeemEnabled
+import logger
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,
