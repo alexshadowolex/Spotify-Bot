@@ -18,4 +18,6 @@ object TwitchBotConfig {
     val songRequestRedeemId: String = properties.getProperty("song_request_redeem_id")
     val songRequestEmotes: List<String> = properties.getProperty("song_request_emotes").split(",")
     val isSongRequestCommandEnabledByDefault: Boolean = properties.getProperty("is_song_request_command_enabled_by_default").toBoolean()
+    val blacklistedUsers = properties.getProperty("blacklisted_users").split(",")
+    val blacklistEmote: String = properties.getProperty("blacklist_emote")
 }

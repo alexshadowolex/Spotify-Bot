@@ -15,6 +15,7 @@ import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
+import com.github.twitch4j.common.events.domain.EventUser
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.TwitchBotConfig
 import handler.*
@@ -132,6 +133,10 @@ private suspend fun setupTwitchBot(): TwitchClient {
             }
         } ?: return@onEvent
 
+        if(isUserBlacklisted(redeemEvent.redemption.user.displayName, redeemEvent.redemption.user.id, twitchClient.chat)) {
+            return@onEvent
+        }
+
         val redeemHandlerScope = RedeemHandlerScope(
             chat = twitchClient.chat,
             redeemEvent = redeemEvent
@@ -153,6 +158,10 @@ private suspend fun setupTwitchBot(): TwitchClient {
         val command = commands.find { parts.first().substringAfter(TwitchBotConfig.commandPrefix).lowercase() in it.names } ?: return@onEvent
 
         logger.info("User '${messageEvent.user.name}' tried using command '${command.names.first()}' with arguments: ${parts.drop(1).joinToString()}")
+
+        if(isUserBlacklisted(messageEvent.user.name, messageEvent.user.id, twitchClient.chat)) {
+            return@onEvent
+        }
 
         val nextAllowedCommandUsageInstant = nextAllowedCommandUsageInstantPerCommand.getOrPut(command) {
             Clock.System.now()
@@ -194,6 +203,19 @@ private suspend fun setupTwitchBot(): TwitchClient {
 
     logger.info("Twitch client started.")
     return twitchClient
+}
+
+fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boolean {
+
+    if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers){
+
+        chat.sendMessage(TwitchBotConfig.channel, "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}")
+        if(userId !in TwitchBotConfig.blacklistedUsers) {
+            logger.warn("Blacklisted user $userName tried using a command. Please use following ID in the properties file instead of the name: $userId")
+        }
+        return true
+    }
+    return false
 }
 
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
