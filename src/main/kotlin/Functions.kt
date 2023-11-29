@@ -10,10 +10,11 @@ import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.TwitchBotConfig
 import handler.*
 import io.ktor.http.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
 import java.nio.file.Files
@@ -21,6 +22,7 @@ import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
 import kotlin.time.Duration.Companion.seconds
 
+// Setup Twitch Bot
 suspend fun setupTwitchBot(): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
 
@@ -133,6 +135,7 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
     }
 }
 
+// Logging
 private const val LOG_DIRECTORY = "logs"
 
 fun setupLogging() {
@@ -155,6 +158,7 @@ fun setupLogging() {
     logger.info("Log file '${logFile.name}' has been created.")
 }
 
+// Twitch Bot functions
 fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boolean {
 
     if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers){
@@ -168,6 +172,7 @@ fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boole
     return false
 }
 
+// Spotify Functions
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     var success = true
     try {
@@ -252,3 +257,60 @@ private data class SongRequestResult(
     val track: Track?,
     val songRequestResultExplanation: String
 )
+
+suspend fun getCurrentSpotifySong(): Track? {
+    return try {
+        spotifyClient.player.getCurrentlyPlaying()?.item as Track
+    } catch (_: Exception) {
+        null
+    }
+}
+
+fun createSongString(song: Track): String {
+    return "\"${song.name}\"" +
+            " by " +
+            song.artists.map { it.name }.let { artists ->
+                listOf(
+                    artists.dropLast(1).joinToString(),
+                    artists.last()
+                ).filter { it.isNotBlank() }.joinToString(" and ")
+            }
+}
+
+private const val CURRENT_SONG_FILE_NAME = "currentSong.txt"
+private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
+fun startSpotifySongNameGetter() {
+    backgroundCoroutineScope.launch {
+        val displayFilesDirectory = File(DISPLAY_FILES_DIRECTORY)
+        if(!displayFilesDirectory.exists() || !displayFilesDirectory.isDirectory) {
+            displayFilesDirectory.mkdirs()
+            logger.info("Created display file folder $DISPLAY_FILES_DIRECTORY")
+        }
+        val currentSongFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
+        var currentFileContent: String
+        if(!currentSongFile.exists()) {
+            withContext(Dispatchers.IO) {
+                currentSongFile.createNewFile()
+                logger.info("Created current song display file $CURRENT_SONG_FILE_NAME")
+            }
+        }
+
+        while(isActive) {
+            if(isSpotifySongNameGetterEnabled) {
+                val currentTrack = getCurrentSpotifySong()
+                if (currentTrack == null) {
+                    delay(1.seconds)
+                    continue
+                }
+
+                val currentSongString = createSongString(currentTrack)
+
+                currentFileContent = currentSongString
+                currentSongFile.writeText(currentFileContent + " ".repeat(10))
+                delay(2.seconds)
+            } else {
+                delay(0.5.seconds)
+            }
+        }
+    }
+}

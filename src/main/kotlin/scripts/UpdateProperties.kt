@@ -13,7 +13,9 @@ val propertiesFilesToProperties = listOf(
         Pair("channel", "channelName"),
         Pair("song_request_redeem_id", "UseTheNameIfYouDontHaveTheId"),
         // Since Version: 1.0.1
-        Pair("song_request_emotes", "carJAM,catJAM,Jammies,blobDance")
+        Pair("song_request_emotes", "carJAM,catJAM,Jammies,blobDance"),
+        // Since Version: 1.2.0
+        Pair("is_spotify_song_name_getter_enabled_by_default", "true")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(

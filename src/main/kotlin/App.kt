@@ -24,43 +24,101 @@ val darkColorPalette = darkColors(
 
 var isSongRequestRedeemEnabled = !TwitchBotConfig.isSongRequestCommandEnabledByDefault
 var isSongRequestCommandEnabled = TwitchBotConfig.isSongRequestCommandEnabledByDefault
+var isSpotifySongNameGetterEnabled = TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault
 
 @Composable
 @Preview
 fun app() {
     val isSongRequestChecked = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
+    val isSpotifySongNameGetterChecked = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
 
     MaterialTheme(colors = darkColorPalette) {
         Scaffold {
             Column {
-                Row (
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .fillMaxWidth()
-                ) {
-                    Column (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Song Request as...",
+                Row {
+                    Column {
+                        Row(
                             modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                        )
+                                .padding(top = 20.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Song Request as...",
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 10.dp, start = 15.dp, end = 15.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.5f)
+                            ) {
+                                Text(
+                                    text = "Redeem",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.5f)
+                            ) {
+                                Text(
+                                    text = "Command",
+                                    modifier = Modifier
+                                        .align(Alignment.End)
+                                )
+                            }
+                        }
+
+                        Row {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Switch(
+                                    checked = isSongRequestChecked.value,
+                                    onCheckedChange = {
+                                        isSongRequestChecked.value = it
+                                        isSongRequestRedeemEnabled = !it
+                                        isSongRequestCommandEnabled = it
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .fillMaxWidth()
+                                        .scale(2F)
+                                )
+                            }
+                        }
                     }
                 }
 
                 Row(
                     modifier = Modifier
-                        .padding(top = 10.dp, start = 15.dp, end = 15.dp)
-                        .fillMaxWidth()
+                        .padding(top = 5.dp)
                 ) {
-                    Column (
+                    Column(
                         modifier = Modifier
-                            .weight(0.5f)
+                            .fillMaxWidth(0.5F)
                     ) {
                         Text(
-                            text = "Redeem",
+                            text = "Song Name Getter " +
+                                    if (isSpotifySongNameGetterChecked.value) {
+                                        "Enabled"
+                                    } else {
+                                        "Disabled"
+                                    },
                             modifier = Modifier
                                 .align(Alignment.Start)
                         )
@@ -68,32 +126,16 @@ fun app() {
 
                     Column(
                         modifier = Modifier
-                            .weight(0.5f)
-                    ) {
-                        Text(
-                            text = "Command",
-                            modifier = Modifier
-                                .align(Alignment.End)
-                        )
-                    }
-                }
-
-                Row {
-                    Column(
-                        modifier = Modifier
                             .fillMaxWidth()
                     ) {
                         Switch(
-                            checked = isSongRequestChecked.value,
+                            checked = isSpotifySongNameGetterChecked.value,
                             onCheckedChange = {
-                                isSongRequestChecked.value = it
-                                isSongRequestRedeemEnabled = !it
-                                isSongRequestCommandEnabled = it
+                                isSpotifySongNameGetterChecked.value = it
+                                isSpotifySongNameGetterEnabled = it
                             },
                             modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .fillMaxWidth()
-                                .scale(2F)
+                                .align(Alignment.Start)
                         )
                     }
                 }
