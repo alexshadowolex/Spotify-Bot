@@ -48,14 +48,14 @@ lateinit var spotifyClient: SpotifyClientApi
 suspend fun main() = try {
     setupLogging()
     val twitchClient = setupTwitchBot()
-    val initialToken: Token = Json.decodeFromString(File("data/spotifytoken.json").readText())
+    val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())
 
     application {
         DisposableEffect(Unit) {
             spotifyClient = runBlocking {
                 spotifyClientApi(
-                    clientId = TwitchBotConfig.spotifyClientId,
-                    clientSecret = TwitchBotConfig.spotifyClientSecret,
+                    clientId = SpotifyConfig.spotifyClientId,
+                    clientSecret = SpotifyConfig.spotifyClientSecret,
                     redirectUri = "https://www.example.com",
                     token = initialToken
                 ) {
@@ -65,7 +65,7 @@ suspend fun main() = try {
                     afterTokenRefresh = {
                         it.token.refreshToken = initialToken.refreshToken
                         try {
-                            File("data/spotifytoken.json").writeText(json.encodeToString(it.token.copy(refreshToken = initialToken.refreshToken)))
+                            File("data\\tokens\\spotifyToken.json").writeText(json.encodeToString(it.token.copy(refreshToken = initialToken.refreshToken)))
                         } catch(e: Exception) {
                             logger.error("Error occured while saving new token", e)
                         }
@@ -96,8 +96,7 @@ suspend fun main() = try {
 }
 
 private suspend fun setupTwitchBot(): TwitchClient {
-    val chatAccountToken = File("data/twitchtoken.txt").readText()
-    val oAuth2Credential = OAuth2Credential("twitch", chatAccountToken)
+    val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
 
     val twitchClient = TwitchClientBuilder.builder()
         .withEnableHelix(true)
@@ -115,7 +114,7 @@ private suspend fun setupTwitchBot(): TwitchClient {
     val nextAllowedCommandUsageInstantPerUser = mutableMapOf<Pair<Command, /* user: */ String>, Instant>()
     val nextAllowedCommandUsageInstantPerCommand = mutableMapOf<Command, Instant>()
 
-    val channelId = twitchClient.helix.getUsers(chatAccountToken, null, listOf(TwitchBotConfig.channel)).execute().users.first().id
+    val channelId = twitchClient.helix.getUsers(TwitchBotConfig.chatAccountToken, null, listOf(TwitchBotConfig.channel)).execute().users.first().id
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
         oAuth2Credential,
         channelId

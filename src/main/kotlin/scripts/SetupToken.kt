@@ -1,5 +1,6 @@
 package scripts
 
+import SpotifyConfig
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,12 +32,11 @@ import kotlin.system.exitProcess
 fun main() = try {
     val redirectUri = "https://www.example.com"
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     Desktop.getDesktop().browse(
         URI.create(
             getSpotifyAuthorizationUrl(
                 scopes = SpotifyScope.values(),
-                clientId = TwitchBotConfig.spotifyClientId,
+                clientId = SpotifyConfig.spotifyClientId,
                 redirectUri = redirectUri
             )
         )
@@ -86,19 +86,25 @@ fun app2(redirectUri: String) {
                     Button(
                         onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
-                                val api = spotifyClientApi {
-                                    credentials {
-                                        clientId = TwitchBotConfig.spotifyClientId
-                                        clientSecret = TwitchBotConfig.spotifyClientSecret
-                                        this.redirectUri = redirectUri
-                                    }
+                                val api = try {
+                                    spotifyClientApi {
+                                        credentials {
+                                            clientId = SpotifyConfig.spotifyClientId
+                                            clientSecret = SpotifyConfig.spotifyClientSecret
+                                            this.redirectUri = redirectUri
+                                        }
 
-                                    authorization {
-                                        authorizationCode = spotifyCode
-                                    }
-                                }.build()
+                                        authorization {
+                                            authorizationCode = spotifyCode
+                                        }
+                                    }.build()
+                                } catch (e: Exception) {
+                                    JOptionPane.showMessageDialog(null, e.message + "\n" + StringWriter().also { e.printStackTrace(PrintWriter(it)) }, "InfoBox: File Debugger", JOptionPane.INFORMATION_MESSAGE)
+                                    exitProcess(0)
+                                }
 
-                                File("data/spotifytoken.json").writeText(Json.encodeToString(api.token))
+
+                                File("data\\tokens\\spotifyToken.json").writeText(Json.encodeToString(api.token))
                                 JOptionPane.showMessageDialog(null, "Success! You can close this App now!", "Success", JOptionPane.INFORMATION_MESSAGE)
                             }
                         },
