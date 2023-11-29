@@ -2,6 +2,8 @@ package scripts
 
 import java.io.File
 
+// Compile with: kotlinc Migrate_to_1-2-0.kt -include-runtime -d Migrate_to_1-2-0.jar
+
 const val newLine = "& echo."
 val renameFiles = mapOf(
     "twitchBotconfig.properties" to "twitchBotConfig.properties",
