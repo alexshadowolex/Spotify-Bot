@@ -21,7 +21,7 @@ val songRequestCommand = Command(
         }
 
         val query = arguments.joinToString(" ")
-        logger.info("Used SongRequestRedeem.")
+        logger.info("Used SongRequestCommand.")
         logger.info("query: $query")
 
         val success = handleSongRequestQuery(chat, query)
