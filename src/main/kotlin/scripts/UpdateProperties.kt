@@ -11,7 +11,13 @@ val propertiesFilesToProperties = listOf(
     mapOf(
         // Since Version: 1.0.0
         Pair("channel", "channelName"),
+        Pair("command_prefix", "#"),
+        Pair("default_command_cool_down", "20"),
+        Pair("default_user_cool_down", "30"),
         Pair("song_request_redeem_id", "UseTheNameIfYouDontHaveTheId"),
+        Pair("is_song_request_command_enabled_by_default", "true"),
+        Pair("blacklisted_users", ""),
+        Pair("blacklist_emote", "FeelsOkayMan"),
         // Since Version: 1.0.1
         Pair("song_request_emotes", "carJAM,catJAM,Jammies,blobDance"),
         // Since Version: 1.2.0

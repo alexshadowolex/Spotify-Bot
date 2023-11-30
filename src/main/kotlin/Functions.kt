@@ -42,7 +42,11 @@ suspend fun setupTwitchBot(): TwitchClient {
     val nextAllowedCommandUsageInstantPerUser = mutableMapOf<Pair<Command, /* user: */ String>, Instant>()
     val nextAllowedCommandUsageInstantPerCommand = mutableMapOf<Command, Instant>()
 
-    val channelId = twitchClient.helix.getUsers(TwitchBotConfig.chatAccountToken, null, listOf(TwitchBotConfig.channel)).execute().users.first().id
+    val channelId = twitchClient.helix.getUsers(
+        TwitchBotConfig.chatAccountToken,
+        null,
+        listOf(TwitchBotConfig.channel)
+    ).execute().users.first().id
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
         oAuth2Credential,
         channelId
