@@ -2,7 +2,7 @@ package scripts
 
 import java.io.File
 
-// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-0.jar
+// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-1.jar
 
 const val latestVersion = "1.2.0"
 
@@ -21,7 +21,9 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 1.0.1
         Pair("song_request_emotes", "carJAM,catJAM,Jammies,blobDance"),
         // Since Version: 1.2.0
-        Pair("is_spotify_song_name_getter_enabled_by_default", "true")
+        Pair("is_spotify_song_name_getter_enabled_by_default", "true"),
+        // Since Version: 1.2.1
+        Pair("show_new_version_available_window_on_start_up", "true")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(

@@ -20,4 +20,5 @@ object TwitchBotConfig {
     val blacklistedUsers = properties.getProperty("blacklisted_users").split(",")
     val blacklistEmote: String = properties.getProperty("blacklist_emote")
     val isSpotifySongNameGetterEnabledByDefault = properties.getProperty("is_spotify_song_name_getter_enabled_by_default").toBoolean()
+    val showNewVersionAvailableWindowOnStartUp = properties.getProperty("show_new_version_available_window_on_start_up").toBoolean()
 }
