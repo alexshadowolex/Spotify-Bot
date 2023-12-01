@@ -44,7 +44,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                         .padding(top = 20.dp, start = 20.dp, end = 20.dp, bottom = 10.dp)
                 ) {
                     Text(
-                        text = "New Version ${BuildInfo.latestAvailableVersion} of this app is available on ",
+                        text = "New Version v${BuildInfo.latestAvailableVersion} of this app is available on ",
                         style = MaterialTheme.typography.body1,
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
@@ -56,18 +56,6 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                         modifier = Modifier
                             .clickable {
                                 backgroundCoroutineScope.launch {
-                                    Toolkit.getDefaultToolkit().systemClipboard.setContents(
-                                        StringSelection(GITHUB_LATEST_VERSION_LINK),
-                                        null
-                                    )
-
-                                    scaffoldState.snackbarHostState.showSnackbar(
-                                        message = "URL copied! Opening browser...",
-                                        duration = SnackbarDuration.Short
-                                    )
-
-                                    delay(1.seconds)
-
                                     withContext(Dispatchers.IO) {
                                         Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
                                     }
@@ -77,7 +65,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                             .pointerHoverIcon(PointerIcon.Hand)
                             .align(Alignment.CenterVertically),
                         textDecoration = TextDecoration.Underline,
-                        color = MaterialTheme.colors.secondary
+                        color = MaterialTheme.colors.primary
                     )
                 }
 
@@ -92,7 +80,8 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                             },
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
-                                .pointerHoverIcon(PointerIcon.Hand)
+                                .pointerHoverIcon(PointerIcon.Hand),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
                         ) {
                             Text("Ignore")
                         }
@@ -108,7 +97,8 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                             },
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
-                                .pointerHoverIcon(PointerIcon.Hand)
+                                .pointerHoverIcon(PointerIcon.Hand),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
                         ) {
                             Text("Go To GitHub")
                         }

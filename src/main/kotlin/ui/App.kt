@@ -1,21 +1,32 @@
 package ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import backgroundCoroutineScope
 import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
 import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
+import config.BuildInfo
 import config.TwitchBotConfig
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.awt.Desktop
+import java.net.URI
+import kotlin.text.Typography
 import kotlin.time.Duration.Companion.seconds
 
 val darkColorPalette = darkColors(
@@ -194,6 +205,45 @@ fun app() {
                 }
 
                 sectionDivider()
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    Column (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Bottom)
+                    ) {
+                        Row (
+                            modifier = Modifier
+                                .align(Alignment.End),
+                        ) {
+                            Text(
+                                text = "Bot Version v${BuildInfo.version} by ",
+                                fontSize = 12.sp
+                            )
+
+                            Text(
+                                style = MaterialTheme.typography.body1,
+                                text = "alexshadowolex",
+                                modifier = Modifier
+                                    .clickable {
+                                        backgroundCoroutineScope.launch {
+                                            withContext(Dispatchers.IO) {
+                                                Desktop.getDesktop()
+                                                    .browse(URI.create("https://www.twitch.tv/alexshadowolex"))
+                                            }
+                                        }
+                                    }
+                                    .pointerHoverIcon(PointerIcon.Hand),
+                                textDecoration = TextDecoration.Underline,
+                                color = MaterialTheme.colors.primary,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
