@@ -1,4 +1,6 @@
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -14,6 +16,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import ui.app
+import ui.newVersionScreen
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -64,14 +68,34 @@ suspend fun main() = try {
                 logger.info("App shutting down...")
             }
         }
+
         Window(
             state = WindowState(size = DpSize(350.dp, 250.dp)),
+            resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,
         ) {
             app()
         }
+
+        if (TwitchBotConfig.showNewVersionAvailableWindowOnStartUp && isNewAppReleaseAvailable()) {
+            val isNewVersionWindowOpen = remember{ mutableStateOf(true) }
+            if(isNewVersionWindowOpen.value) {
+                Window(
+                    state = WindowState(size = DpSize(500.dp, 150.dp)),
+                    resizable = false,
+                    title = "New Version Available!",
+                    onCloseRequest = {
+                        isNewVersionWindowOpen.value = false
+                    },
+                ) {
+                    window.requestFocus()
+                    newVersionScreen(isNewVersionWindowOpen)
+                }
+            }
+        }
     }
+
 } catch (e: Throwable) {
     JOptionPane.showMessageDialog(null, e.message + "\n" + StringWriter().also { e.printStackTrace(PrintWriter(it)) }, "InfoBox: File Debugger", JOptionPane.INFORMATION_MESSAGE)
     logger.error("Error while executing program.", e)

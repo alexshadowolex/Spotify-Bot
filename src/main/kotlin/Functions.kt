@@ -16,6 +16,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import org.jsoup.Jsoup
+import ui.isSpotifySongNameGetterEnabled
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
@@ -390,6 +391,7 @@ fun startSpotifySongNameGetter() {
 
 
 // Github
+const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**
  * Checks GitHub to see if a new version of this app is available
  * @return Boolean true, if there is a new version, else false
@@ -397,15 +399,19 @@ fun startSpotifySongNameGetter() {
 fun isNewAppReleaseAvailable(): Boolean {
     // response = httpClient.get("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest'") {}
     // TODO: at some point use the api of github with get request, as soon as we find out how to use it without auth
-    val linkLatestRelease = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
     val titleTagName = "title"
     val textBeforeVersionNumber = "Release v"
     val delimiterAfterVersionNumber = " "
 
-    val latestVersion = Jsoup.connect(linkLatestRelease).get()
+    val latestVersion = Jsoup.connect(GITHUB_LATEST_VERSION_LINK).get()
         .select(titleTagName).first()?.text()
         ?.substringAfter(textBeforeVersionNumber)
         ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
 
-    return BuildInfo.version != latestVersion
+    if(BuildInfo.version != latestVersion) {
+        BuildInfo.latestAvailableVersion = latestVersion
+        return true
+    }
+
+    return false
 }

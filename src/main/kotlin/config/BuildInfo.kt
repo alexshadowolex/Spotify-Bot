@@ -9,4 +9,5 @@ object BuildInfo {
     }
 
     val version: String = properties.getProperty("version")
+    var latestAvailableVersion: String = properties.getProperty("version")
 }
