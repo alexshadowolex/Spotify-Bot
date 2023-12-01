@@ -53,6 +53,8 @@ dependencies {
 
     implementation("org.jsoup:jsoup:1.15.3")
 
+    implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.2")
+
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.2")
 
