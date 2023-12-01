@@ -7,6 +7,7 @@ import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import config.BuildInfo
 import config.TwitchBotConfig
 import handler.*
 import io.ktor.http.*
@@ -14,15 +15,34 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
+import kotlin.collections.drop
+import kotlin.collections.dropLast
+import kotlin.collections.filter
+import kotlin.collections.find
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.getOrPut
+import kotlin.collections.joinToString
+import kotlin.collections.last
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mutableMapOf
+import kotlin.collections.random
+import kotlin.collections.set
 import kotlin.time.Duration.Companion.seconds
 
 // Setup Twitch Bot
+/**
+ * Sets up the connection to twitch
+ * @return TwitchClient the TwitchClient-class
+ */
 suspend fun setupTwitchBot(): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
 
@@ -116,6 +136,12 @@ suspend fun setupTwitchBot(): TwitchClient {
     return twitchClient
 }
 
+
+/**
+ * Initiates the callback for the reward redeems
+ * @param redeemEvent The event-class
+ * @param twitchClient The TwitchClient-class
+ */
 fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: TwitchClient) {
     val redeem = redeems.find { redeemEvent.redemption.reward.id in it.id || redeemEvent.redemption.reward.title in it.id }.also {
         if (it != null) {
@@ -141,7 +167,9 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
 
 // Logging
 private const val LOG_DIRECTORY = "logs"
-
+/**
+ * Sets up the logging process with MultiOutputStream to both console and log file
+ */
 fun setupLogging() {
     Files.createDirectories(Paths.get(LOG_DIRECTORY))
 
@@ -162,7 +190,15 @@ fun setupLogging() {
     logger.info("Log file '${logFile.name}' has been created.")
 }
 
+
 // Twitch Bot functions
+/**
+ * Checks if a user is blacklisted
+ * @param userName User's Name
+ * @param userId User's ID
+ * @param chat Chat-Class
+ * @return Boolean true, if the user is blacklisted, else false
+ */
 fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boolean {
 
     if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers){
@@ -176,7 +212,14 @@ fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boole
     return false
 }
 
+
 // Spotify Functions
+/**
+ * Helper function to be called both by redeem and command. Calls the update queue and issues a message to twitch chat.
+ * @param chat Twitch chat class
+ * @param query given String-query, either link or pure string
+ * @return Boolean true on success, else false
+ */
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     var success = true
     try {
@@ -207,6 +250,13 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     return success
 }
 
+
+/**
+ * Updates the spotify queue adding a song to it
+ * @param query Either a spotify link or a string that will be searched for
+ * @return SongRequestResult A Track-Item? and a String, on success: Track item and message,
+ * on failure: null and explanation
+ */
 private suspend fun updateQueue(query: String): SongRequestResult {
     val result = try {
         Url(query).takeIf { it.host == "open.spotify.com" && it.encodedPath.contains("/track/") }?.let {
@@ -262,6 +312,11 @@ private data class SongRequestResult(
     val songRequestResultExplanation: String
 )
 
+
+/**
+ * Issues a GET-Request to get the currently playing spotify song
+ * @return Track? The track-item, if successful, else null
+ */
 suspend fun getCurrentSpotifySong(): Track? {
     return try {
         spotifyClient.player.getCurrentlyPlaying()?.item as Track
@@ -270,6 +325,12 @@ suspend fun getCurrentSpotifySong(): Track? {
     }
 }
 
+
+/**
+ * Creates a string from the given song with Title and Artists
+ * @param song Track-Class of the given song
+ * @return String song name and artists as a string
+ */
 fun createSongString(song: Track): String {
     return "\"${song.name}\"" +
             " by " +
@@ -281,8 +342,16 @@ fun createSongString(song: Track): String {
             }
 }
 
+
 private const val CURRENT_SONG_FILE_NAME = "currentSong.txt"
 private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
+/**
+ * Function that handles the coroutine to get the current spotify song name.
+ * On Start up it creates the dir and files, if needed.
+ * If isSpotifySongNameGetterEnabled is true, it constantly does a GET-Request to get the currently playing
+ * song name and writes it into a file
+ * Delay for next pull is 2 seconds
+ */
 fun startSpotifySongNameGetter() {
     backgroundCoroutineScope.launch {
         val displayFilesDirectory = File(DISPLAY_FILES_DIRECTORY)
@@ -317,4 +386,26 @@ fun startSpotifySongNameGetter() {
             }
         }
     }
+}
+
+
+// Github
+/**
+ * Checks GitHub to see if a new version of this app is available
+ * @return Boolean true, if there is a new version, else false
+ */
+fun isNewAppReleaseAvailable(): Boolean {
+    // response = httpClient.get("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest'") {}
+    // TODO: at some point use the api of github with get request, as soon as we find out how to use it without auth
+    val linkLatestRelease = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
+    val titleTagName = "title"
+    val textBeforeVersionNumber = "Release v"
+    val delimiterAfterVersionNumber = " "
+
+    val latestVersion = Jsoup.connect(linkLatestRelease).get()
+        .select(titleTagName).first()?.text()
+        ?.substringAfter(textBeforeVersionNumber)
+        ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
+
+    return BuildInfo.version != latestVersion
 }

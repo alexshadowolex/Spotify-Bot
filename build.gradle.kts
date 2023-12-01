@@ -1,5 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileOutputStream
+import java.util.*
 
 plugins {
     kotlin("jvm") version "1.8.20"
@@ -17,12 +19,39 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
+val generatedVersionDir = "src\\main\\resources\\"
+
+sourceSets {
+    main {
+        kotlin {
+            output.dir(generatedVersionDir)
+        }
+    }
+}
+
+tasks.register("generateVersionProperties") {
+    doLast {
+        val propertiesFile = file("$generatedVersionDir\\buildInfo.properties")
+        propertiesFile.parentFile.mkdirs()
+        val properties = Properties()
+        properties.setProperty("version", "$version")
+        val out = FileOutputStream(propertiesFile)
+        properties.store(out, null)
+    }
+}
+
+tasks.named("processResources") {
+    dependsOn("generateVersionProperties")
+}
+
 dependencies {
     val ktorVersion = "2.3.2"
 
     implementation(compose.desktop.currentOs)
 
     implementation("org.slf4j:slf4j-simple:2.0.5")
+
+    implementation("org.jsoup:jsoup:1.15.3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.2")
