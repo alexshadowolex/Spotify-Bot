@@ -1,6 +1,7 @@
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -74,6 +75,7 @@ suspend fun main() = try {
             resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,
+            icon = painterResource("logo.png")
         ) {
             app()
         }
@@ -88,6 +90,7 @@ suspend fun main() = try {
                     onCloseRequest = {
                         isNewVersionWindowOpen.value = false
                     },
+                    icon = painterResource("logo.png")
                 ) {
                     window.requestFocus()
                     newVersionScreen(isNewVersionWindowOpen)
