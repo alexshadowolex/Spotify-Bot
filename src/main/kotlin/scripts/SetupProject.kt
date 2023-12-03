@@ -11,14 +11,10 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import com.adamratzman.spotify.spotifyClientApi
 import kotlinx.coroutines.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.awt.Desktop
 import java.io.File
 import java.io.PrintWriter
@@ -27,6 +23,8 @@ import java.net.URI
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
+
+// Current Version: v1
 
 fun main() = try {
 

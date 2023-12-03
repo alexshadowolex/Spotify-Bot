@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import config.TwitchBotConfig
 import com.adamratzman.spotify.SpotifyScope
 import com.adamratzman.spotify.getSpotifyAuthorizationUrl
 import com.adamratzman.spotify.spotifyClientApi
@@ -29,6 +28,8 @@ import java.io.StringWriter
 import java.net.URI
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
+
+// Current Version: v3
 
 fun main() = try {
     val redirectUri = "https://www.example.com"
