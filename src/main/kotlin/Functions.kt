@@ -23,19 +23,6 @@ import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
-import kotlin.collections.drop
-import kotlin.collections.dropLast
-import kotlin.collections.filter
-import kotlin.collections.find
-import kotlin.collections.first
-import kotlin.collections.firstOrNull
-import kotlin.collections.getOrPut
-import kotlin.collections.joinToString
-import kotlin.collections.last
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mutableMapOf
-import kotlin.collections.random
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.seconds
 
@@ -63,11 +50,17 @@ suspend fun setupTwitchBot(): TwitchClient {
     val nextAllowedCommandUsageInstantPerUser = mutableMapOf<Pair<Command, /* user: */ String>, Instant>()
     val nextAllowedCommandUsageInstantPerCommand = mutableMapOf<Command, Instant>()
 
-    val channelId = twitchClient.helix.getUsers(
-        TwitchBotConfig.chatAccountToken,
-        null,
-        listOf(TwitchBotConfig.channel)
-    ).execute().users.first().id
+    val channelId = try {
+        twitchClient.helix.getUsers(
+            TwitchBotConfig.chatAccountToken,
+            null,
+            listOf(TwitchBotConfig.channel)
+        ).execute().users.first().id
+    } catch (e: NoSuchElementException) {
+        logger.error("An Error occurred with the channel name. Maybe the channel name is spelled wrong?")
+        e.printStackTrace()
+        throw ExceptionInInitializerError("Error with channel name. Check the value of \"channel_name\" in the twitchBotConfig.properties-file!")
+    }
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
         oAuth2Credential,
         channelId
