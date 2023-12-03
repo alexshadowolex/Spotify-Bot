@@ -4,6 +4,7 @@ import SpotifyConfig
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -45,8 +46,9 @@ fun main() = try {
     application {
 
         Window(
-            state = WindowState(size = DpSize(600.dp, 350.dp)),
+            state = WindowState(size = DpSize(600.dp, 200.dp)),
             title = "Setup Token",
+            resizable = false,
             onCloseRequest = ::exitApplication,
         ) {
             app2(redirectUri)
@@ -61,10 +63,15 @@ fun main() = try {
 @Composable
 fun app2(redirectUri: String) {
     var spotifyCode by remember { mutableStateOf("") }
+    val scaffoldState = rememberScaffoldState()
     MaterialTheme {
-        Scaffold {
+        Scaffold (
+            scaffoldState = scaffoldState
+        ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
             ) {
                 Row {
                     TextField(
@@ -82,7 +89,21 @@ fun app2(redirectUri: String) {
                             .fillMaxWidth()
                     )
                 }
-                Row {
+
+                Row (
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                ) {
+                    Text(
+                        text = "A browser tab should have opened from example.com. " +
+                                "Copy the code from the URL behind \"?code=\" and paste it into the text field."
+                    )
+                }
+
+                Row (
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                ) {
                     Button(
                         onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
@@ -99,13 +120,24 @@ fun app2(redirectUri: String) {
                                         }
                                     }.build()
                                 } catch (e: Exception) {
-                                    JOptionPane.showMessageDialog(null, e.message + "\n" + StringWriter().also { e.printStackTrace(PrintWriter(it)) }, "InfoBox: File Debugger", JOptionPane.INFORMATION_MESSAGE)
-                                    exitProcess(0)
+                                    JOptionPane.showMessageDialog(
+                                        null,
+                                        "An error occurred. Make sure you give the correct code. Message: " +
+                                                e.message + "\n" +
+                                                StringWriter().also { e.printStackTrace(PrintWriter(it)) },
+                                        "InfoBox: File Debugger",
+                                        JOptionPane.ERROR_MESSAGE
+                                    )
+                                    null
                                 }
 
-
-                                File("data\\tokens\\spotifyToken.json").writeText(Json.encodeToString(api.token))
-                                JOptionPane.showMessageDialog(null, "Success! You can close this App now!", "Success", JOptionPane.INFORMATION_MESSAGE)
+                                if(api != null) {
+                                    File("data\\tokens\\spotifyToken.json").writeText(Json.encodeToString(api.token))
+                                    scaffoldState.snackbarHostState.showSnackbar(
+                                        message = "Token setup successfully! You can close this app now",
+                                        duration = SnackbarDuration.Long
+                                    )
+                                }
                             }
                         },
                         modifier = Modifier

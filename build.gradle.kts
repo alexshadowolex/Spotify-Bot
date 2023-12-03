@@ -44,6 +44,10 @@ tasks.named("processResources") {
     dependsOn("generateVersionProperties")
 }
 
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 dependencies {
     val ktorVersion = "2.3.2"
 

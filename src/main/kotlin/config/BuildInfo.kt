@@ -1,11 +1,10 @@
 package config
 
-import java.io.File
 import java.util.*
 
 object BuildInfo {
     private val properties = Properties().apply {
-        load(File("src\\main\\resources\\buildInfo.properties").inputStream())
+        load(this@BuildInfo::class.java.getResourceAsStream("/buildInfo.properties"))
     }
 
     val version: String = properties.getProperty("version")
