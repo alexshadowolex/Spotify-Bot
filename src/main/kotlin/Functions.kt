@@ -1,3 +1,4 @@
+import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.endpoints.pub.SearchApi
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.utils.Market
@@ -288,10 +289,19 @@ private suspend fun updateQueue(query: String): SongRequestResult {
         spotifyClient.player.addItemToEndOfQueue(result.uri)
         logger.info("Result URI: ${result.uri.uri}")
     } catch (e: Exception) {
-        logger.error("Spotify is probably not set up.", e)
+        val message = when(e) {
+            is SpotifyException.BadRequestException -> {
+                logger.error("Spotify player is not active.", e)
+                "Spotify Player is currently not active. Click on the spotify play button strimmer!"
+            }
+            else -> {
+                logger.error("An exception occurred while calling addItemToEndOfQueue: ", e)
+                "Adding the song to the playlist failed."
+            }
+        }
         return SongRequestResult(
             track = null,
-            songRequestResultExplanation = "Adding the song to the playlist failed."
+            songRequestResultExplanation = message
         )
     }
 
