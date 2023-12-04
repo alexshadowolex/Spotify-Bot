@@ -1,5 +1,6 @@
 import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.endpoints.pub.SearchApi
+import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.utils.Market
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
@@ -332,22 +333,35 @@ suspend fun getCurrentSpotifySong(): Track? {
 
 /**
  * Creates a string from the given song with Title and Artists
- * @param song Track-Class of the given song
+ * @param name Track-Name of the given song
+ * @param artists List<SimpleArtist> artists of the given song
  * @return String song name and artists as a string
  */
-fun createSongString(song: Track): String {
-    return "\"${song.name}\"" +
+fun createSongString(name: String, artists: List<SimpleArtist>): String {
+    return "\"${name}\"" +
             " by " +
-            song.artists.map { it.name }.let { artists ->
-                listOf(
-                    artists.dropLast(1).joinToString(),
-                    artists.last()
-                ).filter { it.isNotBlank() }.joinToString(" and ")
-            }
+            getArtistsString(artists)
+}
+
+
+/**
+ * Creates the concatenation of a list of artists with "," and the last 2 with "and"
+ * @param artists List<SimpleArtist> artists
+ * @return String of a concatenation of the artists
+ */
+fun getArtistsString(artists: List<SimpleArtist>): String {
+    return artists.map { it.name }.let { artist ->
+        listOf(
+            artist.dropLast(1).joinToString(),
+            artist.last()
+        ).filter { it.isNotBlank() }.joinToString(" and ")
+    }
 }
 
 
 private const val CURRENT_SONG_FILE_NAME = "currentSong.txt"
+private const val CURRENT_SONG_NAME_FILE_NAME = "currentSongName.txt"
+private const val CURRENT_SONG_ARTISTS_FILE_NAME = "currentSongArtists.txt"
 private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 /**
  * Function that handles the coroutine to get the current spotify song name.
@@ -363,12 +377,21 @@ fun startSpotifySongNameGetter() {
             displayFilesDirectory.mkdirs()
             logger.info("Created display file folder $DISPLAY_FILES_DIRECTORY")
         }
+
         val currentSongFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
-        var currentFileContent: String
-        if(!currentSongFile.exists()) {
-            withContext(Dispatchers.IO) {
-                currentSongFile.createNewFile()
-                logger.info("Created current song display file $CURRENT_SONG_FILE_NAME")
+        val currentSongNameFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME")
+        val currentSongArtistFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
+
+        listOf(
+            currentSongFile,
+            currentSongNameFile,
+            currentSongArtistFile
+        ).forEach{ currentFile ->
+            if (!currentFile.exists()) {
+                withContext(Dispatchers.IO) {
+                    currentFile.createNewFile()
+                    logger.info("Created current song display file ${currentFile.name}")
+                }
             }
         }
 
@@ -380,10 +403,11 @@ fun startSpotifySongNameGetter() {
                     continue
                 }
 
-                val currentSongString = createSongString(currentTrack)
+                val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
 
-                currentFileContent = currentSongString
-                currentSongFile.writeText(currentFileContent + " ".repeat(10))
+                currentSongFile.writeText(currentSongString + " ".repeat(10))
+                currentSongNameFile.writeText(currentTrack.name)
+                currentSongArtistFile.writeText(getArtistsString(currentTrack.artists))
                 delay(2.seconds)
             } else {
                 delay(0.5.seconds)
