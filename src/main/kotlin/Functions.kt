@@ -17,7 +17,6 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
-import org.apache.commons.io.FileUtils
 import org.jsoup.Jsoup
 import ui.isSpotifySongNameGetterEnabled
 import java.io.File
@@ -103,6 +102,7 @@ suspend fun setupTwitchBot(): TwitchClient {
             val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstant - Clock.System.now()).inWholeSeconds.seconds
 
             twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Command is still on cooldown. Please try again in $secondsUntilTimeoutOver")
+            logger.info("Command is still on cooldown.")
 
             return@onEvent
         }
@@ -111,6 +111,7 @@ suspend fun setupTwitchBot(): TwitchClient {
             val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstantForUser - Clock.System.now()).inWholeSeconds.seconds
 
             twitchClient.chat.sendMessage(TwitchBotConfig.channel, "You are still on cooldown. Please try again in $secondsUntilTimeoutOver")
+            logger.info("User ${messageEvent.user} is still on cooldown.")
 
             return@onEvent
         }
@@ -141,15 +142,26 @@ suspend fun setupTwitchBot(): TwitchClient {
  * @param twitchClient The TwitchClient-class
  */
 fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: TwitchClient) {
-    val redeem = redeems.find { redeemEvent.redemption.reward.id in it.id || redeemEvent.redemption.reward.title in it.id }.also {
+    val redeem = redeems.find {
+        redeemEvent.redemption.reward.id in it.id ||
+        redeemEvent.redemption.reward.title in it.id
+    }.also {
         if (it != null) {
             if(redeemEvent.redemption.reward.title in it.id) {
-                logger.warn("Redeem ${redeemEvent.redemption.reward.title}. Please use following ID in the properties file instead of the name: ${redeemEvent.redemption.reward.id}")
+                logger.warn("Redeem ${redeemEvent.redemption.reward.title}. " +
+                        "Please use following ID in the properties file instead of the name: " +
+                        redeemEvent.redemption.reward.id
+                )
             }
         }
     } ?: return
 
-    if(isUserBlacklisted(redeemEvent.redemption.user.displayName, redeemEvent.redemption.user.id, twitchClient.chat)) {
+    if(isUserBlacklisted(
+            redeemEvent.redemption.user.displayName,
+            redeemEvent.redemption.user.id,
+            twitchClient.chat
+    )) {
+        logger.info("User ${redeemEvent.redemption.user} is blacklisted. Aborting")
         return
     }
 
@@ -219,6 +231,7 @@ fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boole
  * @return Boolean true on success, else false
  */
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
+    logger.info("called handleSongRequestQuery with query $query")
     var success = true
     try {
         chat.sendMessage(
@@ -256,6 +269,7 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
  * on failure: null and explanation
  */
 private suspend fun updateQueue(query: String): SongRequestResult {
+    logger.info("called updateQueue with query $query")
     val result = try {
         Url(query).takeIf { it.host == "open.spotify.com" && it.encodedPath.contains("/track/") }?.let {
             val songId = it.encodedPath.substringAfter("/track/")
@@ -290,7 +304,7 @@ private suspend fun updateQueue(query: String): SongRequestResult {
 
     try {
         spotifyClient.player.addItemToEndOfQueue(result.uri)
-        logger.info("Result URI: ${result.uri.uri}")
+        logger.info("Added Song with URI ${result.uri.uri} successfully to the queue.")
     } catch (e: Exception) {
         val message = when(e) {
             is SpotifyException.BadRequestException -> {
@@ -367,13 +381,14 @@ private const val CURRENT_SONG_ARTISTS_FILE_NAME = "currentSongArtists.txt"
 private const val CURRENT_SONG_ALBUM_IMAGE_FILE_NAME = "currentAlbumImage.jpg"
 private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 /**
- * Function that handles the coroutine to get the current spotify song name.
+ * Function that handles the coroutine to get the current spotify song.
  * On Start up it creates the dir and files, if needed.
  * If isSpotifySongNameGetterEnabled is true, it constantly does a GET-Request to get the currently playing
  * song name and writes it into a file
  * Delay for next pull is 2 seconds
  */
-fun startSpotifySongNameGetter() {
+fun startSpotifySongGetter() {
+    logger.info("called startSpotifySongGetter")
     backgroundCoroutineScope.launch {
         val displayFilesDirectory = File(DISPLAY_FILES_DIRECTORY)
         val currentSongFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
@@ -388,6 +403,8 @@ fun startSpotifySongNameGetter() {
             currentSongArtistFile,
             currentSongAlbumImageFile
         )
+
+        logger.info("created song display files and folder")
 
         while(isActive) {
             if(isSpotifySongNameGetterEnabled) {
@@ -427,11 +444,15 @@ private fun writeCurrentSongTextFiles(
     currentSongNameFile: File,
     currentSongArtistFile: File
 ) {
-    val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+    try {
+        val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
 
-    currentSongFile.writeText(currentSongString + " ".repeat(10))
-    currentSongNameFile.writeText(currentTrack.name)
-    currentSongArtistFile.writeText(getArtistsString(currentTrack.artists))
+        currentSongFile.writeText(currentSongString + " ".repeat(10))
+        currentSongNameFile.writeText(currentTrack.name)
+        currentSongArtistFile.writeText(getArtistsString(currentTrack.artists))
+    } catch (e: Exception) {
+        logger.error("Exception occurred while trying to save the song in files in writeCurrentSongTextFiles ", e)
+    }
 }
 
 
@@ -444,11 +465,15 @@ private fun downloadAndSaveAlbumImage(
     currentTrack: Track,
     currentSongAlbumImageFile: File
 ) {
-    val images = currentTrack.album.images
-    if(images.isNotEmpty()) {
-        val imageUrl = images.first().url
-        val imageData = URL(imageUrl).readBytes()
-        currentSongAlbumImageFile.writeBytes(imageData)
+    try {
+        val images = currentTrack.album.images
+        if (images.isNotEmpty()) {
+            val imageUrl = images.first().url
+            val imageData = URL(imageUrl).readBytes()
+            currentSongAlbumImageFile.writeBytes(imageData)
+        }
+    } catch (e: Exception) {
+        logger.error("Exception occurred while trying to get the image in downloadAndSaveAlbumImage ", e)
     }
 }
 
@@ -498,6 +523,7 @@ const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotif
  * @return Boolean true, if there is a new version, else false
  */
 fun isNewAppReleaseAvailable(): Boolean {
+    logger.info("called isNewAppReleaseAvailable")
     // response = httpClient.get("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest'") {}
     // TODO: at some point use the api of github with get request, as soon as we find out how to use it without auth
     val titleTagName = "title"
@@ -510,6 +536,7 @@ fun isNewAppReleaseAvailable(): Boolean {
         ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
 
     if(BuildInfo.version != latestVersion) {
+        logger.info("Found new Build version $latestVersion")
         BuildInfo.latestAvailableVersion = latestVersion
         return true
     }

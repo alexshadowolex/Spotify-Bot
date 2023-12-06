@@ -18,14 +18,11 @@ import androidx.compose.ui.unit.dp
 import backgroundCoroutineScope
 import config.BuildInfo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import logger
 import java.awt.Desktop
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.net.URI
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
@@ -55,6 +52,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                         text = "GitHub",
                         modifier = Modifier
                             .clickable {
+                                logger.info("Clicked on Go To GitHub Link")
                                 backgroundCoroutineScope.launch {
                                     withContext(Dispatchers.IO) {
                                         Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
@@ -76,6 +74,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                     ) {
                         Button(
                             onClick = {
+                                logger.info("Clicked on Ignore Button")
                                 isNewVersionWindowOpen.value = false
                             },
                             modifier = Modifier
@@ -93,6 +92,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                     ) {
                         Button(
                             onClick = {
+                                logger.info("Clicked on Go To GitHub Button")
                                 Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
                             },
                             modifier = Modifier

@@ -3,8 +3,8 @@ package redeems
 import config.TwitchBotConfig
 import handleSongRequestQuery
 import handler.Redeem
-import ui.isSongRequestRedeemEnabled
 import logger
+import ui.isSongRequestRedeemEnabled
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,

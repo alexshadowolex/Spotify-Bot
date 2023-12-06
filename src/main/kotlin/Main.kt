@@ -62,7 +62,7 @@ suspend fun main() = try {
 
             logger.info("Spotify client built successfully.")
 
-            startSpotifySongNameGetter()
+            startSpotifySongGetter()
 
             onDispose {
                 twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Bot shutting down peepoLeave")

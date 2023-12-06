@@ -1,7 +1,6 @@
 package ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -24,9 +23,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import logger
 import java.awt.Desktop
 import java.net.URI
-import kotlin.text.Typography
 import kotlin.time.Duration.Companion.seconds
 
 val darkColorPalette = darkColors(
@@ -133,6 +132,7 @@ fun app() {
                                 Switch(
                                     checked = isSongRequestChecked.value,
                                     onCheckedChange = {
+                                        logger.info("Clicked on isSongRequestChecked Switch")
                                         isSongRequestChecked.value = it
                                         isSongRequestRedeemEnabled = !it
                                         isSongRequestCommandEnabled = it
@@ -195,6 +195,7 @@ fun app() {
                         Switch(
                             checked = isSpotifySongNameGetterChecked.value,
                             onCheckedChange = {
+                                logger.info("Clicked on isSpotifySongNameGetterChecked Switch")
                                 isSpotifySongNameGetterChecked.value = it
                                 isSpotifySongNameGetterEnabled = it
                             },
@@ -229,6 +230,7 @@ fun app() {
                                 text = "alexshadowolex",
                                 modifier = Modifier
                                     .clickable {
+                                        logger.info("Clicked on alexshadowolex Link")
                                         backgroundCoroutineScope.launch {
                                             withContext(Dispatchers.IO) {
                                                 Desktop.getDesktop()

@@ -3,8 +3,8 @@ package commands
 import config.TwitchBotConfig
 import handleSongRequestQuery
 import handler.Command
-import ui.isSongRequestCommandEnabled
 import logger
+import ui.isSongRequestCommandEnabled
 import kotlin.time.Duration.Companion.seconds
 
 val songRequestCommand = Command(
