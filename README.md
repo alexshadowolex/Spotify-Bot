@@ -12,13 +12,13 @@ Table of Contents:
       3. [Update Properties](#update-properties)
       4. [Setup Spotify Token](#setup-spotify-token)
 3. [How to Update](#how-to-update)
-4. [Current functionalities (v.1.2.1)](#current-functionalities-v121)
+4. [Current functionalities (v.1.2.2)](#current-functionalities-v122)
 5. [Contents of data-files explained](#contents-of-data-files-explained)
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Project: v.1.2.1
-* Spotify-Bot.jar: v.1.2.1
+* Project: v.1.2.2
+* Spotify-Bot.jar: v.1.2.2
 * SetupToken.jar: v3
 * SetupProject.jar: v1
 * UpdateProperties.jar: v.1.2.1
@@ -106,9 +106,17 @@ If the release includes new versions of the other script files (SetupProject, Se
 <br>
 The file, that will always be included, is the new Bot version. Download it and swap out the old version with the new one.
 
-## Current functionalities (v.1.2.1)
+## Current functionalities (v.1.2.2)
 * Song Request -> either with redeem or command. Takes a spotify-link or a text and then adds the result to the queue.
-* Song Name Getter -> Can be toggled off (is_spotify_song_name_getter_enabled_by_default, switch in UI). Gets the current song name and artists and writes it into data\displayFiles\currentSong.txt. This will only happen, if the function is active and the bot has been started.
+* Song Name Getter -> Can be toggled off (is_spotify_song_name_getter_enabled_by_default, switch in UI). Gets the current song name, artists and album image and writes it into different files:
+  * data\displayFiles\currentSong.txt -> Song Name + "by" + Artists + 10 spaces (for moving text display)
+  * data\displayFiles\currentSongName.txt -> Song Name
+  * data\displayFiles\currentSongArtists.txt -> Song Artists
+  * data\displayFiles\currentAlbumImage.jpg -> Current song album's image
+  <br><br>
+  The different files are thought so every user can use the parts they want to use.
+  <br>
+  This will only happen, if the function is active and the bot has been started.
 * Update Checker -> Can be toggled off (show_new_version_available_window_on_start_up). Checks for new versions on GitHub and if there is one, a window will appear.
 
 ## Contents of data-files explained
