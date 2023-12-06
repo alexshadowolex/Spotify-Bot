@@ -17,11 +17,13 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import org.apache.commons.io.FileUtils
 import org.jsoup.Jsoup
 import ui.isSpotifySongNameGetterEnabled
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
@@ -362,6 +364,7 @@ fun getArtistsString(artists: List<SimpleArtist>): String {
 private const val CURRENT_SONG_FILE_NAME = "currentSong.txt"
 private const val CURRENT_SONG_NAME_FILE_NAME = "currentSongName.txt"
 private const val CURRENT_SONG_ARTISTS_FILE_NAME = "currentSongArtists.txt"
+private const val CURRENT_SONG_ALBUM_IMAGE_FILE_NAME = "currentAlbumImage.jpg"
 private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 /**
  * Function that handles the coroutine to get the current spotify song name.
@@ -373,27 +376,18 @@ private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 fun startSpotifySongNameGetter() {
     backgroundCoroutineScope.launch {
         val displayFilesDirectory = File(DISPLAY_FILES_DIRECTORY)
-        if(!displayFilesDirectory.exists() || !displayFilesDirectory.isDirectory) {
-            displayFilesDirectory.mkdirs()
-            logger.info("Created display file folder $DISPLAY_FILES_DIRECTORY")
-        }
-
         val currentSongFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
         val currentSongNameFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME")
         val currentSongArtistFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
+        val currentSongAlbumImageFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME")
 
-        listOf(
+        createSongDisplayFolderAndFiles(
+            displayFilesDirectory,
             currentSongFile,
             currentSongNameFile,
-            currentSongArtistFile
-        ).forEach{ currentFile ->
-            if (!currentFile.exists()) {
-                withContext(Dispatchers.IO) {
-                    currentFile.createNewFile()
-                    logger.info("Created current song display file ${currentFile.name}")
-                }
-            }
-        }
+            currentSongArtistFile,
+            currentSongAlbumImageFile
+        )
 
         while(isActive) {
             if(isSpotifySongNameGetterEnabled) {
@@ -403,14 +397,94 @@ fun startSpotifySongNameGetter() {
                     continue
                 }
 
-                val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+                downloadAndSaveAlbumImage(currentTrack, currentSongAlbumImageFile)
 
-                currentSongFile.writeText(currentSongString + " ".repeat(10))
-                currentSongNameFile.writeText(currentTrack.name)
-                currentSongArtistFile.writeText(getArtistsString(currentTrack.artists))
+                writeCurrentSongTextFiles(
+                    currentTrack,
+                    currentSongFile,
+                    currentSongNameFile,
+                    currentSongArtistFile
+                )
                 delay(2.seconds)
             } else {
                 delay(0.5.seconds)
+            }
+        }
+    }
+}
+
+
+/**
+ * Writes current song into the separate text files
+ * @param currentTrack Current Track
+ * @param currentSongFile Current Song File
+ * @param currentSongNameFile Current Song Name File
+ * @param currentSongArtistFile Current Song Artists File
+ */
+private fun writeCurrentSongTextFiles(
+    currentTrack: Track,
+    currentSongFile: File,
+    currentSongNameFile: File,
+    currentSongArtistFile: File
+) {
+    val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+
+    currentSongFile.writeText(currentSongString + " ".repeat(10))
+    currentSongNameFile.writeText(currentTrack.name)
+    currentSongArtistFile.writeText(getArtistsString(currentTrack.artists))
+}
+
+
+/**
+ * Downloads the current song's album image
+ * @param currentTrack Current Track
+ * @param currentSongAlbumImageFile Current Song Album Image File
+ */
+private fun downloadAndSaveAlbumImage(
+    currentTrack: Track,
+    currentSongAlbumImageFile: File
+) {
+    val images = currentTrack.album.images
+    if(images.isNotEmpty()) {
+        val imageUrl = images.first().url
+        val imageData = URL(imageUrl).readBytes()
+        currentSongAlbumImageFile.writeBytes(imageData)
+    }
+}
+
+
+/**
+ * Creates the song display folder and the files
+ * @param displayFilesDirectory Display Files Folder
+ * @param currentSongFile Current Song File
+ * @param currentSongNameFile Current Song Name File
+ * @param currentSongArtistFile Current Song Artists File
+ * @param currentSongAlbumImageFile Current Song Album Image File
+ */
+private fun createSongDisplayFolderAndFiles(
+    displayFilesDirectory: File,
+    currentSongFile: File,
+    currentSongNameFile: File,
+    currentSongArtistFile: File,
+    currentSongAlbumImageFile: File
+) {
+    backgroundCoroutineScope.launch {
+        if (!displayFilesDirectory.exists() || !displayFilesDirectory.isDirectory) {
+            displayFilesDirectory.mkdirs()
+            logger.info("Created display file folder $DISPLAY_FILES_DIRECTORY")
+        }
+
+        listOf(
+            currentSongFile,
+            currentSongNameFile,
+            currentSongArtistFile,
+            currentSongAlbumImageFile
+        ).forEach { currentFile ->
+            if (!currentFile.exists()) {
+                withContext(Dispatchers.IO) {
+                    currentFile.createNewFile()
+                    logger.info("Created current song display file ${currentFile.name}")
+                }
             }
         }
     }
