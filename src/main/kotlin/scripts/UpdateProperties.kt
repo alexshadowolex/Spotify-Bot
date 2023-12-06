@@ -51,7 +51,7 @@ fun main() {
             properties.forEach { (property, defaultValue) ->
                 if (propertyFileContent.find { it.contains(property) } == null) {
                     propertyFileContent += "$property=$defaultValue"
-                    outputString += "Added property: \"$property\" with default value \"$defaultValue\""
+                    outputString += "Added property: \"$property\" to ${file.name} with default value \"$defaultValue\""
                 }
             }
 

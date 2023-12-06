@@ -2,7 +2,21 @@
 Spotify Bot for everyone to use. The main functionality is to have users add songs to the queue (via redeem or command). Additional functionality can be found below or be requested.<br>
 Initially created for [SovereignsGreed](https://www.twitch.tv/sovereignsgreed)
 
-## Current Version
+Table of Contents:
+1. [Current Versions](#current-versions)
+2. [How to Setup](#how-to-setup)
+   1. [Requirements](#requirements)
+   2. [Setup Steps](#setup-steps)
+      1. [Download and save](#download-and-save)
+      2. [Setup Project Structure](#setup-project-structure)
+      3. [Update Properties](#update-properties)
+      4. [Setup Spotify Token](#setup-spotify-token)
+3. [How to Update](#how-to-update)
+4. [Current functionalities (v.1.2.1)](#current-functionalities-v121)
+5. [Contents of data-files explained](#contents-of-data-files-explained)
+6. [Additional Information](#additional-information)
+
+## Current Versions
 * Project: v.1.2.1
 * Spotify-Bot.jar: v.1.2.1
 * SetupToken.jar: v3
@@ -11,9 +25,11 @@ Initially created for [SovereignsGreed](https://www.twitch.tv/sovereignsgreed)
 
 ## How to Setup
 
-### Requirement
+### Requirements
 You need to have java 17 or higher installed on your pc. To check if you have, open a cmd (type "cmd" bottom left into search bar) and type "java --version". If it responds with a version, you will see the version number. If not, you can download java 19 installer from here: [Oracle Java 19](https://download.oracle.com/java/19/archive/jdk-19.0.2_windows-x64_bin.msi).
 After installing, check again in a new cmd if it is installed.
+<br>
+Also the app only works on windows.
 <br><br>
 
 ### Setup Steps
@@ -81,6 +97,15 @@ Now you will find "spotifyToken.json" in data\tokens\.
 With this, the setup is done. You can execute the Spotify-Bot.jar with the current version on the same level as all the other files. The data folder needs to be next to it.<br>
 On the start up, the bot will display a message in chat to confirm the start up. <br>
 
+## How to Update
+If an update is released, you can find it under [Releases](https://github.com/alexshadowolex/spotify-bot/releases/latest). In this release, the latest files are found.
+<br>
+If the release includes a file "UpdateProperties_<version>.jar" it means that new properties have been added during the release. Download this file and execute it first so all needed properties are there. The cmd will inform you, which properties in which files are new.
+<br>
+If the release includes new versions of the other script files (SetupProject, SetupToken), they are the latest versions. Older version might not work anymore. Download, if needed.
+<br>
+The file, that will always be included, is the new Bot version. Download it and swap out the old version with the new one.
+
 ## Current functionalities (v.1.2.1)
 * Song Request -> either with redeem or command. Takes a spotify-link or a text and then adds the result to the queue.
 * Song Name Getter -> Can be toggled off (is_spotify_song_name_getter_enabled_by_default, switch in UI). Gets the current song name and artists and writes it into data\displayFiles\currentSong.txt. This will only happen, if the function is active and the bot has been started.
@@ -122,7 +147,6 @@ If you don't have the redeem ID, you have 2 possible solutions:<br>
 ## Additional Information
 * Use any compiled binary (.jar-files) at your own risk. They could be doing anything without you knowing it. Either you trust me and my builds or not. I will take no responsibility for anything.
 * You can change the properties' values at any time, but they will only be applied after the next start up.
-* If a new version is available, download the files in the release. If new properties were added, a file UpdateProperties-<version_number>.jar is included. Run that file before running the new Bot Version. To update the current Bot, just replace it with the new version.
 * Make sure to check on releases, if there are newer version of the project-setup- or setup-token-jar, if needed.
 * If an error occurres (a window with a big wall of text appears), check the bottom part of the message. The most common mistake is a property missing or having invalid data. A property missing can be identified like this: <br>
   ![exampleMissingProperty.png](images/exampleMissingProperty.png)
