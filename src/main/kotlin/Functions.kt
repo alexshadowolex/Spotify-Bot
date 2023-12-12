@@ -246,7 +246,7 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
                                 artists.last()
                             ).filter { it.isNotBlank() }.joinToString(" and ")
                         }
-                    } has been added to the playlist ${TwitchBotConfig.songRequestEmotes.random()}"
+                    } has been added to the queue ${TwitchBotConfig.songRequestEmotes.random()}"
                 } else {
                     success = false
                     "Couldn't add song to the queue. ${response.songRequestResultExplanation}"
@@ -313,7 +313,7 @@ private suspend fun updateQueue(query: String): SongRequestResult {
             }
             else -> {
                 logger.error("An exception occurred while calling addItemToEndOfQueue: ", e)
-                "Adding the song to the playlist failed."
+                "Adding the song to the queue failed."
             }
         }
         return SongRequestResult(
@@ -324,7 +324,7 @@ private suspend fun updateQueue(query: String): SongRequestResult {
 
     return SongRequestResult(
         track = result,
-        songRequestResultExplanation = "Successfully added the song to the playlist."
+        songRequestResultExplanation = "Successfully added the song to the queue."
     )
 }
 
@@ -354,7 +354,7 @@ suspend fun getCurrentSpotifySong(): Track? {
  * @return String song name and artists as a string
  */
 fun createSongString(name: String, artists: List<SimpleArtist>): String {
-    return "\"${name}\"" +
+    return "\"$name\"" +
             " by " +
             getArtistsString(artists)
 }
