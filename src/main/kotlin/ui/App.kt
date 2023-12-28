@@ -44,7 +44,8 @@ val lightColorPalette = lightColors(
     onBackground = Color.Black,
 )
 
-lateinit var isSongRequestCommandEnabled: MutableState<Boolean>
+lateinit var isSongRequestEnabled: MutableState<Boolean>
+lateinit var isSongRequestEnabledAsCommand: MutableState<Boolean>
 lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
 
 @Composable
@@ -68,7 +69,8 @@ fun app() {
         }
     }
 
-    isSongRequestCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
+    isSongRequestEnabled = remember { mutableStateOf(TwitchBotConfig.isSongRequestEnabledByDefault) }
+    isSongRequestEnabledAsCommand = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
     isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
 
     MaterialTheme(
@@ -83,11 +85,49 @@ fun app() {
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
             ) {
-                Row {
+                Row (
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                ) {
                     Column {
+                        Row {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.7F)
+                                    .align(Alignment.CenterVertically)
+                            ) {
+                                Text(
+                                    text = "Song Request " +
+                                            if (isSongRequestEnabled.value) {
+                                                "Enabled"
+                                            } else {
+                                                "Disabled"
+                                            },
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterVertically)
+                            ) {
+                                Switch(
+                                    checked = isSongRequestEnabled.value,
+                                    onCheckedChange = {
+                                        logger.info("Clicked on isSongRequestEnabled Switch")
+                                        isSongRequestEnabled.value = it
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.End)
+                                )
+                            }
+                        }
+
                         Row(
                             modifier = Modifier
-                                .padding(top = 15.dp)
+                                .padding(top = 3.dp)
                                 .fillMaxWidth()
                         ) {
                             Column(
@@ -110,12 +150,13 @@ fun app() {
                                 modifier = Modifier
                                     .fillMaxWidth(0.33F)
                                     .align(Alignment.CenterVertically)
+                                    .padding(start = 15.dp)
                             ) {
                                 Text(
                                     text = "Redeem",
                                     modifier = Modifier
                                         .align(Alignment.Start),
-                                    color = if(!isSongRequestCommandEnabled.value) {
+                                    color = if(!isSongRequestEnabledAsCommand.value) {
                                         MaterialTheme.colors.primary
                                     } else {
                                         MaterialTheme.colors.onBackground
@@ -129,15 +170,16 @@ fun app() {
                                     .align(Alignment.CenterVertically)
                             ) {
                                 Switch(
-                                    checked = isSongRequestCommandEnabled.value,
+                                    checked = isSongRequestEnabledAsCommand.value,
                                     onCheckedChange = {
-                                        logger.info("Clicked on isSongRequestChecked Switch")
-                                        isSongRequestCommandEnabled.value = it
+                                        logger.info("Clicked on songRequestTypeChecked Switch")
+                                        isSongRequestEnabledAsCommand.value = it
                                     },
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
                                         .fillMaxWidth()
-                                        .scale(1.5F)
+                                        .scale(1.5F),
+                                    enabled = isSongRequestEnabled.value
                                 )
                             }
 
@@ -145,12 +187,13 @@ fun app() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.CenterVertically)
+                                    .padding(end = 15.dp)
                             ) {
                                 Text(
                                     text = "Command",
                                     modifier = Modifier
                                         .align(Alignment.End),
-                                    color = if(isSongRequestCommandEnabled.value) {
+                                    color = if(isSongRequestEnabledAsCommand.value) {
                                         MaterialTheme.colors.primary
                                     } else {
                                         MaterialTheme.colors.onBackground
@@ -192,7 +235,7 @@ fun app() {
                         Switch(
                             checked = isSpotifySongNameGetterEnabled.value,
                             onCheckedChange = {
-                                logger.info("Clicked on isSpotifySongNameGetterChecked Switch")
+                                logger.info("Clicked on isSpotifySongNameGetterEnabled Switch")
                                 isSpotifySongNameGetterEnabled.value = it
                             },
                             modifier = Modifier

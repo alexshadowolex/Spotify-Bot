@@ -2,9 +2,9 @@ package scripts
 
 import java.io.File
 
-// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-1.jar
+// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-3.jar
 
-const val latestVersion = "1.2.1"
+const val latestVersion = "1.2.3"
 
 val propertiesFilesToProperties = listOf(
     File("data\\properties\\twitchBotConfig.properties") to
@@ -23,7 +23,9 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 1.2.0
         Pair("is_spotify_song_name_getter_enabled_by_default", "true"),
         // Since Version: 1.2.1
-        Pair("show_new_version_available_window_on_start_up", "true")
+        Pair("show_new_version_available_window_on_start_up", "true"),
+        // Since Version: 1.2.3
+        Pair("is_song_request_enabled_by_default", "true")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(

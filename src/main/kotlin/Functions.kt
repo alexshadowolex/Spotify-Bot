@@ -18,7 +18,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import org.jsoup.Jsoup
-import ui.isSongRequestCommandEnabled
+import ui.isSongRequestEnabledAsCommand
 import ui.isSpotifySongNameGetterEnabled
 import java.io.File
 import java.io.FileOutputStream
@@ -527,8 +527,8 @@ private fun createSongDisplayFolderAndFiles(
  * Checks if song request redeem is enabled. This is the case when song request command is not enabled.
  * @return {Boolean} true, if song request redeem is enabled, else false
  */
-fun isSongRequestRedeemEnabled(): Boolean {
-    return !isSongRequestCommandEnabled.value
+fun isSongRequestEnabledAsRedeem(): Boolean {
+    return !isSongRequestEnabledAsCommand.value
 }
 
 
