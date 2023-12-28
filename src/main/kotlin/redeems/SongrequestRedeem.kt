@@ -3,13 +3,13 @@ package redeems
 import config.TwitchBotConfig
 import handleSongRequestQuery
 import handler.Redeem
+import isSongRequestRedeemEnabled
 import logger
-import ui.isSongRequestRedeemEnabled
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,
     handler = { query ->
-        if(!isSongRequestRedeemEnabled) {
+        if(!isSongRequestRedeemEnabled()) {
             logger.info("SongRequestRedeem disabled. Aborting execution")
             return@Redeem
         }

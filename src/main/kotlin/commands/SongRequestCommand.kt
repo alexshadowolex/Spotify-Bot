@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.seconds
 val songRequestCommand = Command(
     names = listOf("songrequest", "sr"),
     handler = {arguments ->
-        if(!isSongRequestCommandEnabled) {
+        if(!isSongRequestCommandEnabled.value) {
             logger.info("SongRequestCommand disabled. Aborting execution")
             return@Command
         }

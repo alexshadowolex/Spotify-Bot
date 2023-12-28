@@ -18,6 +18,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import org.jsoup.Jsoup
+import ui.isSongRequestCommandEnabled
 import ui.isSpotifySongNameGetterEnabled
 import java.io.File
 import java.io.FileOutputStream
@@ -407,7 +408,13 @@ fun startSpotifySongGetter() {
         logger.info("created song display files and folder")
 
         while(isActive) {
-            if(isSpotifySongNameGetterEnabled) {
+            if(
+                try {
+                    isSpotifySongNameGetterEnabled.value
+                } catch (e: UninitializedPropertyAccessException) {
+                    false
+                }
+            ) {
                 val currentTrack = getCurrentSpotifySong()
                 if (currentTrack == null) {
                     delay(1.seconds)
@@ -513,6 +520,15 @@ private fun createSongDisplayFolderAndFiles(
             }
         }
     }
+}
+
+
+/**
+ * Checks if song request redeem is enabled. This is the case when song request command is not enabled.
+ * @return {Boolean} true, if song request redeem is enabled, else false
+ */
+fun isSongRequestRedeemEnabled(): Boolean {
+    return !isSongRequestCommandEnabled.value
 }
 
 

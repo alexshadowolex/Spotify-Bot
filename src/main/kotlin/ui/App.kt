@@ -44,9 +44,8 @@ val lightColorPalette = lightColors(
     onBackground = Color.Black,
 )
 
-var isSongRequestRedeemEnabled = !TwitchBotConfig.isSongRequestCommandEnabledByDefault
-var isSongRequestCommandEnabled = TwitchBotConfig.isSongRequestCommandEnabledByDefault
-var isSpotifySongNameGetterEnabled = TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault
+lateinit var isSongRequestCommandEnabled: MutableState<Boolean>
+lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
 
 @Composable
 @Preview
@@ -69,8 +68,8 @@ fun app() {
         }
     }
 
-    val isSongRequestChecked = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
-    val isSpotifySongNameGetterChecked = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
+    isSongRequestCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
+    isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
 
     MaterialTheme(
         colors = if (isInDarkMode) {
@@ -116,7 +115,7 @@ fun app() {
                                     text = "Redeem",
                                     modifier = Modifier
                                         .align(Alignment.Start),
-                                    color = if(!isSongRequestChecked.value) {
+                                    color = if(!isSongRequestCommandEnabled.value) {
                                         MaterialTheme.colors.primary
                                     } else {
                                         MaterialTheme.colors.onBackground
@@ -130,12 +129,10 @@ fun app() {
                                     .align(Alignment.CenterVertically)
                             ) {
                                 Switch(
-                                    checked = isSongRequestChecked.value,
+                                    checked = isSongRequestCommandEnabled.value,
                                     onCheckedChange = {
                                         logger.info("Clicked on isSongRequestChecked Switch")
-                                        isSongRequestChecked.value = it
-                                        isSongRequestRedeemEnabled = !it
-                                        isSongRequestCommandEnabled = it
+                                        isSongRequestCommandEnabled.value = it
                                     },
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
@@ -153,7 +150,7 @@ fun app() {
                                     text = "Command",
                                     modifier = Modifier
                                         .align(Alignment.End),
-                                    color = if(isSongRequestChecked.value) {
+                                    color = if(isSongRequestCommandEnabled.value) {
                                         MaterialTheme.colors.primary
                                     } else {
                                         MaterialTheme.colors.onBackground
@@ -177,7 +174,7 @@ fun app() {
                     ) {
                         Text(
                             text = "Song Name Getter " +
-                                    if (isSpotifySongNameGetterChecked.value) {
+                                    if (isSpotifySongNameGetterEnabled.value) {
                                         "Enabled"
                                     } else {
                                         "Disabled"
@@ -193,11 +190,10 @@ fun app() {
                             .align(Alignment.CenterVertically)
                     ) {
                         Switch(
-                            checked = isSpotifySongNameGetterChecked.value,
+                            checked = isSpotifySongNameGetterEnabled.value,
                             onCheckedChange = {
                                 logger.info("Clicked on isSpotifySongNameGetterChecked Switch")
-                                isSpotifySongNameGetterChecked.value = it
-                                isSpotifySongNameGetterEnabled = it
+                                isSpotifySongNameGetterEnabled.value = it
                             },
                             modifier = Modifier
                                 .align(Alignment.End)
