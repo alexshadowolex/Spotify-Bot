@@ -1,6 +1,6 @@
 # Spotify Bot
 Spotify Bot for everyone to use. The main functionality is to have users add songs to the queue (via redeem or command). Additional functionality can be found below or be requested.<br>
-Initially created for [SovereignsGreed](https://www.twitch.tv/sovereignsgreed)
+Created by [alexshadowolex](https://www.twitch.tv/alexshadowolex)
 
 Table of Contents:
 1. [Current Versions](#current-versions)
