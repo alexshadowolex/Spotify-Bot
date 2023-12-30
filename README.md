@@ -12,7 +12,7 @@ Table of Contents:
       3. [Update Properties](#update-properties)
       4. [Setup Spotify Token](#setup-spotify-token)
 3. [How to Update](#how-to-update)
-4. [Current functionalities (v.1.2.2)](#current-functionalities-v122)
+4. [Current functionalities](#current-functionalities)
 5. [Contents of data-files explained](#contents-of-data-files-explained)
 6. [Additional Information](#additional-information)
 
@@ -106,8 +106,8 @@ If the release includes new versions of the other script files (SetupProject, Se
 <br>
 The file, that will always be included, is the new Bot version. Download it and swap out the old version with the new one.
 
-## Current functionalities (v.1.2.2)
-* Song Request -> either with redeem or command. Takes a spotify-link or a text and then adds the result to the queue.
+## Current functionalities
+* Song Request -> Can be toggled off (is_song_request_enabled_by_default, switch in UI). Either with redeem or command. Takes a spotify-link or a text and then adds the result to the queue.
 * Song Name Getter -> Can be toggled off (is_spotify_song_name_getter_enabled_by_default, switch in UI). Gets the current song name, artists and album image and writes it into different files:
   * data\displayFiles\currentSong.txt -> Song Name + "by" + Artists + 10 spaces (for moving text display)
   * data\displayFiles\currentSongName.txt -> Song Name
@@ -118,6 +118,7 @@ The file, that will always be included, is the new Bot version. Download it and 
   <br>
   This will only happen, if the function is active and the bot has been started.
 * Update Checker -> Can be toggled off (show_new_version_available_window_on_start_up). Checks for new versions on GitHub and if there is one, a window will appear.
+* Song Info Command -> Can be toggled off (is_song_info_command_enabled_by_default, switch in UI). Command to display the current song in twitch chat together with a spotify link.
 
 ## Contents of data-files explained
 The files consist of following content:
@@ -140,6 +141,8 @@ data\properties\twitchBotconfig.properties:
     ->blacklist_emote=<Twitch emote that will be displayed after the message towards a blacklisted user>
     ->is_spotify_song_name_getter_enabled_by_default=<true or false. If this is true, the name getter functionality is enabled on start up>
     ->show_new_version_available_window_on_start_up=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
+    ->is_song_request_enabled_by_default=<true or false. If this is true, the song request functionality is enabled on start up>
+    ->is_song_info_command_enabled_by_default=<true or false. If this is true, the song info command is enabled on start up>
 ````
 ````
 data\properties\spotifyConfig.properties:
