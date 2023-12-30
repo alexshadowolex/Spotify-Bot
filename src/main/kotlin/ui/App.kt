@@ -47,11 +47,13 @@ val lightColorPalette = lightColors(
 lateinit var isSongRequestEnabled: MutableState<Boolean>
 lateinit var isSongRequestEnabledAsCommand: MutableState<Boolean>
 lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
+lateinit var isSongInfoCommandEnabled: MutableState<Boolean>
 
 @Composable
 @Preview
 fun app() {
     var isInDarkMode by remember { mutableStateOf(false) }
+    val switchLabelWidthPercentage = 0.9F
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -72,6 +74,7 @@ fun app() {
     isSongRequestEnabled = remember { mutableStateOf(TwitchBotConfig.isSongRequestEnabledByDefault) }
     isSongRequestEnabledAsCommand = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
     isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
+    isSongInfoCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongInfoCommandEnabledByDefault) }
 
     MaterialTheme(
         colors = if (isInDarkMode) {
@@ -93,7 +96,7 @@ fun app() {
                         Row {
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.7F)
+                                    .fillMaxWidth(switchLabelWidthPercentage)
                                     .align(Alignment.CenterVertically)
                             ) {
                                 Text(
@@ -212,7 +215,7 @@ fun app() {
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth(0.7F)
+                            .fillMaxWidth(switchLabelWidthPercentage)
                             .align(Alignment.CenterVertically)
                     ) {
                         Text(
@@ -237,6 +240,47 @@ fun app() {
                             onCheckedChange = {
                                 logger.info("Clicked on isSpotifySongNameGetterEnabled Switch")
                                 isSpotifySongNameGetterEnabled.value = it
+                            },
+                            modifier = Modifier
+                                .align(Alignment.End)
+                        )
+                    }
+                }
+
+                sectionDivider()
+
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(switchLabelWidthPercentage)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Text(
+                            text = "Song Info Command " +
+                                    if (isSongInfoCommandEnabled.value) {
+                                        "Enabled"
+                                    } else {
+                                        "Disabled"
+                                    },
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Switch(
+                            checked = isSongInfoCommandEnabled.value,
+                            onCheckedChange = {
+                                logger.info("Clicked on isSongInfoCommandEnabled Switch")
+                                isSongInfoCommandEnabled.value = it
                             },
                             modifier = Modifier
                                 .align(Alignment.End)

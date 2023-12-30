@@ -71,7 +71,7 @@ suspend fun main() = try {
         }
 
         Window(
-            state = WindowState(size = DpSize(350.dp, 300.dp)),
+            state = WindowState(size = DpSize(350.dp, 350.dp)),
             resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,
