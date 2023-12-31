@@ -48,6 +48,7 @@ lateinit var isSongRequestEnabled: MutableState<Boolean>
 lateinit var isSongRequestEnabledAsCommand: MutableState<Boolean>
 lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
 lateinit var isSongInfoCommandEnabled: MutableState<Boolean>
+lateinit var isEmptySongDisplayFilesOnPauseEnabled: MutableState<Boolean>
 
 @Composable
 @Preview
@@ -75,6 +76,7 @@ fun app() {
     isSongRequestEnabledAsCommand = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
     isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
     isSongInfoCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongInfoCommandEnabledByDefault) }
+    isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(TwitchBotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
 
     MaterialTheme(
         colors = if (isInDarkMode) {
@@ -247,8 +249,38 @@ fun app() {
                     }
                 }
 
-                sectionDivider()
+                Row {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(switchLabelWidthPercentage)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Text(
+                            text = "Empty Song Display Files on Pause ",
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                        )
+                    }
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Switch(
+                            checked = isEmptySongDisplayFilesOnPauseEnabled.value,
+                            onCheckedChange = {
+                                logger.info("Clicked on isEmptySongDisplayFilesOnPauseEnabled Switch")
+                                isEmptySongDisplayFilesOnPauseEnabled.value = it
+                            },
+                            modifier = Modifier
+                                .align(Alignment.End),
+                            enabled = isSpotifySongNameGetterEnabled.value
+                        )
+                    }
+                }
+
+                sectionDivider()
 
                 Row(
                     modifier = Modifier

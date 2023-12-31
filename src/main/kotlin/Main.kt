@@ -11,6 +11,11 @@ import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
 import com.adamratzman.spotify.spotifyClientApi
 import config.TwitchBotConfig
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -18,6 +23,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import ui.app
+import ui.isEmptySongDisplayFilesOnPauseEnabled
+import ui.isSpotifySongNameGetterEnabled
 import ui.newVersionScreen
 import java.io.File
 import java.io.PrintWriter
@@ -29,7 +36,19 @@ val logger: org.slf4j.Logger = LoggerFactory.getLogger("Bot")
 
 val backgroundCoroutineScope = CoroutineScope(Dispatchers.IO)
 
+val httpClient = HttpClient(CIO) {
+    install(Logging) {
+        logger = Logger.DEFAULT
+        level = LogLevel.NONE
+    }
+
+    install(ContentNegotiation) {
+        json()
+    }
+}
+
 lateinit var spotifyClient: SpotifyClientApi
+
 
 suspend fun main() = try {
     setupLogging()
@@ -66,12 +85,15 @@ suspend fun main() = try {
 
             onDispose {
                 twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Bot shutting down peepoLeave")
+                if(isEmptySongDisplayFilesOnPauseEnabled.value && isSpotifySongNameGetterEnabled.value) {
+                    emptyAllSongDisplayFiles()
+                }
                 logger.info("App shutting down...")
             }
         }
 
         Window(
-            state = WindowState(size = DpSize(350.dp, 350.dp)),
+            state = WindowState(size = DpSize(350.dp, 400.dp)),
             resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,

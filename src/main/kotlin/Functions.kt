@@ -12,12 +12,17 @@ import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.BuildInfo
 import config.TwitchBotConfig
 import handler.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
+import ui.isEmptySongDisplayFilesOnPauseEnabled
 import ui.isSongRequestEnabledAsCommand
 import ui.isSpotifySongNameGetterEnabled
 import java.io.File
@@ -403,12 +408,16 @@ fun startSpotifySongGetter() {
                     false
                 }
             ) {
-                val currentTrack = getCurrentSpotifySong()
-                if (currentTrack == null) {
-                    delay(1.seconds)
-                    continue
+                val isSpotifyPlaying = if(isEmptySongDisplayFilesOnPauseEnabled.value) {
+                    isSpotifyPlaying()
+                } else {
+                    true
                 }
 
+                if(isSpotifyPlaying == false) {
+                    emptyAllSongDisplayFiles()
+                } else {
+                    // If the player is playing or an error returned (isSpotifyPlaying == null)
                     val currentTrack = getCurrentSpotifySong()
                     if (currentTrack == null) {
                         delay(1.seconds)
@@ -419,6 +428,7 @@ fun startSpotifySongGetter() {
 
                     writeCurrentSongTextFiles(currentTrack)
                     delay(2.seconds)
+                }
             } else {
                 delay(0.5.seconds)
             }
@@ -493,6 +503,26 @@ private fun createSongDisplayFolderAndFiles() {
 
 
 /**
+ * Empties all song display files. Text files get the value of the string "", picture file gets
+ * the value of a 1x1 white picture.
+ */
+fun emptyAllSongDisplayFiles() {
+    listOf(
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME"),
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME"),
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
+    ).forEach{ currentFile ->
+        currentFile.writeText("")
+    }
+
+    File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(
+        object {}.javaClass.getResourceAsStream("Blank.jpg")!!.readAllBytes()
+    )
+    logger.info("Emptied all song display files")
+}
+
+
+/**
  * Checks if song request redeem is enabled. This is the case when song request command is not enabled.
  * @return {Boolean} true, if song request redeem is enabled, else false
  */
@@ -500,6 +530,47 @@ fun isSongRequestEnabledAsRedeem(): Boolean {
     return !isSongRequestEnabledAsCommand.value
 }
 
+
+/**
+ * Checks spotify api if the player is playing.
+ * For reference of what the return codes mean, check here:
+ * https://developer.spotify.com/documentation/web-api/reference/get-information-about-the-users-current-playback
+ * @return {Boolean?} true, if the player is playing. False, if the player is not playing or not active. Null on error.
+ */
+suspend fun isSpotifyPlaying(): Boolean? {
+    val playbackEndpoint = "https://api.spotify.com/v1/me/player"
+    val json = Json { ignoreUnknownKeys = true }
+
+    val response = httpClient.get(playbackEndpoint) {
+        header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+    }
+
+    val isPlaying = when (response.status) {
+        HttpStatusCode.OK -> {
+            try {
+                json.decodeFromString<SimplifiedSpotifyPlaybackResponse>(response.bodyAsText()).is_playing
+            } catch (e: Exception) {
+                logger.error("Exception while parsing Spotify Playback response: ", e)
+                null
+            }
+        }
+        // Player not active
+        HttpStatusCode.NoContent -> {
+            false
+        }
+        // Error cases (401, 403, 429)
+        else -> {
+            null
+        }
+    }
+
+    return isPlaying
+}
+
+@Serializable
+private data class SimplifiedSpotifyPlaybackResponse(
+    val is_playing: Boolean
+)
 
 // Github
 /**

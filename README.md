@@ -116,6 +116,8 @@ The file, that will always be included, is the new Bot version. Download it and 
   <br><br>
   The different files are thought so every user can use the parts they want to use.
   <br>
+  There is a functionality to empty those files on pause (is_empty_song_display_files_on_pause_enabled_by_default, switch in UI).
+  <br>
   This will only happen, if the function is active and the bot has been started.
 * Update Checker -> Can be toggled off (show_new_version_available_window_on_start_up). Checks for new versions on GitHub and if there is one, a window will appear.
 * Song Info Command -> Can be toggled off (is_song_info_command_enabled_by_default, switch in UI). Command to display the current song in twitch chat together with a spotify link.
@@ -143,6 +145,7 @@ data\properties\twitchBotconfig.properties:
     ->show_new_version_available_window_on_start_up=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
     ->is_song_request_enabled_by_default=<true or false. If this is true, the song request functionality is enabled on start up>
     ->is_song_info_command_enabled_by_default=<true or false. If this is true, the song info command is enabled on start up>
+    ->is_empty_song_display_files_on_pause_enabled_by_default=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
 ````
 ````
 data\properties\spotifyConfig.properties:

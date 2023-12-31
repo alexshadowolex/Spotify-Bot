@@ -23,4 +23,5 @@ object TwitchBotConfig {
     val showNewVersionAvailableWindowOnStartUp = properties.getProperty("show_new_version_available_window_on_start_up").toBoolean()
     val isSongRequestEnabledByDefault = properties.getProperty("is_song_request_enabled_by_default").toBoolean()
     val isSongInfoCommandEnabledByDefault = properties.getProperty("is_song_info_command_enabled_by_default").toBoolean()
+    val isEmptySongDisplayFilesOnPauseEnabledByDefault = properties.getProperty("is_empty_song_display_files_on_pause_enabled_by_default").toBoolean()
 }

@@ -26,7 +26,8 @@ val propertiesFilesToProperties = listOf(
         Pair("show_new_version_available_window_on_start_up", "true"),
         // Since Version: 1.2.3
         Pair("is_song_request_enabled_by_default", "true"),
-        Pair("is_song_info_command_enabled_by_default", "true")
+        Pair("is_song_info_command_enabled_by_default", "true"),
+        Pair("is_empty_song_display_files_on_pause_enabled_by_default", "true")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(
