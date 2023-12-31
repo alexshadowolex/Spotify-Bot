@@ -391,19 +391,7 @@ private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 fun startSpotifySongGetter() {
     logger.info("called startSpotifySongGetter")
     backgroundCoroutineScope.launch {
-        val displayFilesDirectory = File(DISPLAY_FILES_DIRECTORY)
-        val currentSongFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
-        val currentSongNameFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME")
-        val currentSongArtistFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
-        val currentSongAlbumImageFile = File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME")
-
-        createSongDisplayFolderAndFiles(
-            displayFilesDirectory,
-            currentSongFile,
-            currentSongNameFile,
-            currentSongArtistFile,
-            currentSongAlbumImageFile
-        )
+        createSongDisplayFolderAndFiles()
 
         logger.info("created song display files and folder")
 
@@ -411,7 +399,7 @@ fun startSpotifySongGetter() {
             if(
                 try {
                     isSpotifySongNameGetterEnabled.value
-                } catch (e: UninitializedPropertyAccessException) {
+                } catch (e: Exception) {
                     false
                 }
             ) {
@@ -421,15 +409,16 @@ fun startSpotifySongGetter() {
                     continue
                 }
 
-                downloadAndSaveAlbumImage(currentTrack, currentSongAlbumImageFile)
+                    val currentTrack = getCurrentSpotifySong()
+                    if (currentTrack == null) {
+                        delay(1.seconds)
+                        continue
+                    }
 
-                writeCurrentSongTextFiles(
-                    currentTrack,
-                    currentSongFile,
-                    currentSongNameFile,
-                    currentSongArtistFile
-                )
-                delay(2.seconds)
+                    downloadAndSaveAlbumImage(currentTrack)
+
+                    writeCurrentSongTextFiles(currentTrack)
+                    delay(2.seconds)
             } else {
                 delay(0.5.seconds)
             }
@@ -441,22 +430,16 @@ fun startSpotifySongGetter() {
 /**
  * Writes current song into the separate text files
  * @param currentTrack Current Track
- * @param currentSongFile Current Song File
- * @param currentSongNameFile Current Song Name File
- * @param currentSongArtistFile Current Song Artists File
  */
-private fun writeCurrentSongTextFiles(
-    currentTrack: Track,
-    currentSongFile: File,
-    currentSongNameFile: File,
-    currentSongArtistFile: File
-) {
+private fun writeCurrentSongTextFiles(currentTrack: Track) {
     try {
         val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
-
-        currentSongFile.writeText(currentSongString + " ".repeat(10))
-        currentSongNameFile.writeText(currentTrack.name)
-        currentSongArtistFile.writeText(getArtistsString(currentTrack.artists))
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
+            .writeText(currentSongString + " ".repeat(10))
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME")
+            .writeText(currentTrack.name)
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
+            .writeText(getArtistsString(currentTrack.artists))
     } catch (e: Exception) {
         logger.error("Exception occurred while trying to save the song in files in writeCurrentSongTextFiles ", e)
     }
@@ -466,18 +449,14 @@ private fun writeCurrentSongTextFiles(
 /**
  * Downloads the current song's album image
  * @param currentTrack Current Track
- * @param currentSongAlbumImageFile Current Song Album Image File
  */
-private fun downloadAndSaveAlbumImage(
-    currentTrack: Track,
-    currentSongAlbumImageFile: File
-) {
+private fun downloadAndSaveAlbumImage(currentTrack: Track) {
     try {
         val images = currentTrack.album.images
         if (images.isNotEmpty()) {
             val imageUrl = images.first().url
             val imageData = URL(imageUrl).readBytes()
-            currentSongAlbumImageFile.writeBytes(imageData)
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(imageData)
         }
     } catch (e: Exception) {
         logger.error("Exception occurred while trying to get the image in downloadAndSaveAlbumImage ", e)
@@ -487,30 +466,20 @@ private fun downloadAndSaveAlbumImage(
 
 /**
  * Creates the song display folder and the files
- * @param displayFilesDirectory Display Files Folder
- * @param currentSongFile Current Song File
- * @param currentSongNameFile Current Song Name File
- * @param currentSongArtistFile Current Song Artists File
- * @param currentSongAlbumImageFile Current Song Album Image File
  */
-private fun createSongDisplayFolderAndFiles(
-    displayFilesDirectory: File,
-    currentSongFile: File,
-    currentSongNameFile: File,
-    currentSongArtistFile: File,
-    currentSongAlbumImageFile: File
-) {
+private fun createSongDisplayFolderAndFiles() {
     backgroundCoroutineScope.launch {
+        val displayFilesDirectory = File(DISPLAY_FILES_DIRECTORY)
         if (!displayFilesDirectory.exists() || !displayFilesDirectory.isDirectory) {
             displayFilesDirectory.mkdirs()
             logger.info("Created display file folder $DISPLAY_FILES_DIRECTORY")
         }
 
         listOf(
-            currentSongFile,
-            currentSongNameFile,
-            currentSongArtistFile,
-            currentSongAlbumImageFile
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME"),
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME"),
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME"),
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME")
         ).forEach { currentFile ->
             if (!currentFile.exists()) {
                 withContext(Dispatchers.IO) {
@@ -533,7 +502,6 @@ fun isSongRequestEnabledAsRedeem(): Boolean {
 
 
 // Github
-const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**
  * Checks GitHub to see if a new version of this app is available
  * @return Boolean true, if there is a new version, else false
@@ -545,8 +513,9 @@ fun isNewAppReleaseAvailable(): Boolean {
     val titleTagName = "title"
     val textBeforeVersionNumber = "Release v"
     val delimiterAfterVersionNumber = " "
+    val githubLatestVersionLink = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 
-    val latestVersion = Jsoup.connect(GITHUB_LATEST_VERSION_LINK).get()
+    val latestVersion = Jsoup.connect(githubLatestVersionLink).get()
         .select(titleTagName).first()?.text()
         ?.substringAfter(textBeforeVersionNumber)
         ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
