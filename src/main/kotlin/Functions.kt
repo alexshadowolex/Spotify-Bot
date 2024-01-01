@@ -398,41 +398,47 @@ fun startSpotifySongGetter() {
     backgroundCoroutineScope.launch {
         createSongDisplayFolderAndFiles()
 
-        logger.info("created song display files and folder")
-
         while(isActive) {
-            if(
-                try {
-                    isSpotifySongNameGetterEnabled.value
-                } catch (e: Exception) {
-                    false
-                }
-            ) {
-                val isSpotifyPlaying = if(isEmptySongDisplayFilesOnPauseEnabled.value) {
-                    isSpotifyPlaying()
-                } else {
-                    true
-                }
-
-                if(isSpotifyPlaying == false) {
-                    emptyAllSongDisplayFiles()
-                } else {
-                    // If the player is playing or an error returned (isSpotifyPlaying == null)
-                    val currentTrack = getCurrentSpotifySong()
-                    if (currentTrack == null) {
-                        delay(1.seconds)
-                        continue
-                    }
-
-                    downloadAndSaveAlbumImage(currentTrack)
-
-                    writeCurrentSongTextFiles(currentTrack)
-                    delay(2.seconds)
-                }
-            } else {
+            if(!isSpotifySongNameGetterEnabled()) {
+                emptyAllSongDisplayFiles()
                 delay(0.5.seconds)
+                continue
             }
+
+            val isPlaying = if(isEmptySongDisplayFilesOnPauseEnabled.value) {
+                isSpotifyPlaying()
+            } else {
+                true
+            }
+
+            if(isPlaying == true || isPlaying == null) {
+                val currentTrack = getCurrentSpotifySong()
+                if (currentTrack == null) {
+                    delay(1.seconds)
+                    continue
+                }
+
+                downloadAndSaveAlbumImage(currentTrack)
+                writeCurrentSongTextFiles(currentTrack)
+            } else {
+                emptyAllSongDisplayFiles()
+            }
+
+            delay(2.seconds)
         }
+    }
+}
+
+
+/**
+ * Helper function to outsource the try-catch block of accessing the variable isSpotifySongNameGetterEnabled
+ * @return {Boolean} true, if the functionality is enabled. False, if not or an error occurred.
+ */
+private fun isSpotifySongNameGetterEnabled(): Boolean {
+    return try {
+        isSpotifySongNameGetterEnabled.value
+    } catch (e: Exception) {
+        false
     }
 }
 
@@ -518,7 +524,6 @@ fun emptyAllSongDisplayFiles() {
     File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(
         object {}.javaClass.getResourceAsStream("Blank.jpg")!!.readAllBytes()
     )
-    logger.info("Emptied all song display files")
 }
 
 
@@ -573,6 +578,7 @@ private data class SimplifiedSpotifyPlaybackResponse(
 )
 
 // Github
+const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**
  * Checks GitHub to see if a new version of this app is available
  * @return Boolean true, if there is a new version, else false
@@ -584,9 +590,8 @@ fun isNewAppReleaseAvailable(): Boolean {
     val titleTagName = "title"
     val textBeforeVersionNumber = "Release v"
     val delimiterAfterVersionNumber = " "
-    val githubLatestVersionLink = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 
-    val latestVersion = Jsoup.connect(githubLatestVersionLink).get()
+    val latestVersion = Jsoup.connect(GITHUB_LATEST_VERSION_LINK).get()
         .select(titleTagName).first()?.text()
         ?.substringAfter(textBeforeVersionNumber)
         ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
