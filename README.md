@@ -17,11 +17,11 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Project: v.1.2.2
-* Spotify-Bot.jar: v.1.2.2
+* Project: v.1.2.3
+* Spotify-Bot.jar: v.1.2.3
 * SetupToken.jar: v3
 * SetupProject.jar: v1
-* UpdateProperties.jar: v.1.2.1
+* UpdateProperties.jar: v.1.2.3
 
 ## How to Setup
 
