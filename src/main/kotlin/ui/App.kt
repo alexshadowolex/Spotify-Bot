@@ -1,24 +1,35 @@
 package ui
 
+import SpotifyConfig
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
 import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
 import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
+import com.github.twitch4j.common.enums.CommandPermission
 import config.BuildInfo
 import config.TwitchBotConfig
+import isSongRequestEnabledAsRedeem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -49,6 +60,8 @@ lateinit var isSongRequestEnabledAsCommand: MutableState<Boolean>
 lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
 lateinit var isSongInfoCommandEnabled: MutableState<Boolean>
 lateinit var isEmptySongDisplayFilesOnPauseEnabled: MutableState<Boolean>
+lateinit var isAddSongCommandEnabled: MutableState<Boolean>
+lateinit var addSongCommandSecurityLevel: MutableState<CommandPermission>
 
 @Composable
 @Preview
@@ -77,6 +90,8 @@ fun app() {
     isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
     isSongInfoCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongInfoCommandEnabledByDefault) }
     isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(TwitchBotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
+    isAddSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isAddSongCommandEnabledByDefault) }
+    addSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
 
     MaterialTheme(
         colors = if (isInDarkMode) {
@@ -161,7 +176,7 @@ fun app() {
                                     text = "Redeem",
                                     modifier = Modifier
                                         .align(Alignment.Start),
-                                    color = if(!isSongRequestEnabledAsCommand.value) {
+                                    color = if(isSongRequestEnabledAsRedeem()) {
                                         MaterialTheme.colors.primary
                                     } else {
                                         MaterialTheme.colors.onBackground
@@ -322,6 +337,72 @@ fun app() {
 
                 sectionDivider()
 
+                Row {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(switchLabelWidthPercentage)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Text(
+                            text = "Add Song Command " +
+                                    if (isAddSongCommandEnabled.value) {
+                                        "Enabled"
+                                    } else {
+                                        "Disabled"
+                                    },
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Switch(
+                            checked = isAddSongCommandEnabled.value,
+                            onCheckedChange = {
+                                logger.info("Clicked on isAddSongCommandEnabled Switch")
+                                isAddSongCommandEnabled.value = it
+                            },
+                            modifier = Modifier
+                                .align(Alignment.End)
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 3.dp)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Security Level of Add Song Command: ",
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                        )
+                    }
+                }
+
+                multiToggleButton(
+                    currentSelection = addSongCommandSecurityLevel.value,
+                    toggleStates = listOf(
+                        CommandPermission.BROADCASTER,
+                        CommandPermission.MODERATOR,
+                        CommandPermission.EVERYONE
+                    ),
+                    onToggleChange = {
+                        addSongCommandSecurityLevel.value = CommandPermission.valueOf(it)
+                    }
+                )
+
+                sectionDivider()
+
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -375,4 +456,83 @@ fun sectionDivider() {
         color = MaterialTheme.colors.primary,
         thickness = 2.dp
     )
+}
+
+@Composable
+fun multiToggleButton(
+    currentSelection: Any,
+    toggleStates: List<Any>,
+    onToggleChange: (String) -> Unit
+) {
+    val selectedTint = MaterialTheme.colors.primary
+    val unselectedTint = Color.Unspecified
+    val widthPerColumn = listOf(0.33F, 0.5F, 1F)
+
+    Row(
+        modifier = Modifier
+            .padding(top = 5.dp, bottom = 5.dp)
+            .clip(shape = RoundedCornerShape(20.dp))
+            .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(20.dp))
+    ) {
+        toggleStates.forEachIndexed { index, toggleState ->
+            val isSelected = currentSelection == toggleState
+            val backgroundTint = if (isSelected) {
+                selectedTint
+            } else {
+                unselectedTint
+            }
+
+            val textColor = if (isSelected) {
+                MaterialTheme.colors.onPrimary
+            } else {
+                Color.Unspecified
+            }
+
+            if (index != 0) {
+                // TODO: Not visible. And if I do "fillMaxHeight", the things gets too big
+                Divider(
+                    color = Color.LightGray,
+                    modifier = Modifier
+                        //.fillMaxHeight()
+                        .width(1.dp)
+                )
+            }
+
+            Column (
+                modifier = Modifier
+                    .background(backgroundTint)
+                    .fillMaxWidth(widthPerColumn[index])
+                    .toggleable(
+                        value = isSelected,
+                        enabled = isAddSongCommandEnabled.value,
+                        onValueChange = { selected ->
+                            if (selected) {
+                                logger.info("clicked on multi selection entry $toggleState")
+                                onToggleChange(toggleState.toString())
+                            }
+                        }
+                    )
+                    .pointerHoverIcon(
+                        if(isAddSongCommandEnabled.value) {
+                            PointerIcon.Hand
+                        } else {
+                            PointerIcon.Default
+                        }
+                    )
+            ) {
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        toggleState.toString(),
+                        color = textColor,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .padding(4.dp)
+                    )
+                }
+            }
+        }
+    }
 }

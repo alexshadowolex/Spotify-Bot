@@ -8,6 +8,7 @@ import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
+import com.github.twitch4j.common.enums.CommandPermission
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.BuildInfo
 import config.TwitchBotConfig
@@ -19,9 +20,9 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
+import ui.addSongCommandSecurityLevel
 import ui.isEmptySongDisplayFilesOnPauseEnabled
 import ui.isSongRequestEnabledAsCommand
 import ui.isSpotifySongNameGetterEnabled
@@ -592,6 +593,17 @@ suspend fun addSongToPlaylist(song: Track): Boolean {
 
     return success
 }
+
+
+/**
+ * Checks if the user's permissions are eligible for using the add song command.
+ * @param permissions Set of CommandPermission of current user
+ * @return {Boolean} true, if the user is eligible, else false
+ */
+fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermission>): Boolean {
+    return permissions.contains(addSongCommandSecurityLevel.value)
+}
+
 
 // Github
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
