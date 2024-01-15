@@ -32,7 +32,8 @@ val propertiesFilesToProperties = listOf(
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(
         // Since Version: 1.2.0
-        Pair("spotify_client_id", "ABC123VeryLong")
+        Pair("spotify_client_id", "ABC123VeryLong"),
+        Pair("playlist_id_for_add_song_command", "playlistId")
     )
 )
 

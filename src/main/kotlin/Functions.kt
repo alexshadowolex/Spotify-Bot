@@ -573,6 +573,26 @@ suspend fun isSpotifyPlaying(): Boolean? {
 }
 
 
+/**
+ * Adds a song to the playlist specified in spotifyConfig.properties.
+ * @param song Track item of the song to add
+ * @return {Boolean} true on success, else false
+ */
+suspend fun addSongToPlaylist(song: Track): Boolean {
+    var success = true
+    try {
+        spotifyClient.playlists.addPlayableToClientPlaylist(
+            SpotifyConfig.playlistIdForAddSongCommand,
+            song.uri
+        )
+    } catch (e: SpotifyException.BadRequestException) {
+        logger.error("Something went wrong when adding song to the playlist in addSongToPlaylist: ", e)
+        success = false
+    }
+
+    return success
+}
+
 // Github
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**
