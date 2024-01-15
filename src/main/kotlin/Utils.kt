@@ -1,4 +1,5 @@
 
+import kotlinx.serialization.Serializable
 import java.io.OutputStream
 
 class MultiOutputStream(private vararg val streams: OutputStream) : OutputStream() {
@@ -17,3 +18,8 @@ class MultiOutputStream(private vararg val streams: OutputStream) : OutputStream
         it.write(b, off, len)
     }
 }
+
+@Serializable
+data class SimplifiedSpotifyPlaybackResponse(
+    val is_playing: Boolean
+)

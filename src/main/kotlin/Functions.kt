@@ -572,10 +572,6 @@ suspend fun isSpotifyPlaying(): Boolean? {
     return isPlaying
 }
 
-@Serializable
-private data class SimplifiedSpotifyPlaybackResponse(
-    val is_playing: Boolean
-)
 
 // Github
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
