@@ -95,7 +95,7 @@ Now you will find "spotifyToken.json" in data\tokens\.
 <br><br><br>
 
 With this, the setup is done. You can execute the Spotify-Bot.jar with the current version on the same level as all the other files. The data folder needs to be next to it.<br>
-On the start up, the bot will display a message in chat to confirm the start up. <br>
+On start up, the bot will display a message in chat to confirm start up. <br>
 
 ## How to Update
 If an update is released, you can find it under [Releases](https://github.com/alexshadowolex/spotify-bot/releases/latest). In this release, the latest files are found.
@@ -121,6 +121,15 @@ The file, that will always be included, is the new Bot version. Download it and 
   This will only happen, if the function is active and the bot has been started.
 * Update Checker -> Can be toggled off (show_new_version_available_window_on_start_up). Checks for new versions on GitHub and if there is one, a window will appear.
 * Song Info Command -> Can be toggled off (is_song_info_command_enabled_by_default, switch in UI). Command to display the current song in twitch chat together with a spotify link.
+* Add Song Command -> Can be toggled off (is_add_song_command_enabled_by_default, switch in UI). Command to add the current song to a certain playlist. This playlist is identified by an ID set in spotifyConfig.properties with the parameter playlist_id_for_add_song_command. <br>
+  To obtain this ID, simply extract it from the share-link: <br>
+  E.g. the ID in this share link: https://open.spotify.com/playlist/idinsidethislink?si=abc1234569ada is "idinsidethislink", the random characters between "playlist/" and "?si". Just crop it out and paste it into the properties-file.<br>
+  This functionality can be restricted to be used only by certain user groups:
+  * BROADCASTER: Only the broadcaster
+  * MODERATOR: Owner and Moderators
+  * EVERYONE: Everyone (careful with that one, your playlist might get filled with too many songs)<br>
+  
+  This security setting can be done in the UI and in the properties files. Note that the value is case sensitive.
 
 ## Contents of data-files explained
 The files consist of following content:
@@ -146,10 +155,13 @@ data\properties\twitchBotconfig.properties:
     ->is_song_request_enabled_by_default=<true or false. If this is true, the song request functionality is enabled on start up>
     ->is_song_info_command_enabled_by_default=<true or false. If this is true, the song info command is enabled on start up>
     ->is_empty_song_display_files_on_pause_enabled_by_default=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
+    ->is_add_song_command_enabled_by_default=<true or false. If this is true, the add song command is enabled on start up>
 ````
 ````
 data\properties\spotifyConfig.properties:
     ->spotify_client_id=<client ID from spotify app>
+    ->playlist_id_for_add_song_command=<playlist ID for add song command. Check the command description for how to obtain the ID>
+    ->add_song_command_security_level_on_start_up=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, EVERYONE>
 ````
 Fill out all the properties in twitchBotConfig.properties and spotifyConfig.properties with data that fits. You can leave empty "blacklisted_users" and the redeem ID (if you are not going to use it). If you want to leave them empty, you still have to include them in the file. An empty property looks like this "blacklisted_users=".
 <br>
