@@ -27,13 +27,17 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 1.2.3
         Pair("is_song_request_enabled_by_default", "true"),
         Pair("is_song_info_command_enabled_by_default", "true"),
-        Pair("is_empty_song_display_files_on_pause_enabled_by_default", "true")
+        Pair("is_empty_song_display_files_on_pause_enabled_by_default", "true"),
+        // Since Version: 1.2.4
+        Pair("is_add_song_command_enabled_by_default", "true")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(
         // Since Version: 1.2.0
         Pair("spotify_client_id", "ABC123VeryLong"),
-        Pair("playlist_id_for_add_song_command", "playlistId")
+        // Since Version: 1.2.4
+        Pair("playlist_id_for_add_song_command", "playlistId"),
+        Pair("add_song_command_security_level_on_start_up", "BROADCASTER")
     )
 )
 
