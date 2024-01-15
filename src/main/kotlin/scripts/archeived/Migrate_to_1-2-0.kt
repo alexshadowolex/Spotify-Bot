@@ -1,4 +1,4 @@
-package scripts
+package scripts.archeived
 
 import java.io.File
 
