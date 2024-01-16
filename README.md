@@ -107,7 +107,7 @@ If the release includes new versions of the other script files (SetupProject, Se
 The file, that will always be included, is the new Bot version. Download it and swap out the old version with the new one.
 
 ## Current functionalities
-* Song Request -> Can be toggled off (is_song_request_enabled_by_default, switch in UI). Either with redeem or command. Takes a spotify-link or a text and then adds the result to the queue.
+* Song Request -> Can be toggled off (is_song_request_enabled_by_default, switch in UI). Either with redeem or command. Takes a spotify-link or a text and then adds the result to the queue. You can set the maximum length of song duration in spotifyConfig.properties (maximum_length_minutes_song_request).
 * Song Name Getter -> Can be toggled off (is_spotify_song_name_getter_enabled_by_default, switch in UI). Gets the current song name, artists and album image and writes it into different files:
   * data\displayFiles\currentSong.txt -> Song Name + "by" + Artists + 10 spaces (for moving text display)
   * data\displayFiles\currentSongName.txt -> Song Name
@@ -162,6 +162,7 @@ data\properties\spotifyConfig.properties:
     ->spotify_client_id=<client ID from spotify app>
     ->playlist_id_for_add_song_command=<playlist ID for add song command. Check the command description for how to obtain the ID>
     ->add_song_command_security_level_on_start_up=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, EVERYONE>
+    ->maximum_length_minutes_song_request<Maximum song length for songrequests. This value is interpreted as Minutes (you can also use decimal numbers). If you don't want a maximum lenght limit, just leave this property empty.>
 ````
 Fill out all the properties in twitchBotConfig.properties and spotifyConfig.properties with data that fits. You can leave empty "blacklisted_users" and the redeem ID (if you are not going to use it). If you want to leave them empty, you still have to include them in the file. An empty property looks like this "blacklisted_users=".
 <br>
