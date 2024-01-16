@@ -34,6 +34,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
 import kotlin.collections.set
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 // Setup Twitch Bot
@@ -308,6 +309,13 @@ private suspend fun updateQueue(query: String): SongRequestResult {
     }
 
     logger.info("Result after search: $result")
+    if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
+        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
+        )
+    }
 
     try {
         spotifyClient.player.addItemToEndOfQueue(result.uri)

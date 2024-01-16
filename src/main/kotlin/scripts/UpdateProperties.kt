@@ -37,7 +37,8 @@ val propertiesFilesToProperties = listOf(
         Pair("spotify_client_id", "ABC123VeryLong"),
         // Since Version: 1.2.4
         Pair("playlist_id_for_add_song_command", "playlistId"),
-        Pair("add_song_command_security_level_on_start_up", "BROADCASTER")
+        Pair("add_song_command_security_level_on_start_up", "BROADCASTER"),
+        Pair("maximum_length_minutes_song_request", "")
     )
 )
 

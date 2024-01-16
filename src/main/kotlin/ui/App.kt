@@ -520,18 +520,14 @@ fun multiToggleButton(
                         }
                     )
             ) {
-                Row (
+                Text(
+                    toggleState.toString(),
+                    color = textColor,
+                    fontSize = 12.sp,
                     modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        toggleState.toString(),
-                        color = textColor,
-                        fontSize = 12.sp,
-                        modifier = Modifier
-                            .padding(4.dp)
-                    )
-                }
+                        .padding(4.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
             }
         }
     }
