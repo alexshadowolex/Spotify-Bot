@@ -17,11 +17,10 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Project: v.1.2.3
-* Spotify-Bot.jar: v.1.2.3
-* SetupToken.jar: v3
-* SetupProject.jar: v1
-* UpdateProperties.jar: v.1.2.3
+* Spotify-Bot.jar: v1.2.3 [Download from Release v1.2.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.3/Spotify.Bot-windows-x64-1.2.3.jar)
+* SetupToken.jar: v3 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupToken_v3.jar)
+* SetupProject.jar: v1 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupProject_v1.jar)
+* UpdateProperties.jar: v1.2.3 [Download from Release v1.2.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.3/UpdateProperties_1-2-3.jar)
 
 ## How to Setup
 
