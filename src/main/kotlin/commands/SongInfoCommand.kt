@@ -4,7 +4,9 @@ import config.TwitchBotConfig
 import createSongString
 import getCurrentSpotifySong
 import handler.Command
+import isSpotifyPlaying
 import logger
+import sendMessageToTwitchChatAndLogIt
 import ui.isSongInfoCommandEnabled
 
 val songInfoCommand: Command = Command(
@@ -22,7 +24,7 @@ val songInfoCommand: Command = Command(
             createSongString(currentSong.name, currentSong.artists) + " --> ${currentSong.externalUrls.spotify}"
         }
 
-        chat.sendMessage(TwitchBotConfig.channel, message)
+        sendMessageToTwitchChatAndLogIt(chat, message)
 
         addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
     }

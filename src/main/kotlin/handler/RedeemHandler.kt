@@ -5,7 +5,7 @@ import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import redeems.songRequestRedeem
 
 data class Redeem(
-    val id: String, // Will initially hold the name of the redeem
+    val id: String, // Can initially hold the name of the redeem
     val handler: suspend RedeemHandlerScope.(arguments: String) -> Unit
 )
 

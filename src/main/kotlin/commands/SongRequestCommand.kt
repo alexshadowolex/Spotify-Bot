@@ -4,6 +4,7 @@ import config.TwitchBotConfig
 import handleSongRequestQuery
 import handler.Command
 import logger
+import sendMessageToTwitchChatAndLogIt
 import ui.isSongRequestEnabled
 import ui.isSongRequestEnabledAsCommand
 import kotlin.time.Duration.Companion.seconds
@@ -19,11 +20,10 @@ val songRequestCommand = Command(
         }
 
         if (query.isBlank()) {
-            chat.sendMessage(TwitchBotConfig.channel, "No song given.")
+            sendMessageToTwitchChatAndLogIt(chat, "No song given.")
             return@Command
         }
 
-        logger.info("Used SongRequestCommand.")
         logger.info("query: $query")
 
         val success = handleSongRequestQuery(chat, query)

@@ -55,7 +55,7 @@ suspend fun setupTwitchBot(): TwitchClient {
     twitchClient.chat.run {
         connect()
         joinChannel(TwitchBotConfig.channel)
-        sendMessage(TwitchBotConfig.channel, "Bot running peepoArrive")
+        sendMessageToTwitchChatAndLogIt(this, "Bot running peepoArrive")
     }
 
     val nextAllowedCommandUsageInstantPerUser = mutableMapOf<Pair<Command, /* user: */ String>, Instant>()
@@ -70,8 +70,11 @@ suspend fun setupTwitchBot(): TwitchClient {
     } catch (e: NoSuchElementException) {
         logger.error("An Error occurred with the channel name. Maybe the channel name is spelled wrong?")
         e.printStackTrace()
-        throw ExceptionInInitializerError("Error with channel name. Check the value of \"channel_name\" in the twitchBotConfig.properties-file!")
+        throw ExceptionInInitializerError(
+            "Error with channel name. Check the value of \"channel_name\" in the twitchBotConfig.properties-file!"
+        )
     }
+
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
         oAuth2Credential,
         channelId
@@ -91,9 +94,14 @@ suspend fun setupTwitchBot(): TwitchClient {
 
         val parts = message.substringAfter(TwitchBotConfig.commandPrefix).split(" ")
 
-        val command = commands.find { parts.first().substringAfter(TwitchBotConfig.commandPrefix).lowercase() in it.names } ?: return@onEvent
+        val command = commands.find {
+            parts.first().substringAfter(TwitchBotConfig.commandPrefix).lowercase() in it.names
+        } ?: return@onEvent
 
-        logger.info("User '${messageEvent.user.name}' tried using command '${command.names.first()}' with arguments: ${parts.drop(1).joinToString()}")
+        logger.info(
+            "User '${messageEvent.user.name}' tried using command '${command.names.first()}' with arguments: " +
+            parts.drop(1).joinToString()
+        )
 
         if(isUserBlacklisted(messageEvent.user.name, messageEvent.user.id, twitchClient.chat)) {
             return@onEvent
@@ -103,22 +111,36 @@ suspend fun setupTwitchBot(): TwitchClient {
             Clock.System.now()
         }
 
-        val nextAllowedCommandUsageInstantForUser = nextAllowedCommandUsageInstantPerUser.getOrPut(command to messageEvent.user.name) {
+        val nextAllowedCommandUsageInstantForUser = nextAllowedCommandUsageInstantPerUser.getOrPut(
+            command to messageEvent.user.name
+        ) {
             Clock.System.now()
         }
-        if((Clock.System.now() - nextAllowedCommandUsageInstant).isNegative() && messageEvent.user.name != TwitchBotConfig.channel) {
+        if(
+            (Clock.System.now() - nextAllowedCommandUsageInstant).isNegative() &&
+            messageEvent.user.name != TwitchBotConfig.channel
+        ) {
             val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstant - Clock.System.now()).inWholeSeconds.seconds
 
-            twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Command is still on cooldown. Please try again in $secondsUntilTimeoutOver")
+            sendMessageToTwitchChatAndLogIt(
+                twitchClient.chat,
+                "Command is still on cooldown. Please try again in $secondsUntilTimeoutOver"
+            )
             logger.info("Command is still on cooldown.")
 
             return@onEvent
         }
 
-        if ((Clock.System.now() - nextAllowedCommandUsageInstantForUser).isNegative() && messageEvent.user.name != TwitchBotConfig.channel) {
+        if (
+            (Clock.System.now() - nextAllowedCommandUsageInstantForUser).isNegative() &&
+            messageEvent.user.name != TwitchBotConfig.channel
+        ) {
             val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstantForUser - Clock.System.now()).inWholeSeconds.seconds
 
-            twitchClient.chat.sendMessage(TwitchBotConfig.channel, "You are still on cooldown. Please try again in $secondsUntilTimeoutOver")
+            sendMessageToTwitchChatAndLogIt(
+                twitchClient.chat,
+                "You are still on cooldown. Please try again in $secondsUntilTimeoutOver"
+            )
             logger.info("User ${messageEvent.user} is still on cooldown.")
 
             return@onEvent
@@ -221,13 +243,31 @@ fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boole
 
     if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers){
 
-        chat.sendMessage(TwitchBotConfig.channel, "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}")
+        sendMessageToTwitchChatAndLogIt(
+            chat,
+            "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}"
+        )
+
         if(userId !in TwitchBotConfig.blacklistedUsers) {
-            logger.warn("Blacklisted user $userName tried using a command. Please use following ID in the properties file instead of the name: $userId")
+            logger.warn(
+                "Blacklisted user $userName tried using a command. " +
+                "Please use following ID in the properties file instead of the name: $userId"
+            )
         }
         return true
     }
     return false
+}
+
+
+/**
+ * Helper function that sends a message to twitch chat and logs it
+ * @param chat TitchChat-Object
+ * @param message String the content of the message
+ */
+fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
+    chat.sendMessage(TwitchBotConfig.channel, message)
+    logger.info("Sent Twitch chat message: $message")
 }
 
 
@@ -242,8 +282,8 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
     var success = true
     try {
-        chat.sendMessage(
-            TwitchBotConfig.channel,
+        sendMessageToTwitchChatAndLogIt(
+            chat,
             updateQueue(query).let { response ->
                 val track = response.track
                 if(track != null) {
@@ -343,14 +383,10 @@ private suspend fun updateQueue(query: String): SongRequestResult {
     )
 }
 
-private data class SongRequestResult(
-    val track: Track?,
-    val songRequestResultExplanation: String
-)
-
 
 /**
- * Issues a GET-Request to get the currently playing spotify song
+ * Issues a GET-Request to get the currently playing spotify song. If the player is not active,
+ * the request will run until a TimeoutException occurred.
  * @return Track? The track-item, if successful, else null
  */
 suspend fun getCurrentSpotifySong(): Track? {
@@ -369,9 +405,7 @@ suspend fun getCurrentSpotifySong(): Track? {
  * @return String song name and artists as a string
  */
 fun createSongString(name: String, artists: List<SimpleArtist>): String {
-    return "\"$name\"" +
-            " by " +
-            getArtistsString(artists)
+    return "\"$name\" by ${getArtistsString(artists)}"
 }
 
 
@@ -588,6 +622,7 @@ suspend fun isSpotifyPlaying(): Boolean? {
  * @return {Boolean} true on success, else false
  */
 suspend fun addSongToPlaylist(song: Track): Boolean {
+    logger.info("called addSongToPlaylist")
     var success = true
     try {
         spotifyClient.playlists.addPlayableToClientPlaylist(
@@ -609,6 +644,7 @@ suspend fun addSongToPlaylist(song: Track): Boolean {
  * @return {Boolean} true, if the user is eligible, else false
  */
 fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermission>): Boolean {
+    logger.info("called areUsersPermissionsEligibleForAddSongCommand")
     return permissions.contains(addSongCommandSecurityLevel.value)
 }
 

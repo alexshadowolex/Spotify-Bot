@@ -14,7 +14,7 @@ val songRequestRedeem: Redeem = Redeem(
             logger.info("SongRequestRedeem disabled. Aborting execution")
             return@Redeem
         }
-        logger.info("Used SongRequestRedeem.")
+
         logger.info("query: $query")
 
         handleSongRequestQuery(chat, query)

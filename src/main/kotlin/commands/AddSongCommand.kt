@@ -1,11 +1,12 @@
 package commands
 
 import addSongToPlaylist
+import areUsersPermissionsEligibleForAddSongCommand
 import config.TwitchBotConfig
 import getCurrentSpotifySong
 import handler.Command
-import areUsersPermissionsEligibleForAddSongCommand
 import logger
+import sendMessageToTwitchChatAndLogIt
 import ui.addSongCommandSecurityLevel
 import ui.isAddSongCommandEnabled
 
@@ -20,7 +21,8 @@ val addSongCommand: Command = Command(
         if(!areUsersPermissionsEligibleForAddSongCommand(messageEvent.permissions)) {
             logger.info("User ${messageEvent.user.name} tried using addSongCommand but was not eligible. " +
                     "Current security setting: ${addSongCommandSecurityLevel.value}")
-            chat.sendMessage(TwitchBotConfig.channel, "You are not eligible to use that command!")
+
+            sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
             return@Command
         }
 
@@ -37,7 +39,7 @@ val addSongCommand: Command = Command(
             "Something went wrong when adding the song to the playlist."
         }
 
-        chat.sendMessage(TwitchBotConfig.channel, message)
+        sendMessageToTwitchChatAndLogIt(chat, message)
 
         addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
     }

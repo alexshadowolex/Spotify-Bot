@@ -70,9 +70,11 @@ suspend fun main() = try {
                     afterTokenRefresh = {
                         it.token.refreshToken = initialToken.refreshToken
                         try {
-                            File("data\\tokens\\spotifyToken.json").writeText(json.encodeToString(it.token.copy(refreshToken = initialToken.refreshToken)))
+                            File("data\\tokens\\spotifyToken.json").writeText(
+                                json.encodeToString(it.token.copy(refreshToken = initialToken.refreshToken))
+                            )
                         } catch(e: Exception) {
-                            logger.error("Error occured while saving new token", e)
+                            logger.error("Error occurred while saving new token", e)
                         }
                     }
                     enableLogger = true
@@ -84,7 +86,7 @@ suspend fun main() = try {
             startSpotifySongGetter()
 
             onDispose {
-                twitchClient.chat.sendMessage(TwitchBotConfig.channel, "Bot shutting down peepoLeave")
+                sendMessageToTwitchChatAndLogIt(twitchClient.chat, "Bot shutting down peepoLeave")
                 if(isEmptySongDisplayFilesOnPauseEnabled.value && isSpotifySongNameGetterEnabled.value) {
                     emptyAllSongDisplayFiles()
                 }
@@ -122,7 +124,11 @@ suspend fun main() = try {
     }
 
 } catch (e: Throwable) {
-    JOptionPane.showMessageDialog(null, e.message + "\n" + StringWriter().also { e.printStackTrace(PrintWriter(it)) }, "InfoBox: File Debugger", JOptionPane.INFORMATION_MESSAGE)
+    JOptionPane.showMessageDialog(
+        null,
+        e.message + "\n"
+                + StringWriter().also { e.printStackTrace(PrintWriter(it)) },
+        "InfoBox: File Debugger", JOptionPane.INFORMATION_MESSAGE)
     logger.error("Error while executing program.", e)
     exitProcess(0)
 }
