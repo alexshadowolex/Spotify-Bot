@@ -400,18 +400,6 @@ fun addSongSecurityMultiToggleButton(
                 Color.Unspecified
             }
 
-            if (index != 0) {
-                Box (
-                ) {
-                    // TODO: Not visible. And if I do "fillMaxHeight", the things gets too big
-                    Divider(
-                        color = Color.LightGray,
-                        modifier = Modifier
-                            .width(1.dp)
-                    )
-                }
-            }
-
             Column (
                 modifier = Modifier
                     .background(backgroundTint)
