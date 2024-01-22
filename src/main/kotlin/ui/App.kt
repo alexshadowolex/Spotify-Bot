@@ -65,16 +65,16 @@ lateinit var addSongCommandSecurityLevel: MutableState<CommandPermission>
 @Preview
 fun app() {
     var isInDarkMode by remember { mutableStateOf(false) }
-    val switchLabelWidthPercentage = 0.9F
 
     LaunchedEffect(Unit) {
+        val windowsRegistryPath = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
+        val windowsRegistryLightThemeParameter = "AppsUseLightTheme"
         while (true) {
             isInDarkMode = if (NativeParameterStoreAccess.IS_WINDOWS) {
-                WindowsRegistry
-                    .getWindowsRegistryEntry(
-                        "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-                        "AppsUseLightTheme"
-                    ) == 0x0
+                WindowsRegistry.getWindowsRegistryEntry(
+                    windowsRegistryPath,
+                    windowsRegistryLightThemeParameter
+                ) == 0x0
             } else {
                 false
             }
@@ -83,13 +83,7 @@ fun app() {
         }
     }
 
-    isSongRequestEnabled = remember { mutableStateOf(TwitchBotConfig.isSongRequestEnabledByDefault) }
-    isSongRequestEnabledAsCommand = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
-    isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
-    isSongInfoCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongInfoCommandEnabledByDefault) }
-    isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(TwitchBotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
-    isAddSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isAddSongCommandEnabledByDefault) }
-    addSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
+    initializeFlagVariables()
 
     MaterialTheme(
         colors = if (isInDarkMode) {
@@ -103,272 +97,41 @@ fun app() {
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
             ) {
-                Row (
-                    modifier = Modifier
-                        .padding(top = 5.dp)
-                ) {
-                    Column {
-                        Row {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth(switchLabelWidthPercentage)
-                                    .align(Alignment.CenterVertically)
-                            ) {
-                                Text(
-                                    text = "Song Request " +
-                                            if (isSongRequestEnabled.value) {
-                                                "Enabled"
-                                            } else {
-                                                "Disabled"
-                                            },
-                                    modifier = Modifier
-                                        .align(Alignment.Start)
-                                )
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.CenterVertically)
-                            ) {
-                                Switch(
-                                    checked = isSongRequestEnabled.value,
-                                    onCheckedChange = {
-                                        logger.info("Clicked on isSongRequestEnabled Switch")
-                                        isSongRequestEnabled.value = it
-                                    },
-                                    modifier = Modifier
-                                        .align(Alignment.End)
-                                )
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .padding(top = 3.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "Song Request as...",
-                                    modifier = Modifier
-                                        .align(Alignment.CenterHorizontally)
-                                )
-                            }
-                        }
-
-                        Row (
-                            modifier = Modifier
-                                .padding(top = 5.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.33F)
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 15.dp)
-                            ) {
-                                Text(
-                                    text = "Redeem",
-                                    modifier = Modifier
-                                        .align(Alignment.Start),
-                                    color = if(isSongRequestEnabledAsRedeem()) {
-                                        MaterialTheme.colors.primary
-                                    } else {
-                                        MaterialTheme.colors.onBackground
-                                    }
-                                )
-                            }
-
-                            Column (
-                                modifier = Modifier
-                                    .fillMaxWidth(0.5F)
-                                    .align(Alignment.CenterVertically)
-                            ) {
-                                Switch(
-                                    checked = isSongRequestEnabledAsCommand.value,
-                                    onCheckedChange = {
-                                        logger.info("Clicked on songRequestTypeChecked Switch")
-                                        isSongRequestEnabledAsCommand.value = it
-                                    },
-                                    modifier = Modifier
-                                        .align(Alignment.CenterHorizontally)
-                                        .fillMaxWidth()
-                                        .scale(1.5F),
-                                    enabled = isSongRequestEnabled.value
-                                )
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.CenterVertically)
-                                    .padding(end = 15.dp)
-                            ) {
-                                Text(
-                                    text = "Command",
-                                    modifier = Modifier
-                                        .align(Alignment.End),
-                                    color = if(isSongRequestEnabledAsCommand.value) {
-                                        MaterialTheme.colors.primary
-                                    } else {
-                                        MaterialTheme.colors.onBackground
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                songRequestRow()
 
                 sectionDivider()
 
-                Row(
-                    modifier = Modifier
-                        .padding(top = 5.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(switchLabelWidthPercentage)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Text(
-                            text = "Song Name Getter " +
-                                    if (isSpotifySongNameGetterEnabled.value) {
-                                        "Enabled"
-                                    } else {
-                                        "Disabled"
-                                    },
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
+                toggleFunctionalityRow(
+                    "Song Name Getter ",
+                    true,
+                    null,
+                    isSpotifySongNameGetterEnabled
+                )
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Switch(
-                            checked = isSpotifySongNameGetterEnabled.value,
-                            onCheckedChange = {
-                                logger.info("Clicked on isSpotifySongNameGetterEnabled Switch")
-                                isSpotifySongNameGetterEnabled.value = it
-                            },
-                            modifier = Modifier
-                                .align(Alignment.End)
-                        )
-                    }
-                }
-
-                Row {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(switchLabelWidthPercentage)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Text(
-                            text = "Empty Song Display Files on Pause ",
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Switch(
-                            checked = isEmptySongDisplayFilesOnPauseEnabled.value,
-                            onCheckedChange = {
-                                logger.info("Clicked on isEmptySongDisplayFilesOnPauseEnabled Switch")
-                                isEmptySongDisplayFilesOnPauseEnabled.value = it
-                            },
-                            modifier = Modifier
-                                .align(Alignment.End),
-                            enabled = isSpotifySongNameGetterEnabled.value
-                        )
-                    }
-                }
+                toggleFunctionalityRow(
+                    "Empty Song Display Files on Pause ",
+                    false,
+                    isSpotifySongNameGetterEnabled,
+                    isEmptySongDisplayFilesOnPauseEnabled
+                )
 
                 sectionDivider()
 
-                Row(
-                    modifier = Modifier
-                        .padding(top = 5.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(switchLabelWidthPercentage)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Text(
-                            text = "Song Info Command " +
-                                    if (isSongInfoCommandEnabled.value) {
-                                        "Enabled"
-                                    } else {
-                                        "Disabled"
-                                    },
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Switch(
-                            checked = isSongInfoCommandEnabled.value,
-                            onCheckedChange = {
-                                logger.info("Clicked on isSongInfoCommandEnabled Switch")
-                                isSongInfoCommandEnabled.value = it
-                            },
-                            modifier = Modifier
-                                .align(Alignment.End)
-                        )
-                    }
-                }
+                toggleFunctionalityRow(
+                    "Song Info Command ",
+                    true,
+                    null,
+                    isSongInfoCommandEnabled
+                )
 
                 sectionDivider()
 
-                Row {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(switchLabelWidthPercentage)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Text(
-                            text = "Add Song Command " +
-                                    if (isAddSongCommandEnabled.value) {
-                                        "Enabled"
-                                    } else {
-                                        "Disabled"
-                                    },
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Switch(
-                            checked = isAddSongCommandEnabled.value,
-                            onCheckedChange = {
-                                logger.info("Clicked on isAddSongCommandEnabled Switch")
-                                isAddSongCommandEnabled.value = it
-                            },
-                            modifier = Modifier
-                                .align(Alignment.End)
-                        )
-                    }
-                }
+                toggleFunctionalityRow(
+                    "Add Song Command ",
+                    true,
+                    null,
+                    isAddSongCommandEnabled
+                )
 
                 Row(
                     modifier = Modifier
@@ -387,7 +150,7 @@ fun app() {
                     }
                 }
 
-                multiToggleButton(
+                addSongSecurityMultiToggleButton(
                     currentSelection = addSongCommandSecurityLevel.value,
                     toggleStates = listOf(
                         CommandPermission.BROADCASTER,
@@ -401,45 +164,7 @@ fun app() {
 
                 sectionDivider()
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    Column (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.Bottom)
-                    ) {
-                        Row (
-                            modifier = Modifier
-                                .align(Alignment.End),
-                        ) {
-                            Text(
-                                text = "Bot Version v${BuildInfo.version} by ",
-                                fontSize = 12.sp
-                            )
-
-                            Text(
-                                style = MaterialTheme.typography.body1,
-                                text = "alexshadowolex",
-                                modifier = Modifier
-                                    .clickable {
-                                        logger.info("Clicked on alexshadowolex Link")
-                                        backgroundCoroutineScope.launch {
-                                            withContext(Dispatchers.IO) {
-                                                Desktop.getDesktop()
-                                                    .browse(URI.create("https://www.twitch.tv/alexshadowolex"))
-                                            }
-                                        }
-                                    }
-                                    .pointerHoverIcon(PointerIcon.Hand),
-                                textDecoration = TextDecoration.Underline,
-                                color = MaterialTheme.colors.primary,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-                }
+                versionAndCreditsRow()
             }
         }
     }
@@ -457,7 +182,196 @@ fun sectionDivider() {
 }
 
 @Composable
-fun multiToggleButton(
+fun toggleFunctionalityRow(
+    labelPrefixText: String,
+    showLabelSuffixText: Boolean,
+    conditionClickable: MutableState<Boolean>?,
+    functionalityFlag: MutableState<Boolean>
+) {
+    val switchLabelWidthPercentage = 0.9F
+
+    Row {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(switchLabelWidthPercentage)
+                .align(Alignment.CenterVertically)
+        ) {
+            Text(
+                text = labelPrefixText +
+                        if(showLabelSuffixText) {
+                            if (functionalityFlag.value) {
+                                "Enabled"
+                            } else {
+                                "Disabled"
+                            }
+                        } else "",
+                modifier = Modifier
+                    .align(Alignment.Start)
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterVertically)
+        ) {
+            Switch(
+                checked = functionalityFlag.value,
+                onCheckedChange = {
+                    functionalityFlag.value = it
+                },
+                modifier = Modifier
+                    .align(Alignment.End),
+                enabled = conditionClickable?.value ?: true
+            )
+        }
+    }
+}
+
+@Composable
+fun songRequestRow() {
+    Row (
+        modifier = Modifier
+            .padding(top = 5.dp)
+    ) {
+        Column {
+            toggleFunctionalityRow(
+                "Song Request ",
+                true,
+                null,
+                isSongRequestEnabled
+            )
+
+            Row(
+                modifier = Modifier
+                    .padding(top = 3.dp)
+                    .fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Song Request as...",
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+
+            Row (
+                modifier = Modifier
+                    .padding(top = 5.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.33F)
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 15.dp)
+                ) {
+                    Text(
+                        text = "Redeem",
+                        modifier = Modifier
+                            .align(Alignment.Start),
+                        color = if(isSongRequestEnabledAsRedeem()) {
+                            MaterialTheme.colors.primary
+                        } else {
+                            MaterialTheme.colors.onBackground
+                        }
+                    )
+                }
+
+                Column (
+                    modifier = Modifier
+                        .fillMaxWidth(0.5F)
+                        .align(Alignment.CenterVertically)
+                ) {
+                    Switch(
+                        checked = isSongRequestEnabledAsCommand.value,
+                        onCheckedChange = {
+                            logger.info("Changed song request type to " + if(isSongRequestEnabledAsCommand.value) {
+                                    "Command"
+                                } else {
+                                    "Redeem"
+                                }
+                            )
+                            isSongRequestEnabledAsCommand.value = it
+                        },
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .fillMaxWidth()
+                            .scale(1.5F),
+                        enabled = isSongRequestEnabled.value
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically)
+                        .padding(end = 15.dp)
+                ) {
+                    Text(
+                        text = "Command",
+                        modifier = Modifier
+                            .align(Alignment.End),
+                        color = if(isSongRequestEnabledAsCommand.value) {
+                            MaterialTheme.colors.primary
+                        } else {
+                            MaterialTheme.colors.onBackground
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun versionAndCreditsRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Bottom)
+        ) {
+            Row (
+                modifier = Modifier
+                    .align(Alignment.End),
+            ) {
+                Text(
+                    text = "Bot Version v${BuildInfo.version} by ",
+                    fontSize = 12.sp
+                )
+
+                Text(
+                    style = MaterialTheme.typography.body1,
+                    text = "alexshadowolex",
+                    modifier = Modifier
+                        .clickable {
+                            logger.info("Clicked on alexshadowolex Link")
+                            backgroundCoroutineScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    Desktop.getDesktop()
+                                        .browse(URI.create("https://www.twitch.tv/alexshadowolex"))
+                                }
+                            }
+                        }
+                        .pointerHoverIcon(PointerIcon.Hand),
+                    textDecoration = TextDecoration.Underline,
+                    color = MaterialTheme.colors.primary,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun addSongSecurityMultiToggleButton(
     currentSelection: Any,
     toggleStates: List<Any>,
     onToggleChange: (String) -> Unit
@@ -487,13 +401,15 @@ fun multiToggleButton(
             }
 
             if (index != 0) {
-                // TODO: Not visible. And if I do "fillMaxHeight", the things gets too big
-                Divider(
-                    color = Color.LightGray,
-                    modifier = Modifier
-                        //.fillMaxHeight()
-                        .width(1.dp)
-                )
+                Box (
+                ) {
+                    // TODO: Not visible. And if I do "fillMaxHeight", the things gets too big
+                    Divider(
+                        color = Color.LightGray,
+                        modifier = Modifier
+                            .width(1.dp)
+                    )
+                }
             }
 
             Column (
@@ -529,4 +445,15 @@ fun multiToggleButton(
             }
         }
     }
+}
+
+@Composable
+private fun initializeFlagVariables() {
+    isSongRequestEnabled = remember { mutableStateOf(TwitchBotConfig.isSongRequestEnabledByDefault) }
+    isSongRequestEnabledAsCommand = remember { mutableStateOf(TwitchBotConfig.isSongRequestCommandEnabledByDefault) }
+    isSpotifySongNameGetterEnabled = remember { mutableStateOf(TwitchBotConfig.isSpotifySongNameGetterEnabledByDefault) }
+    isSongInfoCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSongInfoCommandEnabledByDefault) }
+    isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(TwitchBotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
+    isAddSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isAddSongCommandEnabledByDefault) }
+    addSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
 }

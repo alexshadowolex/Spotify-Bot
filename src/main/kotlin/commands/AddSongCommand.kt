@@ -20,7 +20,8 @@ val addSongCommand: Command = Command(
 
         if(!areUsersPermissionsEligibleForAddSongCommand(messageEvent.permissions)) {
             logger.info("User ${messageEvent.user.name} tried using addSongCommand but was not eligible. " +
-                    "Current security setting: ${addSongCommandSecurityLevel.value}")
+                    "Current security setting: ${addSongCommandSecurityLevel.value}"
+            )
 
             sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
             return@Command
@@ -34,7 +35,7 @@ val addSongCommand: Command = Command(
         }
 
         val message = if(success) {
-            "Successfully added song ${currentSong!!.name} to the playlist!"
+            "Successfully added song \"${currentSong!!.name}\" to the playlist!"
         } else {
             "Something went wrong when adding the song to the playlist."
         }

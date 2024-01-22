@@ -18,7 +18,7 @@ val songInfoCommand: Command = Command(
         }
 
         val currentSong = getCurrentSpotifySong()
-        val message = if(currentSong == null) {
+        val message = if(currentSong == null || isSpotifyPlaying() == false) {
             "No Song playing right now!"
         } else {
             createSongString(currentSong.name, currentSong.artists) + " --> ${currentSong.externalUrls.spotify}"

@@ -310,27 +310,22 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
     var success = true
     try {
+        val message = updateQueue(query).let { result ->
+            val track = result.track
+            if(track != null) {
+                "Song '${track.name}' by ${getArtistsString(track.artists)} has been added to the queue " +
+                TwitchBotConfig.songRequestEmotes.random()
+            } else {
+                success = false
+                "Couldn't add song to the queue. ${result.songRequestResultExplanation}"
+            }
+        }
         sendMessageToTwitchChatAndLogIt(
             chat,
-            updateQueue(query).let { response ->
-                val track = response.track
-                if(track != null) {
-                    "Song '${track.name}' by ${
-                        track.artists.map { "'${it.name}'" }.let { artists ->
-                            listOf(
-                                artists.dropLast(1).joinToString(),
-                                artists.last()
-                            ).filter { it.isNotBlank() }.joinToString(" and ")
-                        }
-                    } has been added to the queue ${TwitchBotConfig.songRequestEmotes.random()}"
-                } else {
-                    success = false
-                    "Couldn't add song to the queue. ${response.songRequestResultExplanation}"
-                }
-            }
+            message
         )
     } catch (e: Exception) {
-        logger.error("Something went wrong with songrequests", e)
+        logger.error("Something went wrong in handleSongRequestQuery ", e)
         success = false
     }
 
@@ -347,23 +342,11 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
 private suspend fun updateQueue(query: String): SongRequestResult {
     logger.info("called updateQueue with query $query")
     val result = try {
-        Url(query).takeIf { it.host == "open.spotify.com" && it.encodedPath.contains("/track/") }?.let {
+        Url(query).takeIf { isQuerySpotifyTrackDirectLink(it) }?.let {
             val songId = it.encodedPath.substringAfter("/track/")
-            logger.info("Song ID from link: $songId")
-            spotifyClient.tracks.getTrack(
-                track = songId,
-                market = Market.DE
-            )
+            getSpotifyTrackById(songId)
         } ?: run {
-            spotifyClient.search.search(
-                query = query,
-                searchTypes = arrayOf(
-                    SearchApi.SearchType.Artist,
-                    SearchApi.SearchType.Album,
-                    SearchApi.SearchType.Track
-                ),
-                market = Market.DE
-            ).tracks?.firstOrNull()
+            getSpotifyTrackByQuery(query)
         } ?: return SongRequestResult(
             track = null,
             songRequestResultExplanation = "No Result when searching for song."
@@ -376,7 +359,8 @@ private suspend fun updateQueue(query: String): SongRequestResult {
         )
     }
 
-    logger.info("Result after search: $result")
+    logger.info("Result after accessing spotify endpoints: $result")
+
     if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
         logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
         return SongRequestResult(
@@ -409,6 +393,59 @@ private suspend fun updateQueue(query: String): SongRequestResult {
         track = result,
         songRequestResultExplanation = "Successfully added the song to the queue."
     )
+}
+
+
+/**
+ * Checks if the given URL is a spotify direct link to a track.
+ * @param query Url-object of the given link
+ * @return {Boolean} true, if it is a direct link to a spotify track, else false
+ */
+private fun isQuerySpotifyTrackDirectLink(query: Url): Boolean {
+    return query.host == "open.spotify.com" && query.encodedPath.contains("/track/")
+}
+
+
+/**
+ * Gets the track from the Spotify APIs track endpoint.
+ * @param songId String with the link's songId
+ * @return {Track?} a track on success, null on error
+ */
+private suspend fun getSpotifyTrackById(songId: String): Track? {
+    logger.info("called getSpotifyTrackById with ID: $songId")
+    return try {
+        spotifyClient.tracks.getTrack(
+            track = songId,
+            market = Market.DE
+        )
+    } catch (e: Exception) {
+        logger.error("Exception while accessing tracks endpoint of spotify: ", e)
+        null
+    }
+}
+
+
+/**
+ * Gets the track from the Spotify APIs search endpoint.
+ * @param query String with the search query
+ * @return {Track?} a track on success, null on error
+ */
+private suspend fun getSpotifyTrackByQuery(query: String): Track? {
+    logger.info("called getSpotifyTrackByQuery with query: $query")
+    return try {
+        spotifyClient.search.search(
+            query = query,
+            searchTypes = arrayOf(
+                SearchApi.SearchType.Artist,
+                SearchApi.SearchType.Album,
+                SearchApi.SearchType.Track
+            ),
+            market = Market.DE
+        ).tracks?.firstOrNull()
+    } catch (e: Exception) {
+        logger.error("Exception while accessing search endpoint of spotify: ", e)
+        null
+    }
 }
 
 
