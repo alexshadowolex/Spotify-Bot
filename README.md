@@ -4,25 +4,25 @@ Created by [alexshadowolex](https://www.twitch.tv/alexshadowolex)
 
 Table of Contents:
 1. [Current Versions](#current-versions)
-2. [How to Setup](#how-to-setup)
+2. [How to set up](#how-to-set-up)
    1. [Requirements](#requirements)
    2. [Setup Steps](#setup-steps)
       1. [Download and save](#download-and-save)
-      2. [Setup Project Structure](#setup-project-structure)
+      2. [Set Up Project Structure](#set-up-project-structure)
       3. [Update Properties](#update-properties)
-      4. [Setup Spotify Token](#setup-spotify-token)
+      4. [Set Up Spotify Token](#set-up-spotify-token)
 3. [How to Update](#how-to-update)
 4. [Current functionalities](#current-functionalities)
 5. [Contents of data-files explained](#contents-of-data-files-explained)
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v1.2.3 [Download from Release v1.2.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.3/Spotify.Bot-windows-x64-1.2.3.jar)
+* Spotify-Bot.jar: v1.2.4 [Download from Release v1.2.4](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.4/Spotify.Bot-windows-x64-1.2.4.jar)
 * SetupToken.jar: v3 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupToken_v3.jar)
 * SetupProject.jar: v1 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupProject_v1.jar)
-* UpdateProperties.jar: v1.2.3 [Download from Release v1.2.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.3/UpdateProperties_1-2-3.jar)
+* UpdateProperties.jar: v1.2.4 [Download from Release v1.2.4](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.4/UpdateProperties_1-2-4.jar)
 
-## How to Setup
+## How to set up
 
 ### Requirements
 You need to have java 17 or higher installed on your pc. To check if you have, open a cmd (type "cmd" bottom left into search bar) and type "java --version". If it responds with a version, you will see the version number. If not, you can download java 19 installer from here: [Oracle Java 19](https://download.oracle.com/java/19/archive/jdk-19.0.2_windows-x64_bin.msi).
@@ -43,8 +43,8 @@ Download all files and put them on the same level, like this:
 ````
 During the setup process, you will need to execute those jars in a specific order. Execute them from that location.
 <br><br>
-#### Setup Project Structure
-First we need to setup the project structure. Execute the newest version of the file SetupProject.jar.<br>
+#### Set Up Project Structure
+First we need to set up the project structure. Execute the newest version of the file SetupProject.jar.<br>
 You will see this window:
 <br>
 ![setupProject.png](images/setupProject.png)
@@ -81,8 +81,8 @@ The properties-files in folder data\properties now have the needed entries. They
 You will get a detailed explanation of the properties later. For now, we only need to change 1 property:<br>
 Go into the file data\properties\twitchBotConfig.properties. There you have the entry "channel_name" -> remove everything after the "=" and add your twitch-channel name.
 <br><br>
-#### Setup Spotify Token
-Now we need to setup the spotify token. Execute the latest version of SetupToken.jar. Two things will happen: A Browser Tab opens and following window will be visible:<br>
+#### Set Up Spotify Token
+Now we need to set up the spotify token. Execute the latest version of SetupToken.jar. Two things will happen: A Browser Tab opens and following window will be visible:<br>
 ![setupToken.png](images/setupToken.png)
 <br>
 Go into the browser tab. It has the website of the redirect URI open, example.com. In the URL, you will see following text:<br>
@@ -128,7 +128,7 @@ The file, that will always be included, is the new Bot version. Download it and 
   * MODERATOR: Owner and Moderators
   * EVERYONE: Everyone (careful with that one, your playlist might get filled with too many songs)<br>
   
-  This security setting can be done in the UI and in the properties files. Note that the value is case sensitive.
+  This security setting can be done in the UI and in the properties files. Note that the value is case-sensitive.
 
 ## Contents of data-files explained
 The files consist of following content:
@@ -174,9 +174,9 @@ If you don't have the redeem ID, you have 2 possible solutions:<br>
 * Use any compiled binary (.jar-files) at your own risk. They could be doing anything without you knowing it. Either you trust me and my builds or not. I will take no responsibility for anything.
 * You can change the properties' values at any time, but they will only be applied after the next start up.
 * Make sure to check on releases, if there are newer version of the project-setup- or setup-token-jar, if needed.
-* If an error occurres (a window with a big wall of text appears), check the bottom part of the message. The most common mistake is a property missing or having invalid data. A property missing can be identified like this: <br>
+* If an error occurred (a window with an error message appeared), read the error message. The most common mistake is a property missing or having invalid data. A property missing can be identified like this: <br>
   ![exampleMissingProperty.png](images/exampleMissingProperty.png)
   <br>
-  Here you can see in the last two lines "getProperty("command_prefix") must not be null" and "at config.TwitchBotConfig", indicating that the property "command_prefix" is missing.
-* If any issues occurre, message me on Discord (alexshadowolex) or on [Twitch](https://twitch.tv/alexshadowolex). Please also provide the log files and tell me, what went wrong.
+  Here you can see the name of the faulty property and the file it is located in.
+* If any issues occurred, message me on Discord (alexshadowolex) or on [Twitch](https://twitch.tv/alexshadowolex). Please also provide the log files and tell me, what went wrong.
 * Also feel free to message me for any improvement ideas.
