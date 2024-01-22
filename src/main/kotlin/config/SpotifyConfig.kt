@@ -6,18 +6,22 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 object SpotifyConfig {
+    private val spotifyConfigFile = File("data\\properties\\spotifyConfig.properties")
     private val properties = Properties().apply {
-        load(File("data\\properties\\spotifyConfig.properties").inputStream())
+        load(spotifyConfigFile.inputStream())
     }
 
     val spotifyClientSecret: String = File("data\\tokens\\spotifyClientSecret.txt").readText()
-    val spotifyClientId: String = properties.getProperty("spotify_client_id")
-    val playlistIdForAddSongCommand: String = properties.getProperty("playlist_id_for_add_song_command")
+    val spotifyClientId: String = getPropertyValue(properties, "spotify_client_id", spotifyConfigFile.path)
+    val playlistIdForAddSongCommand: String = getPropertyValue(
+        properties, "playlist_id_for_add_song_command", spotifyConfigFile.path
+    )
     val addSongCommandSecurityLevelOnStartUp = CommandPermission.valueOf(
-        properties.getProperty("add_song_command_security_level_on_start_up")
+        getPropertyValue(properties, "add_song_command_security_level_on_start_up", spotifyConfigFile.path)
     )
     val maximumLengthMinutesSongRequest: Duration = try {
-        properties.getProperty("maximum_length_minutes_song_request").toDouble().minutes
+        getPropertyValue(properties, "maximum_length_minutes_song_request", spotifyConfigFile.path)
+            .toDouble().minutes
     } catch (e: NumberFormatException) {
         logger.info(
             "Invalid number found while parsing property maximum_length_minutes_song_request, " +

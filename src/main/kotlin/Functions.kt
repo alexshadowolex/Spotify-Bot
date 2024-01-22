@@ -26,14 +26,16 @@ import ui.addSongCommandSecurityLevel
 import ui.isEmptySongDisplayFilesOnPauseEnabled
 import ui.isSongRequestEnabledAsCommand
 import ui.isSpotifySongNameGetterEnabled
-import java.io.File
-import java.io.FileOutputStream
-import java.io.PrintStream
+import java.io.*
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
+import java.util.*
+import javax.swing.JOptionPane
+import kotlin.NoSuchElementException
 import kotlin.collections.set
+import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -228,6 +230,32 @@ fun setupLogging() {
     System.setOut(PrintStream(MultiOutputStream(System.out, FileOutputStream(logFile))))
 
     logger.info("Log file '${logFile.name}' has been created.")
+}
+
+
+// General functions
+/**
+ * Gets the value of the specified property out of the given properties-file. When an error occurres, the
+ * function will display a descriptive error message windows and end the app.
+ * @param properties Properties-class, already initialized before calling the function
+ * @param propertyName String name of the property
+ * @param propertiesFileRelativePath String of the relative path of the properties file
+ * @return {String} on success, the raw string value of the property
+ */
+fun getPropertyValue(properties: Properties, propertyName: String, propertiesFileRelativePath: String): String {
+    return try {
+        properties.getProperty(propertyName)
+    } catch (e: Exception) {
+        logger.error("Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ", e)
+        JOptionPane.showMessageDialog(
+            null,
+            "Error while reading value of property \"$propertyName\" in file $propertiesFileRelativePath.\n" +
+                    "Check logs for more information",
+            "Error while reading properties",
+            JOptionPane.ERROR_MESSAGE
+        )
+        exitProcess(-1)
+    }
 }
 
 
