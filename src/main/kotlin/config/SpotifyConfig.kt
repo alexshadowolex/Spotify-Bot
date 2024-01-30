@@ -16,6 +16,7 @@ object SpotifyConfig {
     val playlistIdForAddSongCommand: String = getPropertyValue(
         properties, "playlist_id_for_add_song_command", spotifyConfigFile.path
     )
+    var playlistNameForAddSongCommand = ""
     val addSongCommandSecurityLevelOnStartUp = CommandPermission.valueOf(
         getPropertyValue(properties, "add_song_command_security_level_on_start_up", spotifyConfigFile.path)
     )

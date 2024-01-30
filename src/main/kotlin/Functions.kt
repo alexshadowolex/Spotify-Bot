@@ -714,6 +714,16 @@ fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermiss
 }
 
 
+/**
+ * Issues a GET-Request to spotify API to get the playlist's name of the given playlist ID
+ * @param playlistId String of the playlist's ID to get the name of.
+ * @return {String} the name on success, empty String on failure
+ */
+suspend fun getPlaylistName(playlistId: String): String {
+    return spotifyClient.playlists.getPlaylist(playlistId)?.name ?: ""
+}
+
+
 // Github
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**

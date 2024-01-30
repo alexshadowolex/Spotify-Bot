@@ -1,9 +1,11 @@
 package commands
 
+import SpotifyConfig
 import addSongToPlaylist
 import areUsersPermissionsEligibleForAddSongCommand
 import config.TwitchBotConfig
 import getCurrentSpotifySong
+import getPlaylistName
 import handler.Command
 import logger
 import sendMessageToTwitchChatAndLogIt
@@ -16,6 +18,10 @@ val addSongCommand: Command = Command(
         if(!isAddSongCommandEnabled.value) {
             logger.info("AddSongCommand disabled. Aborting execution")
             return@Command
+        }
+
+        if(SpotifyConfig.playlistNameForAddSongCommand.isEmpty()) {
+            SpotifyConfig.playlistNameForAddSongCommand = getPlaylistName(SpotifyConfig.playlistIdForAddSongCommand)
         }
 
         if(!areUsersPermissionsEligibleForAddSongCommand(messageEvent.permissions)) {
@@ -35,7 +41,12 @@ val addSongCommand: Command = Command(
         }
 
         val message = if(success) {
-            "Successfully added song \"${currentSong!!.name}\" to the playlist!"
+            "Successfully added song \"${currentSong!!.name}\" to the playlist" +
+                if(SpotifyConfig.playlistNameForAddSongCommand.isNotEmpty()) {
+                    " \"${SpotifyConfig.playlistNameForAddSongCommand}\""
+                } else {
+                    ""
+                } + "!"
         } else {
             "Something went wrong when adding the song to the playlist."
         }
