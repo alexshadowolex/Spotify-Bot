@@ -42,7 +42,7 @@ import kotlin.time.Duration.Companion.seconds
 // Setup Twitch Bot
 /**
  * Sets up the connection to twitch
- * @return TwitchClient the TwitchClient-class
+ * @return {TwitchClient} the TwitchClient-class
  */
 suspend fun setupTwitchBot(): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
@@ -170,8 +170,8 @@ suspend fun setupTwitchBot(): TwitchClient {
 
 /**
  * Initiates the callback for the reward redeems
- * @param redeemEvent The event-class
- * @param twitchClient The TwitchClient-class
+ * @param redeemEvent {RewardRedeemedEvent} the redeem event
+ * @param twitchClient {TwitchClient} the twitchClient
  */
 fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: TwitchClient) {
     val redeem = redeems.find {
@@ -210,7 +210,7 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
 // Logging
 private const val LOG_DIRECTORY = "logs"
 /**
- * Sets up the logging process with MultiOutputStream to both console and log file
+ * Sets up the logging process with {MultiOutputStream} to both console and log file
  */
 fun setupLogging() {
     Files.createDirectories(Paths.get(LOG_DIRECTORY))
@@ -237,10 +237,10 @@ fun setupLogging() {
 /**
  * Gets the value of the specified property out of the given properties-file. When an error occurres, the
  * function will display a descriptive error message windows and end the app.
- * @param properties Properties-class, already initialized before calling the function
- * @param propertyName String name of the property
- * @param propertiesFileRelativePath String of the relative path of the properties file
- * @return {String} on success, the raw string value of the property
+ * @param properties {Properties} already initialized properties-class
+ * @param propertyName {String} name of the property
+ * @param propertiesFileRelativePath {String} the relative path of the properties file
+ * @return {String} on success, the raw value of the property
  */
 fun getPropertyValue(properties: Properties, propertyName: String, propertiesFileRelativePath: String): String {
     return try {
@@ -262,10 +262,10 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
 // Twitch Bot functions
 /**
  * Checks if a user is blacklisted
- * @param userName User's Name
- * @param userId User's ID
- * @param chat Chat-Class
- * @return Boolean true, if the user is blacklisted, else false
+ * @param userName {String} user's Name
+ * @param userId {String} user's ID
+ * @param chat {TwitchChat} the twitch chat
+ * @return {Boolean} true, if the user is blacklisted, else false
  */
 fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boolean {
 
@@ -290,8 +290,8 @@ fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boole
 
 /**
  * Helper function that sends a message to twitch chat and logs it
- * @param chat TitchChat-Object
- * @param message String the content of the message
+ * @param chat {TitchChat} the twitch chat
+ * @param message {String} content of the message
  */
 fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
     chat.sendMessage(TwitchBotConfig.channel, message)
@@ -302,9 +302,9 @@ fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
 // Spotify Functions
 /**
  * Helper function to be called both by redeem and command. Calls the update queue and issues a message to twitch chat.
- * @param chat Twitch chat class
- * @param query given String-query, either link or pure string
- * @return Boolean true on success, else false
+ * @param chat {TwitchChat} the twitch chat
+ * @param query {String} query or link
+ * @return {Boolean} true on success, else false
  */
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
@@ -335,9 +335,9 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
 
 /**
  * Updates the spotify queue adding a song to it
- * @param query Either a spotify link or a string that will be searched for
- * @return SongRequestResult A Track-Item? and a String, on success: Track item and message,
- * on failure: null and explanation
+ * @param query {String} either a spotify link or a query that will be searched for
+ * @return {SongRequestResult} {Track-Item?} and {String}, on success: track and explanation message,
+ * on failure: null and explanation message
  */
 private suspend fun updateQueue(query: String): SongRequestResult {
     logger.info("called updateQueue with query $query")
@@ -398,7 +398,7 @@ private suspend fun updateQueue(query: String): SongRequestResult {
 
 /**
  * Checks if the given URL is a spotify direct link to a track.
- * @param query Url-object of the given link
+ * @param query {Url} the given link
  * @return {Boolean} true, if it is a direct link to a spotify track, else false
  */
 private fun isQuerySpotifyTrackDirectLink(query: Url): Boolean {
@@ -408,7 +408,7 @@ private fun isQuerySpotifyTrackDirectLink(query: Url): Boolean {
 
 /**
  * Gets the track from the Spotify APIs track endpoint.
- * @param songId String with the link's songId
+ * @param songId {String} the link's songId
  * @return {Track?} a track on success, null on error
  */
 private suspend fun getSpotifyTrackById(songId: String): Track? {
@@ -427,7 +427,7 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
 
 /**
  * Gets the track from the Spotify APIs search endpoint.
- * @param query String with the search query
+ * @param query {String} the search query
  * @return {Track?} a track on success, null on error
  */
 private suspend fun getSpotifyTrackByQuery(query: String): Track? {
@@ -452,7 +452,7 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
 /**
  * Issues a GET-Request to get the currently playing spotify song. If the player is not active,
  * the request will run until a TimeoutException occurred.
- * @return Track? The track-item, if successful, else null
+ * @return {Track?} track, if successful, else null
  */
 suspend fun getCurrentSpotifySong(): Track? {
     return try {
@@ -465,9 +465,9 @@ suspend fun getCurrentSpotifySong(): Track? {
 
 /**
  * Creates a string from the given song with Title and Artists
- * @param name Track-Name of the given song
- * @param artists List<SimpleArtist> artists of the given song
- * @return String song name and artists as a string
+ * @param name {String} name of the given song
+ * @param artists {List<SimpleArtist>} artists of the given song
+ * @return {String} song name and artists
  */
 fun createSongString(name: String, artists: List<SimpleArtist>): String {
     return "\"$name\" by ${getArtistsString(artists)}"
@@ -476,8 +476,8 @@ fun createSongString(name: String, artists: List<SimpleArtist>): String {
 
 /**
  * Creates the concatenation of a list of artists with "," and the last 2 with "and"
- * @param artists List<SimpleArtist> artists
- * @return String of a concatenation of the artists
+ * @param artists {List<SimpleArtist>} artists
+ * @return {String} concatenation of the artists
  */
 fun getArtistsString(artists: List<SimpleArtist>): String {
     return artists.map { it.name }.let { artist ->
@@ -553,7 +553,7 @@ private fun isSpotifySongNameGetterEnabled(): Boolean {
 
 /**
  * Writes current song into the separate text files
- * @param currentTrack Current Track
+ * @param currentTrack {Track} current Track
  */
 private fun writeCurrentSongTextFiles(currentTrack: Track) {
     try {
@@ -572,7 +572,7 @@ private fun writeCurrentSongTextFiles(currentTrack: Track) {
 
 /**
  * Downloads the current song's album image
- * @param currentTrack Current Track
+ * @param currentTrack {Track} current Track
  */
 private fun downloadAndSaveAlbumImage(currentTrack: Track) {
     try {
@@ -683,7 +683,7 @@ suspend fun isSpotifyPlaying(): Boolean? {
 
 /**
  * Adds a song to the playlist specified in spotifyConfig.properties.
- * @param song Track item of the song to add
+ * @param song {Track} the song to add
  * @return {Boolean} true on success, else false
  */
 suspend fun addSongToPlaylist(song: Track): Boolean {
@@ -705,7 +705,7 @@ suspend fun addSongToPlaylist(song: Track): Boolean {
 
 /**
  * Checks if the user's permissions are eligible for using the add song command.
- * @param permissions Set of CommandPermission of current user
+ * @param permissions {Set<CommandPermission>} permissions of current user
  * @return {Boolean} true, if the user is eligible, else false
  */
 fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermission>): Boolean {
@@ -716,7 +716,7 @@ fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermiss
 
 /**
  * Issues a GET-Request to spotify API to get the playlist's name of the given playlist ID
- * @param playlistId String of the playlist's ID to get the name of.
+ * @param playlistId {String} playlist's ID to get the name of
  * @return {String} the name on success, empty String on failure
  */
 suspend fun getPlaylistName(playlistId: String): String {
@@ -728,7 +728,7 @@ suspend fun getPlaylistName(playlistId: String): String {
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**
  * Checks GitHub to see if a new version of this app is available
- * @return Boolean true, if there is a new version, else false
+ * @return {Boolean} true, if there is a new version, else false
  */
 fun isNewAppReleaseAvailable(): Boolean {
     logger.info("called isNewAppReleaseAvailable")
