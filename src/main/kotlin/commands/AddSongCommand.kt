@@ -1,11 +1,9 @@
 package commands
 
-import SpotifyConfig
-import addSongToPlaylist
 import areUsersPermissionsEligibleForAddSongCommand
 import config.TwitchBotConfig
 import getCurrentSpotifySong
-import getPlaylistName
+import handleAddSongCommandFunctionality
 import handler.Command
 import logger
 import sendMessageToTwitchChatAndLogIt
@@ -20,10 +18,6 @@ val addSongCommand: Command = Command(
             return@Command
         }
 
-        if(SpotifyConfig.playlistNameForAddSongCommand.isEmpty()) {
-            SpotifyConfig.playlistNameForAddSongCommand = getPlaylistName(SpotifyConfig.playlistIdForAddSongCommand)
-        }
-
         if(!areUsersPermissionsEligibleForAddSongCommand(messageEvent.permissions)) {
             logger.info("User ${messageEvent.user.name} tried using addSongCommand but was not eligible. " +
                     "Current security setting: ${addSongCommandSecurityLevel.value}"
@@ -34,21 +28,10 @@ val addSongCommand: Command = Command(
         }
 
         val currentSong = getCurrentSpotifySong()
-        val success = if (currentSong != null) {
-            addSongToPlaylist(currentSong)
-        } else {
-            false
-        }
-
-        val message = if(success) {
-            "Successfully added song \"${currentSong!!.name}\" to the playlist" +
-                if(SpotifyConfig.playlistNameForAddSongCommand.isNotEmpty()) {
-                    " \"${SpotifyConfig.playlistNameForAddSongCommand}\""
-                } else {
-                    ""
-                } + "!"
-        } else {
+        val message = if(currentSong == null) {
             "Something went wrong when adding the song to the playlist."
+        } else {
+            handleAddSongCommandFunctionality(currentSong)
         }
 
         sendMessageToTwitchChatAndLogIt(chat, message)

@@ -26,14 +26,15 @@ import ui.addSongCommandSecurityLevel
 import ui.isEmptySongDisplayFilesOnPauseEnabled
 import ui.isSongRequestEnabledAsCommand
 import ui.isSpotifySongNameGetterEnabled
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
 import java.util.*
 import javax.swing.JOptionPane
-import kotlin.NoSuchElementException
 import kotlin.collections.set
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
@@ -673,6 +674,9 @@ suspend fun isSpotifyPlaying(): Boolean? {
         }
         // Error cases (401, 403, 429)
         else -> {
+            logger.error("An error occurred while accessing player endpoint. Code: ${response.status}. " +
+                    "Message: ${response.bodyAsText()}"
+            )
             null
         }
     }
@@ -682,16 +686,17 @@ suspend fun isSpotifyPlaying(): Boolean? {
 
 
 /**
- * Adds a song to the playlist specified in spotifyConfig.properties.
+ * Adds a song to the playlist with the given playlist ID
  * @param song {Track} the song to add
+ * @param playlistId {String} playlist's ID
  * @return {Boolean} true on success, else false
  */
-suspend fun addSongToPlaylist(song: Track): Boolean {
+suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
     logger.info("called addSongToPlaylist")
     var success = true
     try {
         spotifyClient.playlists.addPlayableToClientPlaylist(
-            SpotifyConfig.playlistIdForAddSongCommand,
+            playlistId,
             song.uri
         )
     } catch (e: SpotifyException.BadRequestException) {
@@ -721,6 +726,84 @@ fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermiss
  */
 suspend fun getPlaylistName(playlistId: String): String {
     return spotifyClient.playlists.getPlaylist(playlistId)?.name ?: ""
+}
+
+
+/**
+ * Checks if a song is in a given playlist by ID
+ * @param songId {String} the song's ID to check for
+ * @param playlistId {String} the playlist's ID
+ * @return {Boolean} true, if the playlist contains the song, else false
+ */
+suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean {
+    val playlistSongIds = getPlaylistSongIds(playlistId)
+    return playlistSongIds.contains(songId)
+}
+
+
+/**
+ * Gets all the song IDs of the specified playlist's songs. It issues a GET-Request to spotify api for every 100
+ * songs contained in that playlist.
+ * @param playlistId {String} ID of the playlist to get the song IDs of
+ * @return {List<String?>} IDs of the songs in that playlist, empty strings if issues occurred
+ */
+suspend fun getPlaylistSongIds(playlistId: String): List<String?> {
+    val playlistSongIds = mutableListOf<String?>()
+    val limit = 100
+    var currentOffset = 0
+    var nextLink: String? = ""
+
+    while(nextLink != null) {
+        val result = spotifyClient.playlists.getPlaylistTracks(
+            playlist = playlistId,
+            offset = currentOffset,
+            limit = limit
+        )
+
+        nextLink = result.next
+        currentOffset += limit
+
+        playlistSongIds.addAll(result.items.map { it.track?.id ?: "" })
+    }
+
+    return playlistSongIds
+}
+
+
+/**
+ * Handles the functionality of the add song command after all sanity checks succeeded.
+ * Checks if the song is already in the give playlist. If so, it will not be added. If not, it adds the song
+ * to the playlist specified per ID in SpotifyConfig.playlistIdForAddSongCommand.
+ * @param song {Track} song to add
+ * @return {String} message to display in twitch chat afterward
+ */
+suspend fun handleAddSongCommandFunctionality(song: Track): String {
+    return if(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
+        "Song \"${song.name}\" is already in playlist "
+    } else {
+        addSongToPlaylist(song, SpotifyConfig.playlistIdForAddSongCommand)
+        "Successfully added song \"${song.name}\" to the playlist "
+    } + getAddSongPlaylistNameString()
+}
+
+
+/**
+ * Gets the playlist's name from the add Song Command. Since the property might still be empty, this needs to get
+ * checked and if so, try and fill the property with the correct name.
+ * @return {String} the playlist's name. If the property is not empty, it will be surrounded by quotation marks
+ */
+suspend fun getAddSongPlaylistNameString(): String {
+    if(SpotifyConfig.playlistNameForAddSongCommand.isEmpty()) {
+        SpotifyConfig.playlistNameForAddSongCommand = getPlaylistName(SpotifyConfig.playlistIdForAddSongCommand)
+    }
+
+    return SpotifyConfig.playlistNameForAddSongCommand.run {
+        if(this.isNotEmpty()) {
+            "\"$this\""
+        } else {
+            this
+        }
+    }
 }
 
 
