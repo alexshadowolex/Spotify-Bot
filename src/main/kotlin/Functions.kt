@@ -101,12 +101,20 @@ suspend fun setupTwitchBot(): TwitchClient {
             parts.first().substringAfter(TwitchBotConfig.commandPrefix).lowercase() in it.names
         } ?: return@onEvent
 
+        val userName = messageEvent.user.name
+        val userId = messageEvent.user.id
+        val chat = messageEvent.twitchChat
+
         logger.info(
-            "User '${messageEvent.user.name}' tried using command '${command.names.first()}' with arguments: " +
+            "User '$userName' tried using command '${command.names.first()}' with arguments: " +
             parts.drop(1).joinToString()
         )
 
-        if(isUserBlacklisted(messageEvent.user.name, messageEvent.user.id, twitchClient.chat)) {
+        if(isUserBlacklisted(userName, userId)) {
+            sendMessageToTwitchChatAndLogIt(
+                chat,
+                "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}"
+            )
             return@onEvent
         }
 
@@ -115,18 +123,18 @@ suspend fun setupTwitchBot(): TwitchClient {
         }
 
         val nextAllowedCommandUsageInstantForUser = nextAllowedCommandUsageInstantPerUser.getOrPut(
-            command to messageEvent.user.name
+            command to userName
         ) {
             Clock.System.now()
         }
         if(
             (Clock.System.now() - nextAllowedCommandUsageInstant).isNegative() &&
-            messageEvent.user.name != TwitchBotConfig.channel
+            userName != TwitchBotConfig.channel
         ) {
             val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstant - Clock.System.now()).inWholeSeconds.seconds
 
             sendMessageToTwitchChatAndLogIt(
-                twitchClient.chat,
+                chat,
                 "Command is still on cooldown. Please try again in $secondsUntilTimeoutOver"
             )
             logger.info("Command is still on cooldown.")
@@ -136,28 +144,30 @@ suspend fun setupTwitchBot(): TwitchClient {
 
         if (
             (Clock.System.now() - nextAllowedCommandUsageInstantForUser).isNegative() &&
-            messageEvent.user.name != TwitchBotConfig.channel
+            userName != TwitchBotConfig.channel
         ) {
-            val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstantForUser - Clock.System.now()).inWholeSeconds.seconds
+            val secondsUntilTimeoutOver = (
+                    nextAllowedCommandUsageInstantForUser - Clock.System.now()
+            ).inWholeSeconds.seconds
 
             sendMessageToTwitchChatAndLogIt(
                 twitchClient.chat,
                 "You are still on cooldown. Please try again in $secondsUntilTimeoutOver"
             )
-            logger.info("User ${messageEvent.user} is still on cooldown.")
+            logger.info("User $userName is still on cooldown.")
 
             return@onEvent
         }
 
         val commandHandlerScope = CommandHandlerScope(
-            chat = twitchClient.chat,
+            chat = chat,
             messageEvent = messageEvent,
         )
 
         backgroundCoroutineScope.launch {
             command.handler(commandHandlerScope, parts.drop(1))
 
-            val key = command to messageEvent.user.name
+            val key = command to userName
             nextAllowedCommandUsageInstantPerUser[key] = Clock.System.now() + commandHandlerScope.addedUserCoolDown
 
             nextAllowedCommandUsageInstantPerCommand[command] = Clock.System.now() + commandHandlerScope.addedCommandCoolDown
@@ -175,25 +185,21 @@ suspend fun setupTwitchBot(): TwitchClient {
  * @param twitchClient {TwitchClient} the twitchClient
  */
 fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: TwitchClient) {
-    val redeem = redeems.find {
-        redeemEvent.redemption.reward.id in it.id ||
-        redeemEvent.redemption.reward.title in it.id
-    }.also {
+    val redeemId = redeemEvent.redemption.reward.id
+    val redeemTitle = redeemEvent.redemption.reward.title
+
+    val redeem = redeems.find { redeemId in it.id || redeemTitle in it.id }.also {
         if (it != null) {
-            if(redeemEvent.redemption.reward.title in it.id) {
-                logger.warn("Redeem ${redeemEvent.redemption.reward.title}. " +
+            if(redeemTitle in it.id) {
+                logger.warn("Redeem $redeemTitle. " +
                         "Please use following ID in the properties file instead of the name: " +
-                        redeemEvent.redemption.reward.id
+                        redeemId
                 )
             }
         }
     } ?: return
 
-    if(isUserBlacklisted(
-            redeemEvent.redemption.user.displayName,
-            redeemEvent.redemption.user.id,
-            twitchClient.chat
-    )) {
+    if(isUserBlacklisted(redeemEvent.redemption.user.displayName, redeemEvent.redemption.user.id)) {
         logger.info("User ${redeemEvent.redemption.user} is blacklisted. Aborting")
         return
     }
@@ -250,7 +256,8 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
         logger.error("Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ", e)
         JOptionPane.showMessageDialog(
             null,
-            "Error while reading value of property \"$propertyName\" in file $propertiesFileRelativePath.\n" +
+            "Error while reading value of property ${propertyName.addQuotationMarks()} " +
+                    "in file $propertiesFileRelativePath.\n" +
                     "Check logs for more information",
             "Error while reading properties",
             JOptionPane.ERROR_MESSAGE
@@ -265,18 +272,10 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
  * Checks if a user is blacklisted
  * @param userName {String} user's Name
  * @param userId {String} user's ID
- * @param chat {TwitchChat} the twitch chat
  * @return {Boolean} true, if the user is blacklisted, else false
  */
-fun isUserBlacklisted(userName: String, userId: String, chat: TwitchChat): Boolean {
-
-    if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers){
-
-        sendMessageToTwitchChatAndLogIt(
-            chat,
-            "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}"
-        )
-
+fun isUserBlacklisted(userName: String, userId: String): Boolean {
+    if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers) {
         if(userId !in TwitchBotConfig.blacklistedUsers) {
             logger.warn(
                 "Blacklisted user $userName tried using a command. " +
@@ -314,17 +313,15 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
         val message = updateQueue(query).let { result ->
             val track = result.track
             if(track != null) {
-                "Song '${track.name}' by ${getArtistsString(track.artists)} has been added to the queue " +
+                "Song ${track.name.addQuotationMarks()} by ${getArtistsString(track.artists)} has been added to the queue " +
                 TwitchBotConfig.songRequestEmotes.random()
             } else {
                 success = false
                 "Couldn't add song to the queue. ${result.songRequestResultExplanation}"
             }
         }
-        sendMessageToTwitchChatAndLogIt(
-            chat,
-            message
-        )
+        sendMessageToTwitchChatAndLogIt(chat, message)
+
     } catch (e: Exception) {
         logger.error("Something went wrong in handleSongRequestQuery ", e)
         success = false
@@ -471,7 +468,7 @@ suspend fun getCurrentSpotifySong(): Track? {
  * @return {String} song name and artists
  */
 fun createSongString(name: String, artists: List<SimpleArtist>): String {
-    return "\"$name\" by ${getArtistsString(artists)}"
+    return "${name.addQuotationMarks()} by ${getArtistsString(artists)}"
 }
 
 
@@ -779,10 +776,10 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?> {
  */
 suspend fun handleAddSongCommandFunctionality(song: Track): String {
     return if(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
-        "Song \"${song.name}\" is already in playlist "
+        "Song ${song.name.addQuotationMarks()} is already in playlist "
     } else {
         addSongToPlaylist(song, SpotifyConfig.playlistIdForAddSongCommand)
-        "Successfully added song \"${song.name}\" to the playlist "
+        "Successfully added song ${song.name.addQuotationMarks()} to the playlist "
     } + getAddSongPlaylistNameString()
 }
 
@@ -797,13 +794,7 @@ suspend fun getAddSongPlaylistNameString(): String {
         SpotifyConfig.playlistNameForAddSongCommand = getPlaylistName(SpotifyConfig.playlistIdForAddSongCommand)
     }
 
-    return SpotifyConfig.playlistNameForAddSongCommand.run {
-        if(this.isNotEmpty()) {
-            "\"$this\""
-        } else {
-            this
-        }
-    }
+    return SpotifyConfig.playlistNameForAddSongCommand.addQuotationMarks()
 }
 
 

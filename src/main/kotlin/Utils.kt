@@ -29,3 +29,13 @@ data class SongRequestResult(
     val track: Track?,
     val songRequestResultExplanation: String
 )
+
+/**
+ * Adds quotation marks to the string. If the string is empty, it changes nothing.
+ */
+fun String.addQuotationMarks() =
+    if(this.isNotEmpty()) {
+        "\"$this\""
+    } else {
+        this
+    }
