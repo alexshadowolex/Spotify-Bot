@@ -22,12 +22,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
-import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
-import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
 import com.github.twitch4j.common.enums.CommandPermission
 import config.BuildInfo
 import config.TwitchBotConfig
 import isSongRequestEnabledAsRedeem
+import isWindowsInDarkMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -67,18 +66,8 @@ fun app() {
     var isInDarkMode by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        val windowsRegistryPath = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
-        val windowsRegistryLightThemeParameter = "AppsUseLightTheme"
         while (true) {
-            isInDarkMode = if (NativeParameterStoreAccess.IS_WINDOWS) {
-                WindowsRegistry.getWindowsRegistryEntry(
-                    windowsRegistryPath,
-                    windowsRegistryLightThemeParameter
-                ) == 0x0
-            } else {
-                false
-            }
-
+            isInDarkMode = isWindowsInDarkMode()
             delay(1.seconds)
         }
     }

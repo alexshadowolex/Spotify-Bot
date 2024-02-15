@@ -4,6 +4,8 @@ import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.utils.Market
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
+import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
+import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
 import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
@@ -263,6 +265,26 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
             JOptionPane.ERROR_MESSAGE
         )
         exitProcess(-1)
+    }
+}
+
+
+/**
+ * Checks if the OS is windows and is in dark mode.
+ * @return {Boolean} true, if OS is windows and in dark mode, else false
+ */
+fun isWindowsInDarkMode(): Boolean {
+    val windowsRegistryPath = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
+    val windowsRegistryLightThemeParameter = "AppsUseLightTheme"
+    val darkModeRegistryHexValue = 0x0
+
+    return if (NativeParameterStoreAccess.IS_WINDOWS) {
+        WindowsRegistry.getWindowsRegistryEntry(
+            windowsRegistryPath,
+            windowsRegistryLightThemeParameter
+        ) == darkModeRegistryHexValue
+    } else {
+        false
     }
 }
 
