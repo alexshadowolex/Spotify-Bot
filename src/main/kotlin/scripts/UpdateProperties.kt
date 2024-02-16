@@ -38,7 +38,10 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 1.2.4
         Pair("playlist_id_for_add_song_command", "playlistId"),
         Pair("add_song_command_security_level_on_start_up", "BROADCASTER"),
-        Pair("maximum_length_minutes_song_request", "")
+        Pair("maximum_length_minutes_song_request", ""),
+        // Since Version: 1.2.5
+        Pair("blocked_song_links", ""),
+        Pair("blocked_song_artists", "")
     )
 )
 
