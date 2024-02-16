@@ -362,9 +362,8 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
 private suspend fun updateQueue(query: String): SongRequestResult {
     logger.info("called updateQueue with query $query")
     val result = try {
-        Url(query).takeIf { isQuerySpotifyTrackDirectLink(it) }?.let {
-            val songId = it.encodedPath.substringAfter("/track/")
-            getSpotifyTrackById(songId)
+        getSongIdFromSpotifyDirectLink(query)?.let {
+            getSpotifyTrackById(it)
         } ?: run {
             getSpotifyTrackByQuery(query)
         } ?: return SongRequestResult(
@@ -380,6 +379,20 @@ private suspend fun updateQueue(query: String): SongRequestResult {
     }
 
     logger.info("Result after accessing spotify endpoints: $result")
+    val artistNames = result.artists.map { it.name }
+
+    if(isSongBlocked(result.uri.id) || isSongArtistBlocked(artistNames)) {
+        val message = "Song \"${result.name}\" was blocked because of " + if(isSongArtistBlocked(artistNames)) {
+            "the artist \"${getFirstBlockedArtistName(artistNames)}\" being blocked."
+        } else {
+            "the song itself being blocked."
+        }
+        logger.info(message)
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = message
+        )
+    }
 
     if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
         logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
@@ -417,11 +430,62 @@ private suspend fun updateQueue(query: String): SongRequestResult {
 
 
 /**
+ * Extracts the song ID from a spotify direct link.
+ * @param directLink {String} of the spotify direct link
+ * @return {String?} the ID on success, null on failure
+ */
+fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
+    return Url(directLink).takeIf { isUrlSpotifyTrackDirectLink(it) }
+        ?.encodedPath?.substringAfter("/track/")
+}
+
+
+/**
+ * Gets the first (if there are more than one included) blocked artist from the given spotify config property.
+ * @param artists {List<String>} artist names
+ * @return {String} the name of the (first) blocked artist or an empty string, if no artist is blocked
+ */
+private fun getFirstBlockedArtistName(artists: List<String>): String {
+    for(artist in artists.map { it.lowercase(Locale.getDefault()) }) {
+        if(SpotifyConfig.blockedSongArtists.contains(artist)) {
+            return artist
+        }
+    }
+    return ""
+}
+
+
+/**
+ * Checks if a song is blocked.
+ * @param songId {String} ID of the song to check
+ * @return {Boolean} true, if the song is blocked, else false
+ */
+private fun isSongBlocked(songId: String): Boolean {
+    return SpotifyConfig.blockedSongIds.contains(songId)
+}
+
+
+/**
+ * Checks if one or more artists are blocked. The function is not case-sensitive.
+ * @param artists {List<String>} artist names
+ * @return {Boolean} true, if at least one artist ist blocked, else false
+ */
+private fun isSongArtistBlocked(artists: List<String>): Boolean {
+    for(artist in artists.map { it.lowercase(Locale.getDefault()) }) {
+        if(SpotifyConfig.blockedSongArtists.contains(artist)) {
+            return true
+        }
+    }
+    return false
+}
+
+
+/**
  * Checks if the given URL is a spotify direct link to a track.
  * @param query {Url} the given link
  * @return {Boolean} true, if it is a direct link to a spotify track, else false
  */
-private fun isQuerySpotifyTrackDirectLink(query: Url): Boolean {
+private fun isUrlSpotifyTrackDirectLink(query: Url): Boolean {
     return query.host == "open.spotify.com" && query.encodedPath.contains("/track/")
 }
 

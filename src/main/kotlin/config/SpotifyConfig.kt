@@ -30,4 +30,10 @@ object SpotifyConfig {
         )
         Double.MAX_VALUE.minutes
     }
+    val blockedSongIds: List<String> = getPropertyValue(
+        properties, "blocked_song_links", spotifyConfigFile.path
+    ).split(",").map { getSongIdFromSpotifyDirectLink(it) ?: "" }
+    val blockedSongArtists: List<String> = getPropertyValue(
+        properties, "blocked_song_artists", spotifyConfigFile.path
+    ).lowercase(Locale.getDefault()).split(",")
 }
