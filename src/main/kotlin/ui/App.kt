@@ -278,13 +278,13 @@ fun songRequestRow() {
                     Switch(
                         checked = isSongRequestEnabledAsCommand.value,
                         onCheckedChange = {
+                            isSongRequestEnabledAsCommand.value = it
                             logger.info("Changed song request type to " + if(isSongRequestEnabledAsCommand.value) {
                                     "Command"
                                 } else {
                                     "Redeem"
                                 }
                             )
-                            isSongRequestEnabledAsCommand.value = it
                         },
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
