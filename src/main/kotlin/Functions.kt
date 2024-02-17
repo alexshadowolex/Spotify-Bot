@@ -24,10 +24,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
-import ui.addSongCommandSecurityLevel
-import ui.isEmptySongDisplayFilesOnPauseEnabled
-import ui.isSongRequestEnabledAsCommand
-import ui.isSpotifySongNameGetterEnabled
+import ui.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
@@ -131,7 +128,7 @@ suspend fun setupTwitchBot(): TwitchClient {
         }
         if(
             (Clock.System.now() - nextAllowedCommandUsageInstant).isNegative() &&
-            userName != TwitchBotConfig.channel
+            !isUserBroadcaster(userName)
         ) {
             val secondsUntilTimeoutOver = (nextAllowedCommandUsageInstant - Clock.System.now()).inWholeSeconds.seconds
 
@@ -146,7 +143,7 @@ suspend fun setupTwitchBot(): TwitchClient {
 
         if (
             (Clock.System.now() - nextAllowedCommandUsageInstantForUser).isNegative() &&
-            userName != TwitchBotConfig.channel
+            !isUserBroadcaster(userName)
         ) {
             val secondsUntilTimeoutOver = (
                     nextAllowedCommandUsageInstantForUser - Clock.System.now()
@@ -286,6 +283,16 @@ fun isWindowsInDarkMode(): Boolean {
     } else {
         false
     }
+}
+
+
+/**
+ * Checks if a user is the broadcaster, specified in TwitchBotConfig.properties channel property.
+ * @param userName {String} name of the user to check
+ * @return {Boolean} true, if the user is the broadcaster, else false.
+ */
+fun isUserBroadcaster(userName: String): Boolean {
+    return userName == TwitchBotConfig.channel
 }
 
 
@@ -881,6 +888,17 @@ suspend fun getAddSongPlaylistNameString(): String {
     }
 
     return SpotifyConfig.playlistNameForAddSongCommand.addQuotationMarks()
+}
+
+
+/**
+ * Checks if the user's permissions are eligible for using the skip song command.
+ * @param permissions {Set<CommandPermission>} permissions of current user
+ * @return {Boolean} true, if the user is eligible, else false
+ */
+fun areUsersPermissionsEligibleForSkipSongCommand(permissions: Set<CommandPermission>): Boolean {
+    logger.info("called areUsersPermissionsEligibleForSkipSongCommand")
+    return permissions.contains(skipSongCommandSecurityLevel.value)
 }
 
 

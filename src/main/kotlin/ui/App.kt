@@ -59,6 +59,8 @@ lateinit var isSongInfoCommandEnabled: MutableState<Boolean>
 lateinit var isEmptySongDisplayFilesOnPauseEnabled: MutableState<Boolean>
 lateinit var isAddSongCommandEnabled: MutableState<Boolean>
 lateinit var addSongCommandSecurityLevel: MutableState<CommandPermission>
+lateinit var isSkipSongCommandEnabled: MutableState<Boolean>
+lateinit var skipSongCommandSecurityLevel: MutableState<CommandPermission>
 
 @Composable
 @Preview
@@ -433,4 +435,7 @@ private fun initializeFlagVariables() {
     isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(TwitchBotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
     isAddSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isAddSongCommandEnabledByDefault) }
     addSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
+    // TODO
+    isSkipSongCommandEnabled = remember { mutableStateOf(true) }
+    skipSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
 }
