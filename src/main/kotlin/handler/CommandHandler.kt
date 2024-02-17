@@ -13,6 +13,7 @@ data class Command(
 data class CommandHandlerScope(
     val chat: TwitchChat,
     val messageEvent: ChannelMessageEvent,
+    val removeSongFromQueueHandler: RemoveSongFromQueueHandler,
     var addedUserCoolDown: Duration = Duration.ZERO,
     var addedCommandCoolDown: Duration = Duration.ZERO
 )

@@ -48,6 +48,7 @@ val httpClient = HttpClient(CIO) {
 }
 
 lateinit var spotifyClient: SpotifyClientApi
+var currentSongString = ""
 
 
 suspend fun main() = try {

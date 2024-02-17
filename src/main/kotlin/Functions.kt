@@ -85,6 +85,8 @@ suspend fun setupTwitchBot(): TwitchClient {
 
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelId)
 
+    val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
+
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
     }
@@ -162,6 +164,7 @@ suspend fun setupTwitchBot(): TwitchClient {
         val commandHandlerScope = CommandHandlerScope(
             chat = chat,
             messageEvent = messageEvent,
+            removeSongFromQueueHandler = removeSongFromQueueHandler
         )
 
         backgroundCoroutineScope.launch {
@@ -390,7 +393,7 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
         val message = updateQueue(query).let { result ->
             val track = result.track
             if(track != null) {
-                "Song ${track.name.addQuotationMarks()} by ${getArtistsString(track.artists)} has been added to the queue " +
+                "Song ${createSongString(track.name, track.artists)} has been added to the queue " +
                 TwitchBotConfig.songRequestEmotes.random()
             } else {
                 success = false
@@ -665,6 +668,8 @@ fun startSpotifySongGetter() {
                     continue
                 }
 
+                currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+
                 downloadAndSaveAlbumImage(currentTrack)
                 writeCurrentSongTextFiles(currentTrack)
             } else {
@@ -681,7 +686,7 @@ fun startSpotifySongGetter() {
  * Helper function to outsource the try-catch block of accessing the variable isSpotifySongNameGetterEnabled
  * @return {Boolean} true, if the functionality is enabled. False, if not or an error occurred.
  */
-private fun isSpotifySongNameGetterEnabled(): Boolean {
+fun isSpotifySongNameGetterEnabled(): Boolean {
     return try {
         isSpotifySongNameGetterEnabled.value
     } catch (e: Exception) {
