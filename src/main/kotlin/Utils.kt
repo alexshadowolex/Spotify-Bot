@@ -30,6 +30,12 @@ data class SongRequestResult(
     val songRequestResultExplanation: String
 )
 
+enum class CustomCommandPermissions {
+    BROADCASTER,
+    MODERATOR,
+    CUSTOM
+}
+
 /**
  * Adds quotation marks to the string. If the string is empty, it changes nothing.
  */

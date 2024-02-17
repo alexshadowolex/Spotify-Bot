@@ -1,5 +1,6 @@
 package ui
 
+import CustomCommandPermissions
 import SpotifyConfig
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
@@ -22,7 +23,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
-import com.github.twitch4j.common.enums.CommandPermission
 import config.BuildInfo
 import config.TwitchBotConfig
 import isSongRequestEnabledAsRedeem
@@ -58,9 +58,9 @@ lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
 lateinit var isSongInfoCommandEnabled: MutableState<Boolean>
 lateinit var isEmptySongDisplayFilesOnPauseEnabled: MutableState<Boolean>
 lateinit var isAddSongCommandEnabled: MutableState<Boolean>
-lateinit var addSongCommandSecurityLevel: MutableState<CommandPermission>
+lateinit var addSongCommandSecurityLevel: MutableState<CustomCommandPermissions>
 lateinit var isSkipSongCommandEnabled: MutableState<Boolean>
-lateinit var skipSongCommandSecurityLevel: MutableState<CommandPermission>
+lateinit var skipSongCommandSecurityLevel: MutableState<CustomCommandPermissions>
 
 @Composable
 @Preview
@@ -144,14 +144,14 @@ fun app() {
                 commandSecurityMultiToggleButton(
                     currentSelection = addSongCommandSecurityLevel.value,
                     toggleStates = listOf(
-                        CommandPermission.BROADCASTER,
-                        CommandPermission.MODERATOR,
-                        CommandPermission.EVERYONE
+                        CustomCommandPermissions.BROADCASTER,
+                        CustomCommandPermissions.MODERATOR,
+                        CustomCommandPermissions.CUSTOM
                     ),
                     conditionClickable = isAddSongCommandEnabled,
                     functionalityDisplayName = "Add Song Command",
                     onToggleChange = {
-                        addSongCommandSecurityLevel.value = CommandPermission.valueOf(it)
+                        addSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
                     }
                 )
 
@@ -184,14 +184,14 @@ fun app() {
                 commandSecurityMultiToggleButton(
                     currentSelection = skipSongCommandSecurityLevel.value,
                     toggleStates = listOf(
-                        CommandPermission.BROADCASTER,
-                        CommandPermission.MODERATOR,
-                        CommandPermission.EVERYONE
+                        CustomCommandPermissions.BROADCASTER,
+                        CustomCommandPermissions.MODERATOR,
+                        CustomCommandPermissions.CUSTOM
                     ),
                     conditionClickable = isSkipSongCommandEnabled,
                     functionalityDisplayName = "Skip Song Command",
                     onToggleChange = {
-                        skipSongCommandSecurityLevel.value = CommandPermission.valueOf(it)
+                        skipSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
                     }
                 )
 

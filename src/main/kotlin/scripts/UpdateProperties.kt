@@ -44,7 +44,9 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 1.2.5
         Pair("blocked_song_links", ""),
         Pair("blocked_song_artists", ""),
-        Pair("skip_song_command_security_level_on_start_up", "BROADCASTER")
+        Pair("skip_song_command_security_level_on_start_up", "BROADCASTER"),
+        Pair("custom_group_user_names_add_song_command", ""),
+        Pair("custom_group_user_names_skip_song_command", "")
     )
 )
 

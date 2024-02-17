@@ -1,5 +1,4 @@
 
-import com.github.twitch4j.common.enums.CommandPermission
 import java.io.File
 import java.util.*
 import kotlin.system.exitProcess
@@ -19,7 +18,7 @@ object SpotifyConfig {
     )
     var playlistNameForAddSongCommand = ""
     val addSongCommandSecurityLevelOnStartUp = try {
-        CommandPermission.valueOf(
+        CustomCommandPermissions.valueOf(
             getPropertyValue(properties, "add_song_command_security_level_on_start_up", spotifyConfigFile.path)
         )
     } catch (e: Exception) {
@@ -27,7 +26,7 @@ object SpotifyConfig {
             propertyName = "add_song_command_security_level_on_start_up",
             propertyFilePath = spotifyConfigFile.path,
             exception = e,
-            enumClassValues = CommandPermission.values().map { it.toString() }
+            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
         )
         exitProcess(-1)
     }
@@ -48,7 +47,7 @@ object SpotifyConfig {
         properties, "blocked_song_artists", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
     val skipSongCommandSecurityLevelOnStartUp = try {
-        CommandPermission.valueOf(
+        CustomCommandPermissions.valueOf(
             getPropertyValue(properties, "skip_song_command_security_level_on_start_up", spotifyConfigFile.path)
         )
 
@@ -57,8 +56,14 @@ object SpotifyConfig {
             propertyName = "skip_song_command_security_level_on_start_up",
             propertyFilePath = spotifyConfigFile.path,
             exception = e,
-            enumClassValues = CommandPermission.values().map { it.toString() }
+            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
         )
         exitProcess(-1)
     }
+    val customGroupUserNamesAddSongCommand: List<String> = getPropertyValue(
+        properties, "custom_group_user_names_add_song_command", spotifyConfigFile.path
+    ).lowercase(Locale.getDefault()).split(",")
+    val customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
+        properties, "custom_group_user_names_skip_song_command", spotifyConfigFile.path
+    ).lowercase(Locale.getDefault()).split(",")
 }

@@ -18,7 +18,7 @@ val addSongCommand: Command = Command(
             return@Command
         }
 
-        if(!areUsersPermissionsEligibleForAddSongCommand(messageEvent.permissions)) {
+        if(!areUsersPermissionsEligibleForAddSongCommand(messageEvent.permissions, messageEvent.user.name)) {
             logger.info("User ${messageEvent.user.name} tried using addSongCommand but was not eligible. " +
                     "Current security setting: ${addSongCommandSecurityLevel.value}"
             )

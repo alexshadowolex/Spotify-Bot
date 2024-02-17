@@ -364,6 +364,17 @@ fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
 }
 
 
+/**
+ * Checks if a user is part of a custom group or the broadcaster.
+ * @param userName {String} user name
+ * @param customGroup {List<String>} custom group to check
+ * @return {Boolean} true, if the user is part of the custom group or the broadcaster, else false
+ */
+fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<String>): Boolean {
+    return userName == TwitchBotConfig.channel || customGroup.contains(userName.lowercase(Locale.getDefault()))
+}
+
+
 // Spotify Functions
 /**
  * Helper function to be called both by redeem and command. Calls the update queue and issues a message to twitch chat.
@@ -835,13 +846,18 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
 
 
 /**
- * Checks if the user's permissions are eligible for using the add song command.
+ * Checks if the user's permissions are eligible for using the add song command. The eligibility is set
+ * in the parameter add_song_command_security_level_on_start_up
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @return {Boolean} true, if the user is eligible, else false
  */
-fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermission>): Boolean {
+fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called areUsersPermissionsEligibleForAddSongCommand")
-    return permissions.contains(addSongCommandSecurityLevel.value)
+    return if(addSongCommandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
+        isUserPartOfCustomGroupOrBroadcaster(userName, SpotifyConfig.customGroupUserNamesAddSongCommand)
+    } else {
+        permissions.contains(CommandPermission.valueOf(addSongCommandSecurityLevel.value.toString()))
+    }
 }
 
 
@@ -928,13 +944,18 @@ suspend fun getAddSongPlaylistNameString(): String {
 
 
 /**
- * Checks if the user's permissions are eligible for using the skip song command.
+ * Checks if the user's permissions are eligible for using the skip song command. The eligibility is set
+ * in the parameter add_song_command_security_level_on_start_up
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @return {Boolean} true, if the user is eligible, else false
  */
-fun areUsersPermissionsEligibleForSkipSongCommand(permissions: Set<CommandPermission>): Boolean {
+fun areUsersPermissionsEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called areUsersPermissionsEligibleForSkipSongCommand")
-    return permissions.contains(skipSongCommandSecurityLevel.value)
+    return if(skipSongCommandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
+        isUserPartOfCustomGroupOrBroadcaster(userName, SpotifyConfig.customGroupUserNamesSkipSongCommand)
+    } else {
+        permissions.contains(CommandPermission.valueOf(skipSongCommandSecurityLevel.value.toString()))
+    }
 }
 
 

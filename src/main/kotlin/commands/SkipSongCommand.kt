@@ -19,7 +19,7 @@ val skipSongCommand: Command = Command(
         }
 
 
-        if(!areUsersPermissionsEligibleForSkipSongCommand(messageEvent.permissions)) {
+        if(!areUsersPermissionsEligibleForSkipSongCommand(messageEvent.permissions, messageEvent.user.name)) {
             logger.info("User ${messageEvent.user.name} tried using skipSongCommand but was not eligible. " +
                     "Current security setting: ${skipSongCommandSecurityLevel.value}"
             )
