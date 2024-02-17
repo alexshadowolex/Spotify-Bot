@@ -253,16 +253,52 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
         properties.getProperty(propertyName)
     } catch (e: Exception) {
         logger.error("Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ", e)
-        JOptionPane.showMessageDialog(
-            null,
-            "Error while reading value of property ${propertyName.addQuotationMarks()} " +
-                    "in file $propertiesFileRelativePath.\n" +
-                    "Check logs for more information",
-            "Error while reading properties",
-            JOptionPane.ERROR_MESSAGE
+        showErrorMessageWindow(
+            message =   "Error while reading value of property ${propertyName.addQuotationMarks()} " +
+                        "in file $propertiesFileRelativePath.\n" +
+                        "Check logs for more information",
+            title = "Error while reading properties"
         )
         exitProcess(-1)
     }
+}
+
+
+/**
+ * Displays an error message window as JOptionPane.
+ * @param message {String} the message to display
+ * @param title {String} the title to display
+ */
+fun showErrorMessageWindow(message: String, title: String) {
+    JOptionPane.showMessageDialog(
+        null,
+        message,
+        title,
+        JOptionPane.ERROR_MESSAGE
+    )
+}
+
+
+/**
+ * Displays an error message window for invalid enum class values.
+ * @param propertyName {String} name of the property
+ * @param propertyFilePath {String} path to the property file
+ * @param exception {Exception} occurred exception while parsing the value
+ * @param enumClassValues {List<String>} possible string-values of the enum property
+ */
+fun displayEnumParsingErrorWindow(
+    propertyName: String,
+    propertyFilePath: String,
+    exception: Exception,
+    enumClassValues: List<String>
+) {
+    logger.error("Exception occurred while reading property \"$propertyName\" in file $propertyFilePath: ", exception)
+    showErrorMessageWindow(
+        "Error while reading value of property \"$propertyName\" in file $propertyFilePath\n" +
+                "Following values are allowed: " +
+                enumClassValues.joinToString(),
+        "Invalid value of property"
+    )
 }
 
 

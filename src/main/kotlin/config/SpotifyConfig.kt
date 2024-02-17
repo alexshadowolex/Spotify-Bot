@@ -2,6 +2,7 @@
 import com.github.twitch4j.common.enums.CommandPermission
 import java.io.File
 import java.util.*
+import kotlin.system.exitProcess
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -17,9 +18,19 @@ object SpotifyConfig {
         properties, "playlist_id_for_add_song_command", spotifyConfigFile.path
     )
     var playlistNameForAddSongCommand = ""
-    val addSongCommandSecurityLevelOnStartUp = CommandPermission.valueOf(
-        getPropertyValue(properties, "add_song_command_security_level_on_start_up", spotifyConfigFile.path)
-    )
+    val addSongCommandSecurityLevelOnStartUp = try {
+        CommandPermission.valueOf(
+            getPropertyValue(properties, "add_song_command_security_level_on_start_up", spotifyConfigFile.path)
+        )
+    } catch (e: Exception) {
+        displayEnumParsingErrorWindow(
+            propertyName = "add_song_command_security_level_on_start_up",
+            propertyFilePath = spotifyConfigFile.path,
+            exception = e,
+            enumClassValues = CommandPermission.values().map { it.toString() }
+        )
+        exitProcess(-1)
+    }
     val maximumLengthMinutesSongRequest: Duration = try {
         getPropertyValue(properties, "maximum_length_minutes_song_request", spotifyConfigFile.path)
             .toDouble().minutes
@@ -36,7 +47,18 @@ object SpotifyConfig {
     val blockedSongArtists: List<String> = getPropertyValue(
         properties, "blocked_song_artists", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
-    val skipSongCommandSecurityLevelOnStartUp = CommandPermission.valueOf(
-        getPropertyValue(properties, "skip_song_command_security_level_on_start_up", spotifyConfigFile.path)
-    )
+    val skipSongCommandSecurityLevelOnStartUp = try {
+        CommandPermission.valueOf(
+            getPropertyValue(properties, "skip_song_command_security_level_on_start_up", spotifyConfigFile.path)
+        )
+
+    } catch (e: Exception) {
+        displayEnumParsingErrorWindow(
+            propertyName = "skip_song_command_security_level_on_start_up",
+            propertyFilePath = spotifyConfigFile.path,
+            exception = e,
+            enumClassValues = CommandPermission.values().map { it.toString() }
+        )
+        exitProcess(-1)
+    }
 }
