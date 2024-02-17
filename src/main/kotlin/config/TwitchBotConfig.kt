@@ -51,4 +51,7 @@ object TwitchBotConfig {
     val isAddSongCommandEnabledByDefault = getPropertyValue(
         properties, "is_add_song_command_enabled_by_default", twitchBotConfigFile.path
     ).toBoolean()
+    val isSkipSongCommandEnabledByDefault = getPropertyValue(
+        properties, "is_skip_song_command_enabled_by_default", twitchBotConfigFile.path
+    ).toBoolean()
 }

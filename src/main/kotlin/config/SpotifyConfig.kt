@@ -36,4 +36,7 @@ object SpotifyConfig {
     val blockedSongArtists: List<String> = getPropertyValue(
         properties, "blocked_song_artists", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
+    val skipSongCommandSecurityLevelOnStartUp = CommandPermission.valueOf(
+        getPropertyValue(properties, "skip_song_command_security_level_on_start_up", spotifyConfigFile.path)
+    )
 }

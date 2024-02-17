@@ -141,15 +141,57 @@ fun app() {
                     }
                 }
 
-                addSongSecurityMultiToggleButton(
+                commandSecurityMultiToggleButton(
                     currentSelection = addSongCommandSecurityLevel.value,
                     toggleStates = listOf(
                         CommandPermission.BROADCASTER,
                         CommandPermission.MODERATOR,
                         CommandPermission.EVERYONE
                     ),
+                    conditionClickable = isAddSongCommandEnabled,
+                    functionalityDisplayName = "Add Song Command",
                     onToggleChange = {
                         addSongCommandSecurityLevel.value = CommandPermission.valueOf(it)
+                    }
+                )
+
+                sectionDivider()
+
+                toggleFunctionalityRow(
+                    "Skip Song Command ",
+                    true,
+                    null,
+                    isSkipSongCommandEnabled
+                )
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 3.dp)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Security Level of Skip Song Command: ",
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                        )
+                    }
+                }
+
+                commandSecurityMultiToggleButton(
+                    currentSelection = skipSongCommandSecurityLevel.value,
+                    toggleStates = listOf(
+                        CommandPermission.BROADCASTER,
+                        CommandPermission.MODERATOR,
+                        CommandPermission.EVERYONE
+                    ),
+                    conditionClickable = isSkipSongCommandEnabled,
+                    functionalityDisplayName = "Skip Song Command",
+                    onToggleChange = {
+                        skipSongCommandSecurityLevel.value = CommandPermission.valueOf(it)
                     }
                 )
 
@@ -362,9 +404,11 @@ fun versionAndCreditsRow() {
 }
 
 @Composable
-fun addSongSecurityMultiToggleButton(
+fun commandSecurityMultiToggleButton(
     currentSelection: Any,
     toggleStates: List<Any>,
+    conditionClickable: MutableState<Boolean>,
+    functionalityDisplayName: String,
     onToggleChange: (String) -> Unit
 ) {
     val selectedTint = MaterialTheme.colors.primary
@@ -397,16 +441,16 @@ fun addSongSecurityMultiToggleButton(
                     .fillMaxWidth(widthPerColumn[index])
                     .toggleable(
                         value = isSelected,
-                        enabled = isAddSongCommandEnabled.value,
+                        enabled = conditionClickable.value,
                         onValueChange = { selected ->
                             if (selected) {
-                                logger.info("clicked on multi selection entry $toggleState")
+                                logger.info("clicked on multi selection entry $toggleState for $functionalityDisplayName")
                                 onToggleChange(toggleState.toString())
                             }
                         }
                     )
                     .pointerHoverIcon(
-                        if(isAddSongCommandEnabled.value) {
+                        if(conditionClickable.value) {
                             PointerIcon.Hand
                         } else {
                             PointerIcon.Default
@@ -435,7 +479,6 @@ private fun initializeFlagVariables() {
     isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(TwitchBotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
     isAddSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isAddSongCommandEnabledByDefault) }
     addSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
-    // TODO
-    isSkipSongCommandEnabled = remember { mutableStateOf(true) }
-    skipSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
+    isSkipSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSkipSongCommandEnabledByDefault) }
+    skipSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.skipSongCommandSecurityLevelOnStartUp) }
 }
