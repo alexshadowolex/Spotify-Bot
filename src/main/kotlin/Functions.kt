@@ -12,6 +12,7 @@ import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import commands.removeSongFromQueueCommand
 import config.BuildInfo
 import config.TwitchBotConfig
 import handler.*
@@ -846,13 +847,13 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
 
 
 /**
- * Checks if the user's permissions are eligible for using the add song command. The eligibility is set
+ * Checks if the user is eligible for using the add song command. The eligibility is set
  * in the parameter add_song_command_security_level_on_start_up
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @return {Boolean} true, if the user is eligible, else false
  */
-fun areUsersPermissionsEligibleForAddSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
-    logger.info("called areUsersPermissionsEligibleForAddSongCommand")
+fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
+    logger.info("called isUserEligibleForAddSongCommand")
     return if(addSongCommandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
         isUserPartOfCustomGroupOrBroadcaster(userName, SpotifyConfig.customGroupUserNamesAddSongCommand)
     } else {
@@ -944,18 +945,35 @@ suspend fun getAddSongPlaylistNameString(): String {
 
 
 /**
- * Checks if the user's permissions are eligible for using the skip song command. The eligibility is set
+ * Checks if the user is eligible for using the skip song command. The eligibility is set
  * in the parameter add_song_command_security_level_on_start_up
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @return {Boolean} true, if the user is eligible, else false
  */
-fun areUsersPermissionsEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
-    logger.info("called areUsersPermissionsEligibleForSkipSongCommand")
+fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
+    logger.info("called isUserEligibleForSkipSongCommand")
     return if(skipSongCommandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
         isUserPartOfCustomGroupOrBroadcaster(userName, SpotifyConfig.customGroupUserNamesSkipSongCommand)
     } else {
         permissions.contains(CommandPermission.valueOf(skipSongCommandSecurityLevel.value.toString()))
     }
+}
+
+
+/**
+ * Checks if the user is eligible for using the remove song from queue command. The eligibility is set
+ * in the parameter remove_song_from_queue_command_security_level_on_start_up
+ * @param permissions {Set<CommandPermission>} permissions of current user
+ * @return {Boolean} true, if the user is eligible, else false
+ */
+fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
+    logger.info("called isUserEligibleForRemoveSongFromQueueCommand")
+    return if(removeSongFromQueueCommandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
+        isUserPartOfCustomGroupOrBroadcaster(userName, SpotifyConfig.customGroupUserNamesRemoveSongFromQueueCommand)
+    } else {
+        permissions.contains(CommandPermission.valueOf(removeSongFromQueueCommandSecurityLevel.value.toString()))
+    }
+
 }
 
 

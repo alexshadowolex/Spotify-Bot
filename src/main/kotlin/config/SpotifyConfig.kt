@@ -66,4 +66,25 @@ object SpotifyConfig {
     val customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
         properties, "custom_group_user_names_skip_song_command", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
+    val removeSongFromQueueCommandSecurityLevelOnStartUp = try {
+        CustomCommandPermissions.valueOf(
+            getPropertyValue(
+                properties,
+                "remove_song_from_queue_command_security_level_on_start_up",
+                spotifyConfigFile.path
+            )
+        )
+
+    } catch (e: Exception) {
+        displayEnumParsingErrorWindow(
+            propertyName = "remove_song_from_queue_command_security_level_on_start_up",
+            propertyFilePath = spotifyConfigFile.path,
+            exception = e,
+            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
+        )
+        exitProcess(-1)
+    }
+    val customGroupUserNamesRemoveSongFromQueueCommand: List<String> = getPropertyValue(
+        properties, "custom_group_user_names_remove_song_from_queue_command", spotifyConfigFile.path
+    ).lowercase(Locale.getDefault()).split(",")
 }

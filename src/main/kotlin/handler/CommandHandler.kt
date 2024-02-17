@@ -2,10 +2,7 @@ package handler
 
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
-import commands.addSongCommand
-import commands.skipSongCommand
-import commands.songInfoCommand
-import commands.songRequestCommand
+import commands.*
 import kotlin.time.Duration
 
 data class Command(
@@ -24,5 +21,6 @@ val commands = listOf(
     songRequestCommand,
     songInfoCommand,
     addSongCommand,
-    skipSongCommand
+    skipSongCommand,
+    removeSongFromQueueCommand
 )

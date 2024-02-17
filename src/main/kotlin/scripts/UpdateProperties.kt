@@ -31,7 +31,8 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 1.2.4
         Pair("is_add_song_command_enabled_by_default", "true"),
         // Since Version: 1.2.5
-        Pair("is_skip_song_command_enabled_by_default", "true")
+        Pair("is_skip_song_command_enabled_by_default", "true"),
+        Pair("is_remove_song_from_queue_command_enabled_by_default", "true")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(
@@ -46,7 +47,9 @@ val propertiesFilesToProperties = listOf(
         Pair("blocked_song_artists", ""),
         Pair("skip_song_command_security_level_on_start_up", "BROADCASTER"),
         Pair("custom_group_user_names_add_song_command", ""),
-        Pair("custom_group_user_names_skip_song_command", "")
+        Pair("custom_group_user_names_skip_song_command", ""),
+        Pair("remove_song_from_queue_command_security_level_on_start_up", "BROADCASTER"),
+        Pair("custom_group_user_names_remove_song_from_queue_command", "")
     )
 )
 

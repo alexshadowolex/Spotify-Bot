@@ -124,12 +124,10 @@ suspend fun main() = try {
     }
 
 } catch (e: Throwable) {
-    JOptionPane.showMessageDialog(
-        null,
-        e.message + "\n"
-                + StringWriter().also { e.printStackTrace(PrintWriter(it)) },
-        "Error while executing app",
-        JOptionPane.ERROR_MESSAGE
+    showErrorMessageWindow(
+        message =   e.message + "\n" +
+                    StringWriter().also { e.printStackTrace(PrintWriter(it)) },
+        title = "Error while executing app"
     )
     logger.error("Error while executing program. ", e)
     exitProcess(-1)

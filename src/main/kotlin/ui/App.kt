@@ -61,6 +61,8 @@ lateinit var isAddSongCommandEnabled: MutableState<Boolean>
 lateinit var addSongCommandSecurityLevel: MutableState<CustomCommandPermissions>
 lateinit var isSkipSongCommandEnabled: MutableState<Boolean>
 lateinit var skipSongCommandSecurityLevel: MutableState<CustomCommandPermissions>
+lateinit var isRemoveSongFromQueueCommandEnabled: MutableState<Boolean>
+lateinit var removeSongFromQueueCommandSecurityLevel: MutableState<CustomCommandPermissions>
 
 @Composable
 @Preview
@@ -481,4 +483,6 @@ private fun initializeFlagVariables() {
     addSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.addSongCommandSecurityLevelOnStartUp) }
     isSkipSongCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isSkipSongCommandEnabledByDefault) }
     skipSongCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.skipSongCommandSecurityLevelOnStartUp) }
+    isRemoveSongFromQueueCommandEnabled = remember { mutableStateOf(TwitchBotConfig.isRemoveSongFromQueueCommandEnabledByDefault) }
+    removeSongFromQueueCommandSecurityLevel = remember { mutableStateOf(SpotifyConfig.removeSongFromQueueCommandSecurityLevelOnStartUp) }
 }
