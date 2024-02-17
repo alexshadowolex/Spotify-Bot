@@ -1,10 +1,10 @@
 package commands
 
-import isUserEligibleForAddSongCommand
 import config.TwitchBotConfig
 import getCurrentSpotifySong
 import handleAddSongCommandFunctionality
 import handler.Command
+import isUserEligibleForAddSongCommand
 import logger
 import sendMessageToTwitchChatAndLogIt
 import ui.addSongCommandSecurityLevel

@@ -29,7 +29,6 @@ import ui.newVersionScreen
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
-import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
 val logger: org.slf4j.Logger = LoggerFactory.getLogger("Bot")

@@ -12,7 +12,6 @@ import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
-import commands.removeSongFromQueueCommand
 import config.BuildInfo
 import config.TwitchBotConfig
 import handler.*

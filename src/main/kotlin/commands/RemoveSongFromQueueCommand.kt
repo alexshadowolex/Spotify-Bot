@@ -1,8 +1,6 @@
 package commands
 
 import config.TwitchBotConfig
-import createSongString
-import currentSongString
 import handler.Command
 import isUserEligibleForRemoveSongFromQueueCommand
 import logger

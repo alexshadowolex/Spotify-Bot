@@ -12,7 +12,7 @@ import logger
 import spotifyClient
 import kotlin.time.Duration.Companion.seconds
 
-class RemoveSongFromQueueHandler () {
+class RemoveSongFromQueueHandler {
     private val songsMarkedForSkipping = mutableSetOf<String>()
 
     init {
@@ -43,6 +43,7 @@ class RemoveSongFromQueueHandler () {
         var delay = 0.1.seconds
         backgroundCoroutineScope.launch {
             while (isActive) {
+                // If the song name getter is enabled, we don't need to pull the name from the API again
                 if(!isSpotifySongNameGetterEnabled()) {
                     val currentTrack = getCurrentSpotifySong()
                     if(currentTrack == null) {

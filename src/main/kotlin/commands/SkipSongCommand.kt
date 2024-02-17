@@ -1,9 +1,9 @@
 package commands
 
-import isUserEligibleForSkipSongCommand
 import config.TwitchBotConfig
 import getCurrentSpotifySong
 import handler.Command
+import isUserEligibleForSkipSongCommand
 import logger
 import sendMessageToTwitchChatAndLogIt
 import spotifyClient
