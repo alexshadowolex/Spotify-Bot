@@ -196,6 +196,45 @@ fun app() {
                         skipSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
                     }
                 )
+                sectionDivider()
+
+                toggleFunctionalityRow(
+                    "Remove Song From Queue Command ",
+                    true,
+                    null,
+                    isRemoveSongFromQueueCommandEnabled
+                )
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 3.dp)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Security Level of Remove Song From Queue Command: ",
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                        )
+                    }
+                }
+
+                commandSecurityMultiToggleButton(
+                    currentSelection = removeSongFromQueueCommandSecurityLevel.value,
+                    toggleStates = listOf(
+                        CustomCommandPermissions.BROADCASTER,
+                        CustomCommandPermissions.MODERATOR,
+                        CustomCommandPermissions.CUSTOM
+                    ),
+                    conditionClickable = isRemoveSongFromQueueCommandEnabled,
+                    functionalityDisplayName = "Remove Song From Queue Command",
+                    onToggleChange = {
+                        removeSongFromQueueCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
+                    }
+                )
 
                 sectionDivider()
 
