@@ -10,6 +10,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import logger
 import spotifyClient
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class RemoveSongFromQueueHandler {
@@ -40,7 +41,7 @@ class RemoveSongFromQueueHandler {
      * Starts the while-loop in a coroutine to check, if the current song is marked for skipping.
      */
     private fun startRemoveSongFromQueueChecker() {
-        var delay = 0.1.seconds
+        var delay: Duration
         backgroundCoroutineScope.launch {
             while (isActive) {
                 // If the song name getter is enabled, we don't need to pull the name from the API again
@@ -53,6 +54,8 @@ class RemoveSongFromQueueHandler {
 
                     currentSongString = createSongString(currentTrack.name, currentTrack.artists)
                     delay = 2.seconds
+                } else {
+                    delay = 0.1.seconds
                 }
 
                 if(songsMarkedForSkipping.contains(currentSongString)) {

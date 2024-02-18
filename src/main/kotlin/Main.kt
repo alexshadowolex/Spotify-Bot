@@ -65,7 +65,7 @@ suspend fun main() = try {
                     token = initialToken
                 ) {
                     onTokenRefresh = {
-                        logger.info("Token refreshed")
+                        logger.info("Spotify token refreshed")
                     }
                     afterTokenRefresh = {
                         it.token.refreshToken = initialToken.refreshToken
@@ -74,7 +74,7 @@ suspend fun main() = try {
                                 json.encodeToString(it.token.copy(refreshToken = initialToken.refreshToken))
                             )
                         } catch(e: Exception) {
-                            logger.error("Error occurred while saving new token", e)
+                            logger.error("Error occurred while saving new spotify token", e)
                         }
                     }
                     enableLogger = true

@@ -701,9 +701,9 @@ fun isSpotifySongNameGetterEnabled(): Boolean {
  */
 private fun writeCurrentSongTextFiles(currentTrack: Track) {
     try {
-        val currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+        val currentSongInputString = createSongString(currentTrack.name, currentTrack.artists)
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
-            .writeText(currentSongString + " ".repeat(10))
+            .writeText(currentSongInputString + " ".repeat(10))
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME")
             .writeText(currentTrack.name)
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
