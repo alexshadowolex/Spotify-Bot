@@ -166,7 +166,7 @@ data\tokens\twitchtoken.txt: only the twitch token, nothing else
 data\tokens\spotifyClientSecret.txt: only the spotify client secret from the app, nothing else
 ````
 ````
-data\properties\twitchBotconfig.properties:
+data\properties\twitchBotConfig.properties:
     ->channel=<Twitch channel Name>
     ->command_prefix=<prefix for command usage>
     ->default_command_cool_down=<cool down in seconds for commands>
@@ -200,7 +200,17 @@ data\properties\spotifyConfig.properties:
     ->custom_group_user_names_remove_song_from_queue_command=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
 ````
 Fill out all the properties in twitchBotConfig.properties and spotifyConfig.properties with data that fits.<br>
-You can leave empty following properties: blacklisted_users, song_request_redeem_id (if you are not going to use it), maximum_length_minutes_song_request, blocked_song_links, blocked_song_artists, custom_group_user_names_add_song_command, custom_group_user_names_skip_song_command and custom_group_user_names_remove_song_from_queue_command.<br>
+You can leave empty following properties: 
+* twitchBotConfig.properties:
+   * blacklisted_users
+   * song_request_redeem_id (if you are not going to use it)
+* spotifyConfig.properties:
+   * maximum_length_minutes_song_request
+   * blocked_song_links
+   * blocked_song_artists
+   * custom_group_user_names_add_song_command
+   * custom_group_user_names_skip_song_command
+   * custom_group_user_names_remove_song_from_queue_command.<br>
 If you want to leave them empty, you still have to include them in the file. An empty property looks like this "blacklisted_users=".
 <br>
 If you don't have the redeem ID, you have 2 possible solutions:<br>
