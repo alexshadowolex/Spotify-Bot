@@ -199,7 +199,9 @@ data\properties\spotifyConfig.properties:
     ->remove_song_from_queue_command_security_level_on_start_up=<security level that decides, who can use the remove song from queue command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
     ->custom_group_user_names_remove_song_from_queue_command=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
 ````
-Fill out all the properties in twitchBotConfig.properties and spotifyConfig.properties with data that fits. You can leave empty "blacklisted_users" and the redeem ID (if you are not going to use it). If you want to leave them empty, you still have to include them in the file. An empty property looks like this "blacklisted_users=".
+Fill out all the properties in twitchBotConfig.properties and spotifyConfig.properties with data that fits.<br>
+You can leave empty following properties: blacklisted_users, song_request_redeem_id (if you are not going to use it), maximum_length_minutes_song_request, blocked_song_links, blocked_song_artists, custom_group_user_names_add_song_command, custom_group_user_names_skip_song_command and custom_group_user_names_remove_song_from_queue_command.<br>
+If you want to leave them empty, you still have to include them in the file. An empty property looks like this "blacklisted_users=".
 <br>
 If you don't have the redeem ID, you have 2 possible solutions:<br>
 1.) Use the redeem's name instead (on the property song_request_redeem_id). Start the bot and use the redeem once. Then go into the latest log-file and check for a warning that says you used the name and should use the ID instead. Copy and Paste it and done.<br>
