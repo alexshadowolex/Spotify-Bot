@@ -2,9 +2,9 @@ package scripts
 
 import java.io.File
 
-// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-4.jar
+// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-5.jar
 
-const val latestVersion = "1.2.4"
+const val latestVersion = "1.2.5"
 
 val propertiesFilesToProperties = listOf(
     File("data\\properties\\twitchBotConfig.properties") to
