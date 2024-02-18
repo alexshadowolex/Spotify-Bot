@@ -146,10 +146,10 @@ The file, that will always be included, is the new Bot version. Download it and 
     * BROADCASTER: Only the broadcaster
     * MODERATOR: Owner and Moderators
     * CUSTOM: Custom group of users, specified per username in property custom_group_user_names_skip_song_command<br>
-* Remove Song From Queue Command -> Can be toggled off (is_remove_song_from_queue_command_enabled_by_default, switch in UI).
+* Remove Song From Queue Command -> Can be toggled off (is_remove_song_from_queue_command_enabled_by_default, switch in UI).<br>
   Command names: "removesongfromqueue", "rsfq", "remove", "removesong", "rs"<br>
   Command to remove a song from the queue.<br>
-  To use this command, type (or rather copy and paste) the song name string that the bot responds with after a song request after the command. E.g. ""Ghost" by Confetti"<br>
+  To use this command, type (or rather copy and paste) the song name string that the bot responds with after a song request (or when you use the song info command) after the command. E.g. ""Ghost" by Confetti"<br>
   This functionality can be restricted to be used only by certain user groups:
   * BROADCASTER: Only the broadcaster
   * MODERATOR: Owner and Moderators
