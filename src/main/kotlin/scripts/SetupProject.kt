@@ -116,7 +116,7 @@ fun app3() {
                     TextField(
                         label = {
                             Text(
-                                text = "Spotify ID"
+                                text = "Spotify Client ID"
                             )
                         },
                         value = spotifyId,
@@ -136,7 +136,7 @@ fun app3() {
                     TextField(
                         label = {
                             Text(
-                                text = "Spotify Secret"
+                                text = "Spotify Client Secret"
                             )
                         },
                         value = spotifySecret,

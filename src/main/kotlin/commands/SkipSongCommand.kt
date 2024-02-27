@@ -11,7 +11,7 @@ import ui.isSkipSongCommandEnabled
 import ui.skipSongCommandSecurityLevel
 
 val skipSongCommand: Command = Command(
-    names = listOf("skipSong", "skip", "next", "ss"),
+    names = listOf("skipsong", "skip", "next", "ss"),
     handler = {
         if(!isSkipSongCommandEnabled.value) {
             logger.info("skipSongCommand disabled. Aborting execution")
