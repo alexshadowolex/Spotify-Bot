@@ -77,7 +77,6 @@ suspend fun main() = try {
                             logger.error("Error occurred while saving new spotify token", e)
                         }
                     }
-                    enableLogger = true
                 }.build()
             }
 

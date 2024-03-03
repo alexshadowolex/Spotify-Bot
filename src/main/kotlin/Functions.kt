@@ -32,6 +32,7 @@ import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.text.ParseException
 import java.time.format.DateTimeFormatterBuilder
 import java.util.*
 import javax.swing.JOptionPane
@@ -417,20 +418,31 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
  * @return {SongRequestResult} {Track-Item?} and {String}, on success: track and explanation message,
  * on failure: null and explanation message
  */
-private suspend fun updateQueue(query: String): SongRequestResult {
+// TODO: change back when fix is in spotify library
+//private suspend fun updateQueue(query: String): SongRequestResult {
+private suspend fun updateQueue(query: String): SongRequestResultPatch {
     logger.info("called updateQueue with query $query")
     val result = try {
         getSongIdFromSpotifyDirectLink(query)?.let {
-            getSpotifyTrackById(it)
+            // TODO: change back when fix is in spotify library
+            //getSpotifyTrackById(it)
+            getSpotifyTrackByIdPatch(it)
         } ?: run {
-            getSpotifyTrackByQuery(query)
-        } ?: return SongRequestResult(
+            // TODO: change back when fix is in spotify library
+            //getSpotifyTrackByQuery(query)
+            getSpotifyTrackByQueryPatch(query)
+        } ?: return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = "No Result when searching for song."
         )
     } catch (e: Exception) {
         logger.error("Error while searching for track:", e)
-        return SongRequestResult(
+        // TODO: change back when fix is in spotify library
+        //return SongRequestResult(
+        //    track = null,
+        //    songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
+        //)
+        return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
         )
@@ -446,15 +458,23 @@ private suspend fun updateQueue(query: String): SongRequestResult {
             "the song itself being blocked."
         }
         logger.info(message)
-        return SongRequestResult(
+        // TODO: change back when fix is in spotify library
+        //return SongRequestResult(
+        //    track = null,
+        //    songRequestResultExplanation = message
+        //)
+        return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = message
         )
     }
 
-    if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
-        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
-        return SongRequestResult(
+    // TODO: change back when fix is in spotify library
+    //if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
+    //    logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+    if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
+        logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+        return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
         )
@@ -474,13 +494,23 @@ private suspend fun updateQueue(query: String): SongRequestResult {
                 "Adding the song to the queue failed."
             }
         }
-        return SongRequestResult(
+        // TODO: change back when fix is in spotify library
+        //return SongRequestResult(
+        //    track = null,
+        //    songRequestResultExplanation = message
+        //)
+        return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = message
         )
     }
 
-    return SongRequestResult(
+    // TODO: change back when fix is in spotify library
+    //return SongRequestResult(
+    //    track = result,
+    //    songRequestResultExplanation = "Successfully added the song to the queue."
+    //)
+    return SongRequestResultPatch(
         track = result,
         songRequestResultExplanation = "Successfully added the song to the queue."
     )
@@ -500,11 +530,11 @@ fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
 
 /**
  * Gets the first (if there are more than one included) blocked artist from the given spotify config property.
- * @param artists {List<String>} artist names
+ * @param artists {List<String?>} artist names
  * @return {String} the name of the (first) blocked artist or an empty string, if no artist is blocked
  */
-private fun getFirstBlockedArtistName(artists: List<String>): String {
-    for(artist in artists.map { it.lowercase(Locale.getDefault()) }) {
+private fun getFirstBlockedArtistName(artists: List<String?>): String {
+    for(artist in artists.map { it?.lowercase(Locale.getDefault()) ?: "" }) {
         if(SpotifyConfig.blockedSongArtists.contains(artist)) {
             return artist
         }
@@ -525,11 +555,11 @@ private fun isSongBlocked(songId: String): Boolean {
 
 /**
  * Checks if one or more artists are blocked. The function is not case-sensitive.
- * @param artists {List<String>} artist names
+ * @param artists {List<String?>} artist names
  * @return {Boolean} true, if at least one artist ist blocked, else false
  */
-private fun isSongArtistBlocked(artists: List<String>): Boolean {
-    for(artist in artists.map { it.lowercase(Locale.getDefault()) }) {
+private fun isSongArtistBlocked(artists: List<String?>): Boolean {
+    for(artist in artists.map { it?.lowercase(Locale.getDefault()) ?: "" }) {
         if(SpotifyConfig.blockedSongArtists.contains(artist)) {
             return true
         }
@@ -568,6 +598,35 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
 
 
 /**
+ * Gets the track from the Spotify APIs track endpoint.
+ * This function is a patch due to new Spotify API changes that are not handled yet in the library.
+ * It will be removed and replaced by getSpotifyTrackById as soon as the library has a new version
+ * @param songId {String} the link's songId
+ * @return {PatchSpotifyTrackResponse?} a track on success, null on error
+ */
+private suspend fun getSpotifyTrackByIdPatch(songId: String): PatchSpotifyTrackResponse? {
+    logger.info("called getSpotifyTrackByIdPatch with ID: $songId")
+    val json = Json {
+        ignoreUnknownKeys = true
+    }
+    return try {
+        val response = httpClient.get("https://api.spotify.com/v1/tracks/$songId") {
+            header("Authorization", " Bearer ${spotifyClient.token.accessToken}")
+        }
+
+        if(response.status == HttpStatusCode.OK) {
+            json.decodeFromString<PatchSpotifyTrackResponse>(response.bodyAsText())
+        } else {
+            throw SpotifyException.ParseException("Error while parsing response from spotify")
+        }
+    } catch (e: Exception) {
+        logger.error("Exception while accessing tracks endpoint of spotify: ", e)
+        null
+    }
+}
+
+
+/**
  * Gets the track from the Spotify APIs search endpoint.
  * @param query {String} the search query
  * @return {Track?} a track on success, null on error
@@ -589,6 +648,44 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
         null
     }
 }
+
+
+/**
+ * Gets the track from the Spotify APIs search endpoint.
+ * This function is a patch due to new Spotify API changes that are not handled yet in the library.
+ * It will be removed and replaced by getSpotifyTrackByQuery as soon as the library has a new version
+ * @param query {String} the search query
+ * @return {PatchSpotifyTrackResponse?} a track on success, null on error
+ */
+private suspend fun getSpotifyTrackByQueryPatch(query: String): PatchSpotifyTrackResponse? {
+    logger.info("called getSpotifyTrackByQueryPatch with query: $query")
+    return try {
+        val result = spotifyClient.search.search(
+            query = query,
+            searchTypes = arrayOf(
+                SearchApi.SearchType.Artist,
+                SearchApi.SearchType.Album,
+                SearchApi.SearchType.Track
+            ),
+            market = Market.DE
+        ).tracks?.firstOrNull()
+
+        if(result == null) {
+            null
+        } else {
+            PatchSpotifyTrackResponse(
+                artists = result.artists,
+                uri = result.uri,
+                name = result.name,
+                duration_ms = result.length.toFloat()
+            )
+        }
+    } catch (e: Exception) {
+        logger.error("Exception while accessing search endpoint of spotify: ", e)
+        null
+    }
+}
+
 
 
 /**
@@ -626,7 +723,7 @@ fun getArtistsString(artists: List<SimpleArtist>): String {
         listOf(
             artist.dropLast(1).joinToString(),
             artist.last()
-        ).filter { it.isNotBlank() }.joinToString(" and ")
+        ).filter { it!!.isNotBlank() }.joinToString(" and ")
     }
 }
 

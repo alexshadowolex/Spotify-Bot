@@ -1,4 +1,6 @@
 
+import com.adamratzman.spotify.models.PlayableUri
+import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
@@ -45,3 +47,18 @@ fun String.addQuotationMarks() =
     } else {
         this
     }
+
+// TODO: remove when fix is in spotify library
+@Serializable
+data class PatchSpotifyTrackResponse(
+    val artists: List<SimpleArtist>,
+    val uri: PlayableUri,
+    val name: String,
+    val duration_ms: Float
+)
+
+
+data class SongRequestResultPatch(
+    val track: PatchSpotifyTrackResponse?,
+    val songRequestResultExplanation: String
+)
