@@ -18,7 +18,7 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v1.2.5 [Download from Release v1.2.5](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.5/Spotify.Bot-windows-x64-1.2.5.jar)
+* Spotify-Bot.jar: v1.2.6 [Download from Release v1.2.6](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.6/Spotify.Bot-windows-x64-1.2.6.jar)
 * SetupToken.jar: v3 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupToken_v3.jar)
 * SetupProject.jar: v1 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupProject_v1.jar)
 * UpdateProperties.jar: v1.2.5 [Download from Release v1.2.5](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.5/UpdateProperties_1-2-5.jar)
@@ -140,7 +140,7 @@ The file, that will always be included, is the new Bot version. Download it and 
   
   This security setting can be done in the UI and in the properties files. Note that the value is case-sensitive.
 * Skip Song Command -> Can be toggled off (is_skip_song_command_enabled_by_default, switch in UI).<br>
-  Command names: "skipSong", "skip", "next", "ss"<br>
+  Command names: "skipsong", "skip", "next", "ss"<br>
   Command to skip the current song.<br>
   This functionality can be restricted to be used only by certain user groups:
     * BROADCASTER: Only the broadcaster
