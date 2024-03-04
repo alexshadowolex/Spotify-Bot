@@ -391,7 +391,7 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
     var success = true
     try {
-        val message = updateQueue(query).let { result ->
+        val message = updateQueuePatch(query).let { result ->
             val track = result.track
             if(track != null) {
                 "Song ${createSongString(track.name, track.artists)} has been added to the queue " +
@@ -414,22 +414,18 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
 
 /**
  * Updates the spotify queue adding a song to it
+ * This function is a patch due to new Spotify API changes that are not handled yet in the library.
+ * It will be removed and replaced by updateQueue as soon as the library has a new version
  * @param query {String} either a spotify link or a query that will be searched for
- * @return {SongRequestResult} {Track-Item?} and {String}, on success: track and explanation message,
+ * @return {SongRequestResultPatch} {PatchSpotifyTrackResponse?} and {String}, on success: track and explanation message,
  * on failure: null and explanation message
  */
-// TODO: change back when fix is in spotify library
-//private suspend fun updateQueue(query: String): SongRequestResult {
-private suspend fun updateQueue(query: String): SongRequestResultPatch {
+private suspend fun updateQueuePatch(query: String): SongRequestResultPatch {
     logger.info("called updateQueue with query $query")
     val result = try {
         getSongIdFromSpotifyDirectLink(query)?.let {
-            // TODO: change back when fix is in spotify library
-            //getSpotifyTrackById(it)
             getSpotifyTrackByIdPatch(it)
         } ?: run {
-            // TODO: change back when fix is in spotify library
-            //getSpotifyTrackByQuery(query)
             getSpotifyTrackByQueryPatch(query)
         } ?: return SongRequestResultPatch(
             track = null,
@@ -437,11 +433,6 @@ private suspend fun updateQueue(query: String): SongRequestResultPatch {
         )
     } catch (e: Exception) {
         logger.error("Error while searching for track:", e)
-        // TODO: change back when fix is in spotify library
-        //return SongRequestResult(
-        //    track = null,
-        //    songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
-        //)
         return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
@@ -457,21 +448,13 @@ private suspend fun updateQueue(query: String): SongRequestResultPatch {
         } else {
             "the song itself being blocked."
         }
-        logger.info(message)
-        // TODO: change back when fix is in spotify library
-        //return SongRequestResult(
-        //    track = null,
-        //    songRequestResultExplanation = message
-        //)
+
         return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = message
         )
     }
 
-    // TODO: change back when fix is in spotify library
-    //if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
-    //    logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
     if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
         logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
         return SongRequestResultPatch(
@@ -494,27 +477,94 @@ private suspend fun updateQueue(query: String): SongRequestResultPatch {
                 "Adding the song to the queue failed."
             }
         }
-        // TODO: change back when fix is in spotify library
-        //return SongRequestResult(
-        //    track = null,
-        //    songRequestResultExplanation = message
-        //)
         return SongRequestResultPatch(
             track = null,
             songRequestResultExplanation = message
         )
     }
 
-    // TODO: change back when fix is in spotify library
-    //return SongRequestResult(
-    //    track = result,
-    //    songRequestResultExplanation = "Successfully added the song to the queue."
-    //)
     return SongRequestResultPatch(
         track = result,
         songRequestResultExplanation = "Successfully added the song to the queue."
     )
 }
+
+
+/**
+ * Updates the spotify queue adding a song to it
+ * @param query {String} either a spotify link or a query that will be searched for
+ * @return {SongRequestResult} {Track-Item?} and {String}, on success: track and explanation message,
+ * on failure: null and explanation message
+ */
+private suspend fun updateQueue(query: String): SongRequestResult {
+    logger.info("called updateQueue with query $query")
+    val result = try {
+        getSongIdFromSpotifyDirectLink(query)?.let {
+            getSpotifyTrackById(it)
+        } ?: run {
+            getSpotifyTrackByQuery(query)
+        } ?: return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "No Result when searching for song."
+        )
+    } catch (e: Exception) {
+        logger.error("Error while searching for track:", e)
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
+        )
+    }
+
+    logger.info("Result after accessing spotify endpoints: $result")
+    val artistNames = result.artists.map { it.name }
+
+    if(isSongBlocked(result.uri.id) || isSongArtistBlocked(artistNames)) {
+        val message = "Song \"${result.name}\" was blocked because of " + if(isSongArtistBlocked(artistNames)) {
+            "the artist \"${getFirstBlockedArtistName(artistNames)}\" being blocked."
+        } else {
+            "the song itself being blocked."
+        }
+        logger.info(message)
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = message
+        )
+    }
+
+    if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
+        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
+        )
+    }
+
+    try {
+        spotifyClient.player.addItemToEndOfQueue(result.uri)
+        logger.info("Added Song with URI ${result.uri.uri} successfully to the queue.")
+    } catch (e: Exception) {
+        val message = when(e) {
+            is SpotifyException.BadRequestException -> {
+                logger.error("Spotify player is not active.", e)
+                "Spotify Player is currently not active. Click on the spotify play button strimmer!"
+            }
+            else -> {
+                logger.error("An exception occurred while calling addItemToEndOfQueue: ", e)
+                "Adding the song to the queue failed."
+            }
+        }
+        return SongRequestResult(
+            track = null,
+            songRequestResultExplanation = message
+        )
+    }
+
+    return SongRequestResult(
+        track = result,
+        songRequestResultExplanation = "Successfully added the song to the queue."
+    )
+}
+
 
 
 /**
