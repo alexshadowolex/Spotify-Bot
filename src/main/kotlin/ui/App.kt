@@ -1,7 +1,6 @@
 package ui
 
 import CustomCommandPermissions
-import SpotifyConfig
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -24,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
 import config.BuildInfo
+import config.SpotifyConfig
 import config.TwitchBotConfig
 import isSongRequestEnabledAsRedeem
 import isWindowsInDarkMode

@@ -10,6 +10,7 @@ import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
 import com.adamratzman.spotify.spotifyClientApi
+import config.SpotifyConfig
 import config.TwitchBotConfig
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
