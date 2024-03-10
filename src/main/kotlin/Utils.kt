@@ -48,6 +48,13 @@ fun String.addQuotationMarks() =
         this
     }
 
+/**
+ * Joins all non-empty elements of a list to a string
+ * @param delimiter {String} delimiter between the list elements to join
+ */
+fun List<String>.joinToPropertiesString(delimiter: String) =
+    this.filter { it.isNotEmpty() }.joinToString(delimiter)
+
 // TODO: remove when fix is in spotify library
 @Serializable
 data class PatchSpotifyTrackResponse(

@@ -3,26 +3,47 @@ import CustomCommandPermissions
 import displayEnumParsingErrorWindow
 import getPropertyValue
 import getSongIdFromSpotifyDirectLink
+import joinToPropertiesString
 import logger
+import showErrorMessageWindow
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 import kotlin.system.exitProcess
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 object SpotifyConfig {
     private val spotifyConfigFile = File("data\\properties\\spotifyConfig.properties")
     private val properties = Properties().apply {
+        if(!spotifyConfigFile.exists()) {
+            logger.error(
+                "Error while reading property file ${spotifyConfigFile.path} in SpotifyConfig init: " +
+                "File does not exist!"
+            )
+            showErrorMessageWindow(
+                title = "Error while reading properties file",
+                message = "Property file \"${spotifyConfigFile.path}\" does not exist!"
+            )
+
+            exitProcess(-1)
+        }
         load(spotifyConfigFile.inputStream())
     }
 
     val spotifyClientSecret: String = File("data\\tokens\\spotifyClientSecret.txt").readText()
     val spotifyClientId: String = getPropertyValue(properties, "spotify_client_id", spotifyConfigFile.path)
-    val playlistIdForAddSongCommand: String = getPropertyValue(
+    var playlistIdForAddSongCommand: String = getPropertyValue(
         properties, "playlist_id_for_add_song_command", spotifyConfigFile.path
     )
+        set(value) {
+            field = value
+            properties.setProperty("playlist_id_for_add_song_command", value)
+            savePropertiesToFile()
+        }
     var playlistNameForAddSongCommand = ""
-    val addSongCommandSecurityLevelOnStartUp = try {
+    var addSongCommandSecurityLevelOnStartUp = try {
         CustomCommandPermissions.valueOf(
             getPropertyValue(properties, "add_song_command_security_level_on_start_up", spotifyConfigFile.path)
         )
@@ -35,7 +56,12 @@ object SpotifyConfig {
         )
         exitProcess(-1)
     }
-    val maximumLengthMinutesSongRequest: Duration = try {
+        set(value) {
+            field = value
+            properties.setProperty("add_song_command_security_level_on_start_up", value.toString())
+            savePropertiesToFile()
+        }
+    var maximumLengthMinutesSongRequest: Duration = try {
         getPropertyValue(properties, "maximum_length_minutes_song_request", spotifyConfigFile.path)
             .toDouble().minutes
     } catch (e: NumberFormatException) {
@@ -45,13 +71,32 @@ object SpotifyConfig {
         )
         Double.MAX_VALUE.minutes
     }
-    val blockedSongIds: List<String> = getPropertyValue(
+        set(value) {
+            field = value
+            properties.setProperty(
+                "maximum_length_minutes_song_request", value.toDouble(DurationUnit.MINUTES).toString()
+            )
+            savePropertiesToFile()
+        }
+    var blockedSongIds: List<String> = getPropertyValue(
         properties, "blocked_song_links", spotifyConfigFile.path
     ).split(",").map { getSongIdFromSpotifyDirectLink(it) ?: "" }
-    val blockedSongArtists: List<String> = getPropertyValue(
+        set(value) {
+            field = value
+            properties.setProperty("blocked_song_links", value.joinToPropertiesString(","))
+            savePropertiesToFile()
+        }
+    var blockedSongArtists: List<String> = getPropertyValue(
         properties, "blocked_song_artists", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
-    val skipSongCommandSecurityLevelOnStartUp = try {
+        set(value) {
+            field = value
+            properties.setProperty(
+                "blocked_song_artists", value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+            )
+            savePropertiesToFile()
+        }
+    var skipSongCommandSecurityLevelOnStartUp = try {
         CustomCommandPermissions.valueOf(
             getPropertyValue(properties, "skip_song_command_security_level_on_start_up", spotifyConfigFile.path)
         )
@@ -65,13 +110,34 @@ object SpotifyConfig {
         )
         exitProcess(-1)
     }
-    val customGroupUserNamesAddSongCommand: List<String> = getPropertyValue(
+        set(value) {
+            field = value
+            properties.setProperty("skip_song_command_security_level_on_start_up", value.toString())
+            savePropertiesToFile()
+        }
+    var customGroupUserNamesAddSongCommand: List<String> = getPropertyValue(
         properties, "custom_group_user_names_add_song_command", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
-    val customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
+        set(value) {
+            field = value
+            properties.setProperty(
+                "custom_group_user_names_add_song_command",
+                value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+            )
+            savePropertiesToFile()
+        }
+    var customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
         properties, "custom_group_user_names_skip_song_command", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
-    val removeSongFromQueueCommandSecurityLevelOnStartUp = try {
+        set(value) {
+            field = value
+            properties.setProperty(
+                "custom_group_user_names_skip_song_command",
+                value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+            )
+            savePropertiesToFile()
+        }
+    var removeSongFromQueueCommandSecurityLevelOnStartUp = try {
         CustomCommandPermissions.valueOf(
             getPropertyValue(
                 properties,
@@ -79,7 +145,6 @@ object SpotifyConfig {
                 spotifyConfigFile.path
             )
         )
-
     } catch (e: Exception) {
         displayEnumParsingErrorWindow(
             propertyName = "remove_song_from_queue_command_security_level_on_start_up",
@@ -89,7 +154,24 @@ object SpotifyConfig {
         )
         exitProcess(-1)
     }
-    val customGroupUserNamesRemoveSongFromQueueCommand: List<String> = getPropertyValue(
+        set(value) {
+            field = value
+            properties.setProperty("remove_song_from_queue_command_security_level_on_start_up", value.toString())
+            savePropertiesToFile()
+        }
+    var customGroupUserNamesRemoveSongFromQueueCommand: List<String> = getPropertyValue(
         properties, "custom_group_user_names_remove_song_from_queue_command", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
+        set(value) {
+            field = value
+            properties.setProperty(
+                "custom_group_user_names_remove_song_from_queue_command",
+                value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+            )
+            savePropertiesToFile()
+        }
+
+    private fun savePropertiesToFile() {
+        properties.store(FileOutputStream(spotifyConfigFile.path), null)
+    }
 }
