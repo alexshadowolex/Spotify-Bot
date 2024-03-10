@@ -260,8 +260,7 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
         logger.error("Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ", e)
         showErrorMessageWindow(
             message =   "Error while reading value of property ${propertyName.addQuotationMarks()} " +
-                        "in file $propertiesFileRelativePath.\n" +
-                        "Check logs for more information",
+                        "in file $propertiesFileRelativePath.",
             title = "Error while reading properties"
         )
         exitProcess(-1)
@@ -277,7 +276,7 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
 fun showErrorMessageWindow(message: String, title: String) {
     JOptionPane.showMessageDialog(
         null,
-        message,
+        "$message\nCheck logs for more information",
         title,
         JOptionPane.ERROR_MESSAGE
     )
@@ -299,10 +298,10 @@ fun displayEnumParsingErrorWindow(
 ) {
     logger.error("Exception occurred while reading property \"$propertyName\" in file $propertyFilePath: ", exception)
     showErrorMessageWindow(
-        "Error while reading value of property \"$propertyName\" in file $propertyFilePath\n" +
+        message = "Error while reading value of property \"$propertyName\" in file $propertyFilePath\n" +
                 "Following values are allowed: " +
                 enumClassValues.joinToString(),
-        "Invalid value of property"
+        title = "Invalid value of property"
     )
 }
 
