@@ -10,8 +10,8 @@ import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
 import com.adamratzman.spotify.spotifyClientApi
+import config.BotConfig
 import config.SpotifyConfig
-import config.TwitchBotConfig
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -104,7 +104,7 @@ suspend fun main() = try {
             app()
         }
 
-        if (TwitchBotConfig.showNewVersionAvailableWindowOnStartUp && isNewAppReleaseAvailable()) {
+        if (BotConfig.showNewVersionAvailableWindowOnStartUp && isNewAppReleaseAvailable()) {
             val isNewVersionWindowOpen = remember{ mutableStateOf(true) }
             if(isNewVersionWindowOpen.value) {
                 Window(

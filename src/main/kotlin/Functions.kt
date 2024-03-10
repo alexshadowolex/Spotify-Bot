@@ -13,6 +13,7 @@ import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import config.BotConfig
 import config.BuildInfo
 import config.SpotifyConfig
 import config.TwitchBotConfig
@@ -344,8 +345,8 @@ fun isUserBroadcaster(userName: String): Boolean {
  * @return {Boolean} true, if the user is blacklisted, else false
  */
 fun isUserBlacklisted(userName: String, userId: String): Boolean {
-    if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers) {
-        if(userId !in TwitchBotConfig.blacklistedUsers) {
+    if(userName in BotConfig.blacklistedUsers || userId in BotConfig.blacklistedUsers) {
+        if(userId !in BotConfig.blacklistedUsers) {
             logger.warn(
                 "Blacklisted user $userName tried using a command. " +
                 "Please use following ID in the properties file instead of the name: $userId"
@@ -1010,7 +1011,7 @@ fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userNam
         permissions,
         userName,
         addSongCommandSecurityLevel,
-        SpotifyConfig.customGroupUserNamesAddSongCommand
+        BotConfig.customGroupUserNamesAddSongCommand
     )
 }
 
@@ -1110,7 +1111,7 @@ fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userNa
         permissions,
         userName,
         skipSongCommandSecurityLevel,
-        SpotifyConfig.customGroupUserNamesSkipSongCommand
+        BotConfig.customGroupUserNamesSkipSongCommand
     )
 }
 
@@ -1128,7 +1129,7 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
         permissions,
         userName,
         removeSongFromQueueCommandSecurityLevel,
-        SpotifyConfig.customGroupUserNamesRemoveSongFromQueueCommand
+        BotConfig.customGroupUserNamesRemoveSongFromQueueCommand
     )
 }
 
