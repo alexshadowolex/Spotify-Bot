@@ -2,7 +2,6 @@ package config
 import CustomCommandPermissions
 import displayEnumParsingErrorWindow
 import getPropertyValue
-import getSongIdFromSpotifyDirectLink
 import joinToPropertiesString
 import logger
 import showErrorMessageWindow
@@ -78,9 +77,10 @@ object SpotifyConfig {
             )
             savePropertiesToFile()
         }
-    var blockedSongIds: List<String> = getPropertyValue(
+    // TODO add configListSeparator="," to BotConfig.properties
+    var blockedSongLinks: List<String> = getPropertyValue(
         properties, "blocked_song_links", spotifyConfigFile.path
-    ).split(",").map { getSongIdFromSpotifyDirectLink(it) ?: "" }
+    ).split(",")
         set(value) {
             field = value
             properties.setProperty("blocked_song_links", value.joinToPropertiesString(","))

@@ -33,7 +33,6 @@ import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.text.ParseException
 import java.time.format.DateTimeFormatterBuilder
 import java.util.*
 import javax.swing.JOptionPane
@@ -599,7 +598,7 @@ private fun getFirstBlockedArtistName(artists: List<String?>): String {
  * @return {Boolean} true, if the song is blocked, else false
  */
 private fun isSongBlocked(songId: String): Boolean {
-    return SpotifyConfig.blockedSongIds.contains(songId)
+    return SpotifyConfig.blockedSongLinks.map { getSongIdFromSpotifyDirectLink(it) ?: "" }.contains(songId)
 }
 
 
