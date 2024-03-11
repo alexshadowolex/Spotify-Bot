@@ -235,7 +235,8 @@ fun setupProject(twitchToken: String, spotifyId: String, spotifySecret: String) 
         ),
         propertiesFolderPath to listOf(
             spotifyConfigFileName,
-            "twitchBotConfig.properties"
+            "twitchBotConfig.properties",
+            "botConfig.properties"
         )
     )
 
