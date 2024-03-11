@@ -85,16 +85,16 @@ fun main(){
         val outputString = mutableListOf<String>()
         var migrated = false
 
-        outputString += "Starting migration to version 2.0.0"
+        outputString += "Starting migration to version 2.0.0$newLine"
 
 
         filesToCreate.forEach {
-            outputString += newLine + if(!it.exists()) {
+            outputString += if(!it.exists()) {
                 it.createNewFile()
                 migrated = true
-                "Created file \"${it.name}\"$newLine"
+                "Created file \"${it.name}\""
             } else {
-                "Skipped creation of file \"${it.name}\" since it seems to already have happened$newLine"
+                "Skipped creation of file \"${it.name}\" since it seems to already have happened"
             }
         }
 
@@ -103,8 +103,10 @@ fun main(){
             val destinationFile = files[1]
             var sourceFileLines = sourceFile.readLines()
 
+            outputString += newLine
+
             properties.forEach { property ->
-                outputString += newLine + if (sourceFileLines.any { it.startsWith(property) }) {
+                outputString += if (sourceFileLines.any { it.startsWith(property) }) {
                     val propertyLine = sourceFileLines.first{it.startsWith(property)}
                     val destinationFileLines = destinationFile.readLines()
 
@@ -113,46 +115,53 @@ fun main(){
                     sourceFile.writeText(sourceFileLines.joinToString("\n"))
 
                     migrated = true
-                    "Moved property \"$property\" from file \"$sourceFile\" to file \"$destinationFile\"$newLine"
+                    "Moved property \"$property\" from file \"$sourceFile\" to file \"$destinationFile\""
                 } else {
-                    "Skipped moving property \"$property\" because it does not exist in source file \"$sourceFile\"$newLine"
+                    "Skipped moving property \"$property\" because it does not exist in source file \"$sourceFile\""
                 }
             }
+
+            outputString += newLine
         }
 
 
         propertiesToRename.forEach { (file, properties) ->
             val configLines = file.readLines().toMutableList()
 
+            outputString += newLine
+
             properties.forEach{ (oldPropertyName, newPropertyName) ->
-                outputString += newLine + if(configLines.any { it.contains(oldPropertyName) }) {
+                outputString += if(configLines.any { it.contains(oldPropertyName) }) {
                     val currentLine = configLines.first { it.contains(oldPropertyName) }
                     configLines -= currentLine
                     configLines += currentLine.replace(oldPropertyName, newPropertyName)
                     file.writeText(configLines.joinToString("\n"))
 
                     migrated = true
-                    "Renamed property \"$oldPropertyName\" in file \"$file\" to new property name \"$newPropertyName\"$newLine"
+                    "Renamed property \"$oldPropertyName\" in file \"$file\" to new property name \"$newPropertyName\""
                 } else {
-                    "Skipped renaming property \"$oldPropertyName\" because it does not exist in file \"$file\"$newLine"
+                    "Skipped renaming property \"$oldPropertyName\" because it does not exist in file \"$file\""
                 }
             }
+
+            outputString += newLine
         }
 
         val twitchBotConfigFile = File("data\\properties\\twitchBotConfig.properties")
         val twitchBotConfigLines = twitchBotConfigFile.readLines().toMutableList()
         val lineContent = twitchBotConfigLines.first { it.startsWith("blacklistMessage") }
 
-        outputString += newLine + if(lineContent.substringAfter("=").length <= 12 ) {
+        outputString += if(lineContent.substringAfter("=").length <= 12 ) {
             twitchBotConfigLines.remove(lineContent)
             twitchBotConfigLines.add("blacklistMessage=Imagine not being a blacklisted user. Couldn't be you FeelsOkayMan")
             twitchBotConfigFile.writeText(twitchBotConfigLines.joinToString("\n"))
             migrated = true
-            "Changed content of blacklistMessage in file \"$twitchBotConfigFile\" to full message$newLine"
+            "Changed content of blacklistMessage in file \"$twitchBotConfigFile\" to full message"
         } else {
-            "Skipped changing content of blacklistMessage in file \"$twitchBotConfigFile\"$newLine"
+            "Skipped changing content of blacklistMessage in file \"$twitchBotConfigFile\""
         }
 
+        outputString += newLine
 
         outputString += if(migrated) {
             "Migration completed."

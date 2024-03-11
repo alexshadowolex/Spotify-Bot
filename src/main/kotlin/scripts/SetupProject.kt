@@ -24,13 +24,13 @@ import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
-// Current Version: v1
+// Current Version: v2
 
 fun main() = try {
 
     application {
         Window(
-            state = WindowState(size = DpSize(600.dp, 350.dp)),
+            state = WindowState(size = DpSize(600.dp, 400.dp)),
             title = "Setup Project",
             resizable = false,
             onCloseRequest = ::exitApplication,
@@ -47,6 +47,7 @@ fun main() = try {
 @Composable
 fun app3() {
     var twitchToken by remember { mutableStateOf("") }
+    var channel by remember { mutableStateOf("") }
     var spotifyId by remember { mutableStateOf("") }
     var spotifySecret by remember { mutableStateOf("") }
     var isSetupInProgress by remember { mutableStateOf(false) }
@@ -106,6 +107,26 @@ fun app3() {
                             .pointerHoverIcon(PointerIcon.Hand),
                         textDecoration = TextDecoration.Underline,
                         color = MaterialTheme.colors.primary
+                    )
+                }
+
+                Row (
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                ) {
+                    TextField(
+                        label = {
+                            Text(
+                                text = "Twitch channel"
+                            )
+                        },
+                        value = channel,
+                        onValueChange = {
+                            channel = it
+                        },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
                     )
                 }
 
@@ -184,7 +205,7 @@ fun app3() {
                         onClick = {
                             backgroundCoroutineScope.launch {
                                 isSetupInProgress = true
-                                setupProject(twitchToken, spotifyId, spotifySecret)
+                                setupProject(twitchToken, channel, spotifyId, spotifySecret)
                                 delay(1.seconds)
                                 isSetupInProgress = false
 
@@ -208,7 +229,7 @@ fun app3() {
 }
 
 
-fun setupProject(twitchToken: String, spotifyId: String, spotifySecret: String) {
+fun setupProject(twitchToken: String, channel: String, spotifyId: String, spotifySecret: String) {
     val dataFolderPath = "data"
     val tokensFolderPath = "$dataFolderPath\\tokens"
     val propertiesFolderPath = "$dataFolderPath\\properties"
@@ -227,6 +248,7 @@ fun setupProject(twitchToken: String, spotifyId: String, spotifySecret: String) 
     val spotifyClientSecretFileName = "spotifyClientSecret.txt"
     val twitchTokenFileName = "twitchToken.txt"
     val spotifyConfigFileName = "spotifyConfig.properties"
+    val twitchBotConfigFileName = "twitchBotConfig.properties"
 
     val foldersToConfigFiles = mapOf(
         tokensFolderPath to listOf(
@@ -235,7 +257,7 @@ fun setupProject(twitchToken: String, spotifyId: String, spotifySecret: String) 
         ),
         propertiesFolderPath to listOf(
             spotifyConfigFileName,
-            "twitchBotConfig.properties",
+            twitchBotConfigFileName,
             "botConfig.properties"
         )
     )
@@ -258,6 +280,10 @@ fun setupProject(twitchToken: String, spotifyId: String, spotifySecret: String) 
 
                 if(file.name == spotifyConfigFileName) {
                     content = "spotifyClientId=$spotifyId"
+                }
+
+                if(file.name == twitchBotConfigFileName) {
+                    content = "channel=$channel"
                 }
 
                 if(content != "") {
