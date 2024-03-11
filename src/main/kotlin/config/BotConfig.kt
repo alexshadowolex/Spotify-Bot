@@ -3,6 +3,7 @@ package config
 import CustomCommandPermissions
 import displayEnumParsingErrorWindow
 import getPropertyValue
+import joinToLowercasePropertiesString
 import joinToPropertiesString
 import logger
 import showErrorMessageWindow
@@ -165,8 +166,7 @@ object BotConfig {
         set(value) {
             field = value
             properties.setProperty(
-                "customGroupUserNamesAddSongCommand",
-                value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+                "customGroupUserNamesAddSongCommand", value.joinToLowercasePropertiesString(",")
             )
             savePropertiesToFile()
         }
@@ -177,8 +177,7 @@ object BotConfig {
         set(value) {
             field = value
             properties.setProperty(
-                "customGroupUserNamesSkipSongCommand",
-                value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+                "customGroupUserNamesSkipSongCommand", value.joinToLowercasePropertiesString(",")
             )
             savePropertiesToFile()
         }
@@ -212,8 +211,7 @@ object BotConfig {
         set(value) {
             field = value
             properties.setProperty(
-                "customGroupUserNamesRemoveSongFromQueueCommand",
-                value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+                "customGroupUserNamesRemoveSongFromQueueCommand", value.joinToLowercasePropertiesString(",")
             )
             savePropertiesToFile()
         }

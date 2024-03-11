@@ -4,6 +4,9 @@ import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
+import java.util.*
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 class MultiOutputStream(private vararg val streams: OutputStream) : OutputStream() {
     override fun close() = streams.forEach(OutputStream::close)
@@ -38,6 +41,7 @@ enum class CustomCommandPermissions {
     CUSTOM
 }
 
+
 /**
  * Adds quotation marks to the string. If the string is empty, it changes nothing.
  */
@@ -48,12 +52,38 @@ fun String.addQuotationMarks() =
         this
     }
 
+
 /**
  * Joins all non-empty elements of a list to a string
  * @param delimiter {String} delimiter between the list elements to join
  */
 fun List<String>.joinToPropertiesString(delimiter: String) =
     this.filter { it.isNotEmpty() }.joinToString(delimiter)
+
+
+/**
+ * Joins all non-empty elements of a list to a string and formats them to lowercase
+ * @param delimiter {String} delimiter between the list elements to join
+ */
+fun List<String>.joinToLowercasePropertiesString(delimiter: String) =
+    this.joinToPropertiesString(delimiter).lowercase(Locale.getDefault())
+
+
+/**
+ * Creates a String out of a duration based on an int value and given duration unit.
+ * @param durationUnit {DurationUnit} the desired duration unit
+ */
+fun Duration.toIntPropertiesString(durationUnit: DurationUnit) =
+    this.toInt(durationUnit).toString()
+
+
+/**
+ * Creates a String out of a duration based on a double value and given duration unit.
+ * @param durationUnit {DurationUnit} the desired duration unit
+ */
+fun Duration.toDoublePropertiesString(durationUnit: DurationUnit) =
+    this.toDouble(durationUnit).toString()
+
 
 // TODO: remove when fix is in spotify library
 @Serializable

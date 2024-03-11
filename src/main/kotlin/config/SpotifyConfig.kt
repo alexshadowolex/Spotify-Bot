@@ -1,5 +1,7 @@
 package config
+import toDoublePropertiesString
 import getPropertyValue
+import joinToLowercasePropertiesString
 import joinToPropertiesString
 import logger
 import showErrorMessageWindow
@@ -30,8 +32,9 @@ object SpotifyConfig {
     }
 
     val spotifyClientSecret: String = File("data\\tokens\\spotifyClientSecret.txt").readText()
-
     val spotifyClientId: String = getPropertyValue(properties, "spotifyClientId", spotifyConfigFile.path)
+
+    var playlistNameForAddSongCommand = ""
 
     var playlistIdForAddSongCommand: String = getPropertyValue(
         properties, "playlistIdForAddSongCommand", spotifyConfigFile.path
@@ -42,12 +45,12 @@ object SpotifyConfig {
             savePropertiesToFile()
         }
 
-    var playlistNameForAddSongCommand = ""
 
     var maximumLengthSongRequestMinutes: Duration = try {
         getPropertyValue(properties, "maximumLengthSongRequestMinutes", spotifyConfigFile.path)
             .toDouble().minutes
     } catch (e: NumberFormatException) {
+        // TODO: Remove when UI is ready
         logger.info(
             "Invalid number found while parsing property maximumLengthSongRequestMinutes, " +
             "setting to maximum length"
@@ -57,7 +60,7 @@ object SpotifyConfig {
         set(value) {
             field = value
             properties.setProperty(
-                "maximumLengthSongRequestMinutes", value.toDouble(DurationUnit.MINUTES).toString()
+                "maximumLengthSongRequestMinutes", value.toDoublePropertiesString(DurationUnit.MINUTES)
             )
             savePropertiesToFile()
         }
@@ -76,9 +79,7 @@ object SpotifyConfig {
     ).lowercase(Locale.getDefault()).split(",")
         set(value) {
             field = value
-            properties.setProperty(
-                "blockedSongArtists", value.joinToPropertiesString(",").lowercase(Locale.getDefault())
-            )
+            properties.setProperty("blockedSongArtists", value.joinToLowercasePropertiesString(","))
             savePropertiesToFile()
         }
 

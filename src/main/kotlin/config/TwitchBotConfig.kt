@@ -1,5 +1,6 @@
 package config
 
+import toIntPropertiesString
 import getPropertyValue
 import joinToPropertiesString
 import logger
@@ -45,7 +46,7 @@ object TwitchBotConfig {
     ).toInt().seconds
         set(value) {
             field = value
-            properties.setProperty("defaultCommandCoolDown", value.toInt(DurationUnit.SECONDS).toString())
+            properties.setProperty("defaultCommandCoolDown", value.toIntPropertiesString(DurationUnit.SECONDS))
             savePropertiesToFile()
         }
 
@@ -54,7 +55,7 @@ object TwitchBotConfig {
     ).toInt().seconds
         set(value) {
             field = value
-            properties.setProperty("defaultUserCoolDown", value.toInt(DurationUnit.SECONDS).toString())
+            properties.setProperty("defaultUserCoolDown", value.toIntPropertiesString(DurationUnit.SECONDS))
             savePropertiesToFile()
         }
 
