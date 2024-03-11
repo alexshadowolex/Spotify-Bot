@@ -24,8 +24,6 @@ import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
 import config.BotConfig
 import config.BuildInfo
-import config.SpotifyConfig
-import config.TwitchBotConfig
 import isSongRequestEnabledAsRedeem
 import isWindowsInDarkMode
 import kotlinx.coroutines.Dispatchers
@@ -514,15 +512,15 @@ fun commandSecurityMultiToggleButton(
 
 @Composable
 private fun initializeFlagVariables() {
-    isSongRequestEnabled = remember { mutableStateOf(BotConfig.isSongRequestEnabledByDefault) }
-    isSongRequestEnabledAsCommand = remember { mutableStateOf(BotConfig.isSongRequestCommandEnabledByDefault) }
-    isSpotifySongNameGetterEnabled = remember { mutableStateOf(BotConfig.isSpotifySongNameGetterEnabledByDefault) }
-    isSongInfoCommandEnabled = remember { mutableStateOf(BotConfig.isSongInfoCommandEnabledByDefault) }
-    isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(BotConfig.isEmptySongDisplayFilesOnPauseEnabledByDefault) }
-    isAddSongCommandEnabled = remember { mutableStateOf(BotConfig.isAddSongCommandEnabledByDefault) }
-    addSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.addSongCommandSecurityLevelOnStartUp) }
-    isSkipSongCommandEnabled = remember { mutableStateOf(BotConfig.isSkipSongCommandEnabledByDefault) }
-    skipSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.skipSongCommandSecurityLevelOnStartUp) }
-    isRemoveSongFromQueueCommandEnabled = remember { mutableStateOf(BotConfig.isRemoveSongFromQueueCommandEnabledByDefault) }
-    removeSongFromQueueCommandSecurityLevel = remember { mutableStateOf(BotConfig.removeSongFromQueueCommandSecurityLevelOnStartUp) }
+    isSongRequestEnabled = remember { mutableStateOf(BotConfig.isSongRequestEnabled) }
+    isSongRequestEnabledAsCommand = remember { mutableStateOf(BotConfig.isSongRequestCommandEnabled) }
+    isSpotifySongNameGetterEnabled = remember { mutableStateOf(BotConfig.isSpotifySongNameGetterEnabled) }
+    isSongInfoCommandEnabled = remember { mutableStateOf(BotConfig.isSongInfoCommandEnabled) }
+    isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(BotConfig.isEmptySongDisplayFilesOnPauseEnabled) }
+    isAddSongCommandEnabled = remember { mutableStateOf(BotConfig.isAddSongCommandEnabled) }
+    addSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.addSongCommandSecurityLevel) }
+    isSkipSongCommandEnabled = remember { mutableStateOf(BotConfig.isSkipSongCommandEnabled) }
+    skipSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.skipSongCommandSecurityLevel) }
+    isRemoveSongFromQueueCommandEnabled = remember { mutableStateOf(BotConfig.isRemoveSongFromQueueCommandEnabled) }
+    removeSongFromQueueCommandSecurityLevel = remember { mutableStateOf(BotConfig.removeSongFromQueueCommandSecurityLevel) }
 }

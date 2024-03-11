@@ -33,48 +33,48 @@ object TwitchBotConfig {
 
     val channel: String = getPropertyValue(properties, "channel", twitchBotConfigFile.path)
 
-    var commandPrefix: String = getPropertyValue(properties, "command_prefix", twitchBotConfigFile.path)
+    var commandPrefix: String = getPropertyValue(properties, "commandPrefix", twitchBotConfigFile.path)
         set(value) {
             field = value
-            properties.setProperty("command_prefix", value)
+            properties.setProperty("commandPrefix", value)
             savePropertiesToFile()
         }
 
     var defaultCommandCoolDown = getPropertyValue(
-        properties, "default_command_cool_down", twitchBotConfigFile.path
+        properties, "defaultCommandCoolDown", twitchBotConfigFile.path
     ).toInt().seconds
         set(value) {
             field = value
-            properties.setProperty("default_command_cool_down", value.toInt(DurationUnit.SECONDS).toString())
+            properties.setProperty("defaultCommandCoolDown", value.toInt(DurationUnit.SECONDS).toString())
             savePropertiesToFile()
         }
 
     var defaultUserCoolDown = getPropertyValue(
-        properties, "default_user_cool_down", twitchBotConfigFile.path
+        properties, "defaultUserCoolDown", twitchBotConfigFile.path
     ).toInt().seconds
         set(value) {
             field = value
-            properties.setProperty("default_user_cool_down", value.toInt(DurationUnit.SECONDS).toString())
+            properties.setProperty("defaultUserCoolDown", value.toInt(DurationUnit.SECONDS).toString())
             savePropertiesToFile()
         }
 
     val songRequestRedeemId: String = getPropertyValue(
-        properties, "song_request_redeem_id", twitchBotConfigFile.path
+        properties, "songRequestRedeemId", twitchBotConfigFile.path
     )
 
     var songRequestEmotes: List<String> = getPropertyValue(
-        properties, "song_request_emotes", twitchBotConfigFile.path
+        properties, "songRequestEmotes", twitchBotConfigFile.path
     ).split(",")
         set(value) {
             field = value
-            properties.setProperty("song_request_emotes", value.joinToPropertiesString(","))
+            properties.setProperty("songRequestEmotes", value.joinToPropertiesString(","))
             savePropertiesToFile()
         }
 
-    var blacklistEmote: String = getPropertyValue(properties, "blacklist_emote", twitchBotConfigFile.path)
+    var blacklistMessage: String = getPropertyValue(properties, "blacklistMessage", twitchBotConfigFile.path)
         set(value) {
             field = value
-            properties.setProperty("blacklist_emote", value)
+            properties.setProperty("blacklistMessage", value)
             savePropertiesToFile()
         }
 

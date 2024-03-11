@@ -256,7 +256,7 @@ fun setupProject(twitchToken: String, spotifyId: String, spotifySecret: String) 
                 }
 
                 if(file.name == spotifyConfigFileName) {
-                    content = "spotify_client_id=$spotifyId"
+                    content = "spotifyClientId=$spotifyId"
                 }
 
                 if(content != "") {

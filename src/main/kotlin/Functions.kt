@@ -115,10 +115,7 @@ suspend fun setupTwitchBot(): TwitchClient {
         )
 
         if(isUserBlacklisted(userName, userId)) {
-            sendMessageToTwitchChatAndLogIt(
-                chat,
-                "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}"
-            )
+            sendMessageToTwitchChatAndLogIt(chat, "$userName ${TwitchBotConfig.blacklistMessage}")
             return@onEvent
         }
 
@@ -455,11 +452,11 @@ private suspend fun updateQueuePatch(query: String): SongRequestResultPatch {
         )
     }
 
-    if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
-        logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+    if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthSongRequestMinutes) {
+        logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}")
         return SongRequestResultPatch(
             track = null,
-            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
+            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}."
         )
     }
 
@@ -531,11 +528,11 @@ private suspend fun updateQueue(query: String): SongRequestResult {
         )
     }
 
-    if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
-        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+    if(result.length.milliseconds > SpotifyConfig.maximumLengthSongRequestMinutes) {
+        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}")
         return SongRequestResult(
             track = null,
-            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
+            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}."
         )
     }
 
@@ -1000,7 +997,7 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
 
 /**
  * Checks if the user is eligible for using the add song command. The eligibility is set
- * in the parameter add_song_command_security_level_on_start_up
+ * in the parameter addSongCommandSecurityLevel
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @param userName {String} username of the user
  * @return {Boolean} true, if the user is eligible, else false
@@ -1100,7 +1097,7 @@ suspend fun getAddSongPlaylistNameString(): String {
 
 /**
  * Checks if the user is eligible for using the skip song command. The eligibility is set
- * in the parameter add_song_command_security_level_on_start_up
+ * in the parameter skipSongCommandSecurityLevel
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @param userName {String} username of the user
  * @return {Boolean} true, if the user is eligible, else false
@@ -1118,7 +1115,7 @@ fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userNa
 
 /**
  * Checks if the user is eligible for using the remove song from queue command. The eligibility is set
- * in the parameter remove_song_from_queue_command_security_level_on_start_up
+ * in the parameter removeSongFromQueueCommandSecurityLevel
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @param userName {String} username of the user
  * @return {Boolean} true, if the user is eligible, else false

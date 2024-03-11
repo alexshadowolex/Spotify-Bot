@@ -104,7 +104,7 @@ suspend fun main() = try {
             app()
         }
 
-        if (BotConfig.showNewVersionAvailableWindowOnStartUp && isNewAppReleaseAvailable()) {
+        if (BotConfig.isNewVersionCheckEnabled && isNewAppReleaseAvailable()) {
             val isNewVersionWindowOpen = remember{ mutableStateOf(true) }
             if(isNewVersionWindowOpen.value) {
                 Window(

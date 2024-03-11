@@ -31,25 +31,25 @@ object SpotifyConfig {
 
     val spotifyClientSecret: String = File("data\\tokens\\spotifyClientSecret.txt").readText()
 
-    val spotifyClientId: String = getPropertyValue(properties, "spotify_client_id", spotifyConfigFile.path)
+    val spotifyClientId: String = getPropertyValue(properties, "spotifyClientId", spotifyConfigFile.path)
 
     var playlistIdForAddSongCommand: String = getPropertyValue(
-        properties, "playlist_id_for_add_song_command", spotifyConfigFile.path
+        properties, "playlistIdForAddSongCommand", spotifyConfigFile.path
     )
         set(value) {
             field = value
-            properties.setProperty("playlist_id_for_add_song_command", value)
+            properties.setProperty("playlistIdForAddSongCommand", value)
             savePropertiesToFile()
         }
 
     var playlistNameForAddSongCommand = ""
 
-    var maximumLengthMinutesSongRequest: Duration = try {
-        getPropertyValue(properties, "maximum_length_minutes_song_request", spotifyConfigFile.path)
+    var maximumLengthSongRequestMinutes: Duration = try {
+        getPropertyValue(properties, "maximumLengthSongRequestMinutes", spotifyConfigFile.path)
             .toDouble().minutes
     } catch (e: NumberFormatException) {
         logger.info(
-            "Invalid number found while parsing property maximum_length_minutes_song_request, " +
+            "Invalid number found while parsing property maximumLengthSongRequestMinutes, " +
             "setting to maximum length"
         )
         Double.MAX_VALUE.minutes
@@ -57,28 +57,27 @@ object SpotifyConfig {
         set(value) {
             field = value
             properties.setProperty(
-                "maximum_length_minutes_song_request", value.toDouble(DurationUnit.MINUTES).toString()
+                "maximumLengthSongRequestMinutes", value.toDouble(DurationUnit.MINUTES).toString()
             )
             savePropertiesToFile()
         }
 
-    // TODO add configListSeparator="," to BotConfig.properties
     var blockedSongLinks: List<String> = getPropertyValue(
-        properties, "blocked_song_links", spotifyConfigFile.path
+        properties, "blockedSongLinks", spotifyConfigFile.path
     ).split(",")
         set(value) {
             field = value
-            properties.setProperty("blocked_song_links", value.joinToPropertiesString(","))
+            properties.setProperty("blockedSongLinks", value.joinToPropertiesString(","))
             savePropertiesToFile()
         }
 
     var blockedSongArtists: List<String> = getPropertyValue(
-        properties, "blocked_song_artists", spotifyConfigFile.path
+        properties, "blockedSongArtists", spotifyConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
         set(value) {
             field = value
             properties.setProperty(
-                "blocked_song_artists", value.joinToPropertiesString(",").lowercase(Locale.getDefault())
+                "blockedSongArtists", value.joinToPropertiesString(",").lowercase(Locale.getDefault())
             )
             savePropertiesToFile()
         }

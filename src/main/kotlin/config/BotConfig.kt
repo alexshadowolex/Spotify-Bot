@@ -30,103 +30,103 @@ object BotConfig {
     }
 
 
-    var isSongRequestCommandEnabledByDefault = getPropertyValue(
-        properties, "is_song_request_command_enabled_by_default", botConfigFile.path
+    var isSongRequestCommandEnabled = getPropertyValue(
+        properties, "isSongRequestCommandEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_song_request_command_enabled_by_default", value.toString())
+            properties.setProperty("isSongRequestCommandEnabled", value.toString())
             savePropertiesToFile()
         }
 
     var blacklistedUsers = getPropertyValue(
-        properties, "blacklisted_users", botConfigFile.path
+        properties, "blacklistedUsers", botConfigFile.path
     ).split(",")
         set(value) {
             field = value
-            properties.setProperty("blacklisted_users", value.joinToPropertiesString(","))
+            properties.setProperty("blacklistedUsers", value.joinToPropertiesString(","))
             savePropertiesToFile()
         }
 
-    var isSpotifySongNameGetterEnabledByDefault = getPropertyValue(
-        properties, "is_spotify_song_name_getter_enabled_by_default", botConfigFile.path
+    var isSpotifySongNameGetterEnabled = getPropertyValue(
+        properties, "isSpotifySongNameGetterEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_spotify_song_name_getter_enabled_by_default", value.toString())
+            properties.setProperty("isSpotifySongNameGetterEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var showNewVersionAvailableWindowOnStartUp = getPropertyValue(
-        properties, "show_new_version_available_window_on_start_up", botConfigFile.path
+    var isNewVersionCheckEnabled = getPropertyValue(
+        properties, "isNewVersionCheckEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("show_new_version_available_window_on_start_up", value.toString())
+            properties.setProperty("isNewVersionCheckEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var isSongRequestEnabledByDefault = getPropertyValue(
-        properties, "is_song_request_enabled_by_default", botConfigFile.path
+    var isSongRequestEnabled = getPropertyValue(
+        properties, "isSongRequestEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_song_request_enabled_by_default", value.toString())
+            properties.setProperty("isSongRequestEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var isSongInfoCommandEnabledByDefault = getPropertyValue(
-        properties, "is_song_info_command_enabled_by_default", botConfigFile.path
+    var isSongInfoCommandEnabled = getPropertyValue(
+        properties, "isSongInfoCommandEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_song_info_command_enabled_by_default", value.toString())
+            properties.setProperty("isSongInfoCommandEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var isEmptySongDisplayFilesOnPauseEnabledByDefault = getPropertyValue(
-        properties, "is_empty_song_display_files_on_pause_enabled_by_default", botConfigFile.path
+    var isEmptySongDisplayFilesOnPauseEnabled = getPropertyValue(
+        properties, "isEmptySongDisplayFilesOnPauseEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_empty_song_display_files_on_pause_enabled_by_default", value.toString())
+            properties.setProperty("isEmptySongDisplayFilesOnPauseEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var isAddSongCommandEnabledByDefault = getPropertyValue(
-        properties, "is_add_song_command_enabled_by_default", botConfigFile.path
+    var isAddSongCommandEnabled = getPropertyValue(
+        properties, "isAddSongCommandEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_add_song_command_enabled_by_default", value.toString())
+            properties.setProperty("isAddSongCommandEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var isSkipSongCommandEnabledByDefault = getPropertyValue(
-        properties, "is_skip_song_command_enabled_by_default", botConfigFile.path
+    var isSkipSongCommandEnabled = getPropertyValue(
+        properties, "isSkipSongCommandEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_skip_song_command_enabled_by_default", value.toString())
+            properties.setProperty("isSkipSongCommandEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var isRemoveSongFromQueueCommandEnabledByDefault = getPropertyValue(
-        properties, "is_remove_song_from_queue_command_enabled_by_default", botConfigFile.path
+    var isRemoveSongFromQueueCommandEnabled = getPropertyValue(
+        properties, "isRemoveSongFromQueueCommandEnabled", botConfigFile.path
     ).toBoolean()
         set(value) {
             field = value
-            properties.setProperty("is_remove_song_from_queue_command_enabled_by_default", value.toString())
+            properties.setProperty("isRemoveSongFromQueueCommandEnabled", value.toString())
             savePropertiesToFile()
         }
 
-    var addSongCommandSecurityLevelOnStartUp = try {
+    var addSongCommandSecurityLevel = try {
         CustomCommandPermissions.valueOf(
-            getPropertyValue(properties, "add_song_command_security_level_on_start_up", botConfigFile.path)
+            getPropertyValue(properties, "addSongCommandSecurityLevel", botConfigFile.path)
         )
     } catch (e: Exception) {
         displayEnumParsingErrorWindow(
-            propertyName = "add_song_command_security_level_on_start_up",
+            propertyName = "addSongCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
             enumClassValues = CustomCommandPermissions.values().map { it.toString() }
@@ -135,18 +135,18 @@ object BotConfig {
     }
         set(value) {
             field = value
-            properties.setProperty("add_song_command_security_level_on_start_up", value.toString())
+            properties.setProperty("addSongCommandSecurityLevel", value.toString())
             savePropertiesToFile()
         }
 
-    var skipSongCommandSecurityLevelOnStartUp = try {
+    var skipSongCommandSecurityLevel = try {
         CustomCommandPermissions.valueOf(
-            getPropertyValue(properties, "skip_song_command_security_level_on_start_up", botConfigFile.path)
+            getPropertyValue(properties, "skipSongCommandSecurityLevel", botConfigFile.path)
         )
 
     } catch (e: Exception) {
         displayEnumParsingErrorWindow(
-            propertyName = "skip_song_command_security_level_on_start_up",
+            propertyName = "skipSongCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
             enumClassValues = CustomCommandPermissions.values().map { it.toString() }
@@ -155,45 +155,45 @@ object BotConfig {
     }
         set(value) {
             field = value
-            properties.setProperty("skip_song_command_security_level_on_start_up", value.toString())
+            properties.setProperty("skipSongCommandSecurityLevel", value.toString())
             savePropertiesToFile()
         }
 
     var customGroupUserNamesAddSongCommand: List<String> = getPropertyValue(
-        properties, "custom_group_user_names_add_song_command", botConfigFile.path
+        properties, "customGroupUserNamesAddSongCommand", botConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
         set(value) {
             field = value
             properties.setProperty(
-                "custom_group_user_names_add_song_command",
+                "customGroupUserNamesAddSongCommand",
                 value.joinToPropertiesString(",").lowercase(Locale.getDefault())
             )
             savePropertiesToFile()
         }
 
     var customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
-        properties, "custom_group_user_names_skip_song_command", botConfigFile.path
+        properties, "customGroupUserNamesSkipSongCommand", botConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
         set(value) {
             field = value
             properties.setProperty(
-                "custom_group_user_names_skip_song_command",
+                "customGroupUserNamesSkipSongCommand",
                 value.joinToPropertiesString(",").lowercase(Locale.getDefault())
             )
             savePropertiesToFile()
         }
 
-    var removeSongFromQueueCommandSecurityLevelOnStartUp = try {
+    var removeSongFromQueueCommandSecurityLevel = try {
         CustomCommandPermissions.valueOf(
             getPropertyValue(
                 properties,
-                "remove_song_from_queue_command_security_level_on_start_up",
+                "removeSongFromQueueCommandSecurityLevel",
                 botConfigFile.path
             )
         )
     } catch (e: Exception) {
         displayEnumParsingErrorWindow(
-            propertyName = "remove_song_from_queue_command_security_level_on_start_up",
+            propertyName = "removeSongFromQueueCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
             enumClassValues = CustomCommandPermissions.values().map { it.toString() }
@@ -202,17 +202,17 @@ object BotConfig {
     }
         set(value) {
             field = value
-            properties.setProperty("remove_song_from_queue_command_security_level_on_start_up", value.toString())
+            properties.setProperty("removeSongFromQueueCommandSecurityLevel", value.toString())
             savePropertiesToFile()
         }
 
     var customGroupUserNamesRemoveSongFromQueueCommand: List<String> = getPropertyValue(
-        properties, "custom_group_user_names_remove_song_from_queue_command", botConfigFile.path
+        properties, "customGroupUserNamesRemoveSongFromQueueCommand", botConfigFile.path
     ).lowercase(Locale.getDefault()).split(",")
         set(value) {
             field = value
             properties.setProperty(
-                "custom_group_user_names_remove_song_from_queue_command",
+                "customGroupUserNamesRemoveSongFromQueueCommand",
                 value.joinToPropertiesString(",").lowercase(Locale.getDefault())
             )
             savePropertiesToFile()
