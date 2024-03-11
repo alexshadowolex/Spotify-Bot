@@ -51,17 +51,61 @@ val lightColorPalette = lightColors(
     onBackground = Color.Black,
 )
 
-lateinit var isSongRequestEnabled: MutableState<Boolean>
-lateinit var isSongRequestEnabledAsCommand: MutableState<Boolean>
-lateinit var isSpotifySongNameGetterEnabled: MutableState<Boolean>
-lateinit var isSongInfoCommandEnabled: MutableState<Boolean>
-lateinit var isEmptySongDisplayFilesOnPauseEnabled: MutableState<Boolean>
-lateinit var isAddSongCommandEnabled: MutableState<Boolean>
-lateinit var addSongCommandSecurityLevel: MutableState<CustomCommandPermissions>
-lateinit var isSkipSongCommandEnabled: MutableState<Boolean>
-lateinit var skipSongCommandSecurityLevel: MutableState<CustomCommandPermissions>
-lateinit var isRemoveSongFromQueueCommandEnabled: MutableState<Boolean>
-lateinit var removeSongFromQueueCommandSecurityLevel: MutableState<CustomCommandPermissions>
+var isSongRequestEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSongRequestEnabled = value.value
+    }
+var isSongRequestEnabledAsCommand = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSongRequestCommandEnabled = value.value
+    }
+var isSpotifySongNameGetterEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSpotifySongNameGetterEnabled = value.value
+    }
+var isSongInfoCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSongInfoCommandEnabled = value.value
+    }
+var isEmptySongDisplayFilesOnPauseEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isEmptySongDisplayFilesOnPauseEnabled = value.value
+    }
+var isAddSongCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isAddSongCommandEnabled = value.value
+    }
+var addSongCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.addSongCommandSecurityLevel = value.value
+    }
+var isSkipSongCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSkipSongCommandEnabled = value.value
+    }
+var skipSongCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.skipSongCommandSecurityLevel = value.value
+    }
+var isRemoveSongFromQueueCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isRemoveSongFromQueueCommandEnabled = value.value
+    }
+var removeSongFromQueueCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.removeSongFromQueueCommandSecurityLevel = value.value
+    }
 
 @Composable
 @Preview
