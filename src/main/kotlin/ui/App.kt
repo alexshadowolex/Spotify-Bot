@@ -1,38 +1,25 @@
 package ui
 
 import CustomCommandPermissions
+import NavController
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import backgroundCoroutineScope
+import androidx.compose.ui.graphics.vector.ImageVector
 import config.BotConfig
-import config.BuildInfo
-import isSongRequestEnabledAsRedeem
 import isWindowsInDarkMode
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import logger
-import java.awt.Desktop
-import java.net.URI
+import rememberNavController
+import ui.navigation.NavigationHost
+import ui.navigation.composable
+import ui.screens.generalSettingsScreen
+import ui.screens.homeScreen
 import kotlin.time.Duration.Companion.seconds
 
 val darkColorPalette = darkColors(
@@ -107,6 +94,7 @@ var removeSongFromQueueCommandSecurityLevel = mutableStateOf(CustomCommandPermis
         BotConfig.removeSongFromQueueCommandSecurityLevel = value.value
     }
 
+
 @Composable
 @Preview
 fun app() {
@@ -121,6 +109,10 @@ fun app() {
 
     initializeFlagVariables()
 
+    val screens = Screen.values().toList()
+    val navController by rememberNavController(Screen.HomeScreen.name)
+    val currentScreen by remember { navController.currentScreen }
+
     MaterialTheme(
         colors = if (isInDarkMode) {
             darkColorPalette
@@ -129,433 +121,86 @@ fun app() {
         }
     ) {
         Scaffold {
-            Column (
-                modifier = Modifier
-                    .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
-            ) {
-                songRequestRow()
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Song Name Getter ",
-                    true,
-                    null,
-                    isSpotifySongNameGetterEnabled
-                )
-
-                toggleFunctionalityRow(
-                    "Empty Song Display Files on Pause ",
-                    false,
-                    isSpotifySongNameGetterEnabled,
-                    isEmptySongDisplayFilesOnPauseEnabled
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Song Info Command ",
-                    true,
-                    null,
-                    isSongInfoCommandEnabled
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Add Song Command ",
-                    true,
-                    null,
-                    isAddSongCommandEnabled
-                )
-
-                Row(
+            Column {
+                Box(
                     modifier = Modifier
-                        .padding(top = 3.dp)
                         .fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Security Level of Add Song Command: ",
+                    Row {
+                        BottomNavigation(
                             modifier = Modifier
-                                .align(Alignment.Start)
-                        )
+                                .fillMaxWidth()
+                        ) {
+                            screens.forEach {
+                                BottomNavigationItem(
+                                    selected = currentScreen == it.name,
+                                    icon = {
+                                        Icon(
+                                            imageVector = it.icon,
+                                            contentDescription = it.label
+                                        )
+                                    },
+                                    label = {
+                                        Text(it.label)
+                                    },
+                                    alwaysShowLabel = true,
+                                    onClick = {
+                                        navController.navigate(it.name)
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
 
-                commandSecurityMultiToggleButton(
-                    currentSelection = addSongCommandSecurityLevel.value,
-                    toggleStates = listOf(
-                        CustomCommandPermissions.BROADCASTER,
-                        CustomCommandPermissions.MODERATOR,
-                        CustomCommandPermissions.CUSTOM
-                    ),
-                    conditionClickable = isAddSongCommandEnabled,
-                    functionalityDisplayName = "Add Song Command",
-                    onToggleChange = {
-                        addSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
-                    }
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Skip Song Command ",
-                    true,
-                    null,
-                    isSkipSongCommandEnabled
-                )
-
-                Row(
+                Box(
                     modifier = Modifier
-                        .padding(top = 3.dp)
-                        .fillMaxWidth()
+                        .fillMaxSize()
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Security Level of Skip Song Command: ",
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
+                    customNavigationHost(
+                        navController = navController
+                    )
                 }
-
-                commandSecurityMultiToggleButton(
-                    currentSelection = skipSongCommandSecurityLevel.value,
-                    toggleStates = listOf(
-                        CustomCommandPermissions.BROADCASTER,
-                        CustomCommandPermissions.MODERATOR,
-                        CustomCommandPermissions.CUSTOM
-                    ),
-                    conditionClickable = isSkipSongCommandEnabled,
-                    functionalityDisplayName = "Skip Song Command",
-                    onToggleChange = {
-                        skipSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
-                    }
-                )
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Remove Song From Queue Command ",
-                    true,
-                    null,
-                    isRemoveSongFromQueueCommandEnabled
-                )
-
-                Row(
-                    modifier = Modifier
-                        .padding(top = 3.dp)
-                        .fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Security Level of Remove Song From Queue Command: ",
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
-                }
-
-                commandSecurityMultiToggleButton(
-                    currentSelection = removeSongFromQueueCommandSecurityLevel.value,
-                    toggleStates = listOf(
-                        CustomCommandPermissions.BROADCASTER,
-                        CustomCommandPermissions.MODERATOR,
-                        CustomCommandPermissions.CUSTOM
-                    ),
-                    conditionClickable = isRemoveSongFromQueueCommandEnabled,
-                    functionalityDisplayName = "Remove Song From Queue Command",
-                    onToggleChange = {
-                        removeSongFromQueueCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
-                    }
-                )
-
-                sectionDivider()
-
-                versionAndCreditsRow()
             }
         }
     }
 }
 
-@Composable
-fun sectionDivider() {
-    Divider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 5.dp),
-        color = MaterialTheme.colors.primary,
-        thickness = 2.dp
+
+// Navigation
+enum class Screen(
+    val label: String,
+    val icon: ImageVector
+) {
+    HomeScreen(
+        label = "Home",
+        icon = Icons.Filled.Home
+    ),
+    GeneralSettingsScreen(
+        label = "General Settings",
+        icon = Icons.Filled.Settings
     )
 }
 
 @Composable
-fun toggleFunctionalityRow(
-    labelPrefixText: String,
-    showLabelSuffixText: Boolean,
-    conditionClickable: MutableState<Boolean>?,
-    functionalityFlag: MutableState<Boolean>
+fun customNavigationHost(
+    navController: NavController
 ) {
-    val switchLabelWidthPercentage = 0.9F
-
-    Row {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(switchLabelWidthPercentage)
-                .align(Alignment.CenterVertically)
-        ) {
-            Text(
-                text = labelPrefixText +
-                        if(showLabelSuffixText) {
-                            if (functionalityFlag.value) {
-                                "Enabled"
-                            } else {
-                                "Disabled"
-                            }
-                        } else "",
-                modifier = Modifier
-                    .align(Alignment.Start)
-            )
+    NavigationHost(navController) {
+        composable(Screen.HomeScreen.name) {
+            homeScreen()
         }
+    }.build()
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterVertically)
-        ) {
-            Switch(
-                checked = functionalityFlag.value,
-                onCheckedChange = {
-                    functionalityFlag.value = it
-                },
-                modifier = Modifier
-                    .align(Alignment.End),
-                enabled = conditionClickable?.value ?: true
-            )
+    NavigationHost(navController) {
+        composable(Screen.GeneralSettingsScreen.name) {
+            generalSettingsScreen()
         }
-    }
+    }.build()
 }
 
 @Composable
-fun songRequestRow() {
-    Row (
-        modifier = Modifier
-            .padding(top = 5.dp)
-    ) {
-        Column {
-            toggleFunctionalityRow(
-                "Song Request ",
-                true,
-                null,
-                isSongRequestEnabled
-            )
-
-            Row(
-                modifier = Modifier
-                    .padding(top = 3.dp)
-                    .fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Song Request as...",
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                    )
-                }
-            }
-
-            Row (
-                modifier = Modifier
-                    .padding(top = 5.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(0.33F)
-                        .align(Alignment.CenterVertically)
-                        .padding(start = 15.dp)
-                ) {
-                    Text(
-                        text = "Redeem",
-                        modifier = Modifier
-                            .align(Alignment.Start),
-                        color = if(isSongRequestEnabledAsRedeem()) {
-                            MaterialTheme.colors.primary
-                        } else {
-                            MaterialTheme.colors.onBackground
-                        }
-                    )
-                }
-
-                Column (
-                    modifier = Modifier
-                        .fillMaxWidth(0.5F)
-                        .align(Alignment.CenterVertically)
-                ) {
-                    Switch(
-                        checked = isSongRequestEnabledAsCommand.value,
-                        onCheckedChange = {
-                            isSongRequestEnabledAsCommand.value = it
-                            logger.info("Changed song request type to " + if(isSongRequestEnabledAsCommand.value) {
-                                    "Command"
-                                } else {
-                                    "Redeem"
-                                }
-                            )
-                        },
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .fillMaxWidth()
-                            .scale(1.5F),
-                        enabled = isSongRequestEnabled.value
-                    )
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.CenterVertically)
-                        .padding(end = 15.dp)
-                ) {
-                    Text(
-                        text = "Command",
-                        modifier = Modifier
-                            .align(Alignment.End),
-                        color = if(isSongRequestEnabledAsCommand.value) {
-                            MaterialTheme.colors.primary
-                        } else {
-                            MaterialTheme.colors.onBackground
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun versionAndCreditsRow() {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Bottom)
-        ) {
-            Row (
-                modifier = Modifier
-                    .align(Alignment.End),
-            ) {
-                Text(
-                    text = "Bot Version v${BuildInfo.version} by ",
-                    fontSize = 12.sp
-                )
-
-                Text(
-                    style = MaterialTheme.typography.body1,
-                    text = "alexshadowolex",
-                    modifier = Modifier
-                        .clickable {
-                            logger.info("Clicked on alexshadowolex Link")
-                            backgroundCoroutineScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    Desktop.getDesktop()
-                                        .browse(URI.create("https://www.twitch.tv/alexshadowolex"))
-                                }
-                            }
-                        }
-                        .pointerHoverIcon(PointerIcon.Hand),
-                    textDecoration = TextDecoration.Underline,
-                    color = MaterialTheme.colors.primary,
-                    fontSize = 12.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun commandSecurityMultiToggleButton(
-    currentSelection: Any,
-    toggleStates: List<Any>,
-    conditionClickable: MutableState<Boolean>,
-    functionalityDisplayName: String,
-    onToggleChange: (String) -> Unit
-) {
-    val selectedTint = MaterialTheme.colors.primary
-    val unselectedTint = Color.Unspecified
-    val widthPerColumn = listOf(0.33F, 0.5F, 1F)
-
-    Row(
-        modifier = Modifier
-            .padding(top = 5.dp, bottom = 5.dp)
-            .clip(shape = RoundedCornerShape(20.dp))
-            .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(20.dp))
-    ) {
-        toggleStates.forEachIndexed { index, toggleState ->
-            val isSelected = currentSelection == toggleState
-            val backgroundTint = if (isSelected) {
-                selectedTint
-            } else {
-                unselectedTint
-            }
-
-            val textColor = if (isSelected) {
-                MaterialTheme.colors.onPrimary
-            } else {
-                Color.Unspecified
-            }
-
-            Column (
-                modifier = Modifier
-                    .background(backgroundTint)
-                    .fillMaxWidth(widthPerColumn[index])
-                    .toggleable(
-                        value = isSelected,
-                        enabled = conditionClickable.value,
-                        onValueChange = { selected ->
-                            if (selected) {
-                                logger.info("clicked on multi selection entry $toggleState for $functionalityDisplayName")
-                                onToggleChange(toggleState.toString())
-                            }
-                        }
-                    )
-                    .pointerHoverIcon(
-                        if(conditionClickable.value) {
-                            PointerIcon.Hand
-                        } else {
-                            PointerIcon.Default
-                        }
-                    )
-            ) {
-                Text(
-                    toggleState.toString(),
-                    color = textColor,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun initializeFlagVariables() {
+fun initializeFlagVariables() {
     isSongRequestEnabled = remember { mutableStateOf(BotConfig.isSongRequestEnabled) }
     isSongRequestEnabledAsCommand = remember { mutableStateOf(BotConfig.isSongRequestCommandEnabled) }
     isSpotifySongNameGetterEnabled = remember { mutableStateOf(BotConfig.isSpotifySongNameGetterEnabled) }

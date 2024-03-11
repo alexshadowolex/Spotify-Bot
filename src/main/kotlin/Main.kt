@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
 import ui.app
 import ui.isEmptySongDisplayFilesOnPauseEnabled
 import ui.isSpotifySongNameGetterEnabled
-import ui.newVersionScreen
+import ui.screens.newVersionScreen
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -95,7 +95,7 @@ suspend fun main() = try {
         }
 
         Window(
-            state = WindowState(size = DpSize(400.dp, 720.dp)),
+            state = WindowState(size = DpSize(400.dp, 800.dp)),
             resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,
