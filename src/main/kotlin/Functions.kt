@@ -1,4 +1,3 @@
-import androidx.compose.runtime.MutableState
 import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.endpoints.pub.SearchApi
 import com.adamratzman.spotify.models.SimpleArtist
@@ -27,7 +26,6 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
-import ui.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
@@ -799,7 +797,7 @@ fun startSpotifySongGetter() {
                 continue
             }
 
-            val isPlaying = if(isEmptySongDisplayFilesOnPauseEnabled.value) {
+            val isPlaying = if(BotConfig.isEmptySongDisplayFilesOnPauseEnabled) {
                 isSpotifyPlaying()
             } else {
                 true
@@ -832,7 +830,7 @@ fun startSpotifySongGetter() {
  */
 fun isSpotifySongNameGetterEnabled(): Boolean {
     return try {
-        isSpotifySongNameGetterEnabled.value
+        BotConfig.isSpotifySongNameGetterEnabled
     } catch (e: Exception) {
         false
     }
@@ -928,7 +926,7 @@ fun emptyAllSongDisplayFiles() {
  * @return {Boolean} true, if song request redeem is enabled, else false
  */
 fun isSongRequestEnabledAsRedeem(): Boolean {
-    return !isSongRequestEnabledAsCommand.value
+    return !BotConfig.isSongRequestCommandEnabled
 }
 
 
@@ -1007,7 +1005,7 @@ fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userNam
     return isUserEligibleForCommand(
         permissions,
         userName,
-        addSongCommandSecurityLevel,
+        BotConfig.addSongCommandSecurityLevel,
         BotConfig.customGroupUserNamesAddSongCommand
     )
 }
@@ -1107,7 +1105,7 @@ fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userNa
     return isUserEligibleForCommand(
         permissions,
         userName,
-        skipSongCommandSecurityLevel,
+        BotConfig.skipSongCommandSecurityLevel,
         BotConfig.customGroupUserNamesSkipSongCommand
     )
 }
@@ -1125,7 +1123,7 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
     return isUserEligibleForCommand(
         permissions,
         userName,
-        removeSongFromQueueCommandSecurityLevel,
+        BotConfig.removeSongFromQueueCommandSecurityLevel,
         BotConfig.customGroupUserNamesRemoveSongFromQueueCommand
     )
 }
@@ -1146,13 +1144,13 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 fun isUserEligibleForCommand(
     permissions: Set<CommandPermission>,
     userName: String,
-    commandSecurityLevel: MutableState<CustomCommandPermissions>,
+    commandSecurityLevel: CustomCommandPermissions,
     customGroup: List<String>
 ): Boolean {
-    return if(commandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
+    return if(commandSecurityLevel == CustomCommandPermissions.CUSTOM) {
         isUserPartOfCustomGroupOrBroadcaster(userName, customGroup)
     } else {
-        permissions.contains(CommandPermission.valueOf(commandSecurityLevel.value.toString()))
+        permissions.contains(CommandPermission.valueOf(commandSecurityLevel.toString()))
     }
 }
 

@@ -1,12 +1,11 @@
 package commands
 
+import config.BotConfig
 import config.TwitchBotConfig
 import handleSongRequestQuery
 import handler.Command
 import logger
 import sendMessageToTwitchChatAndLogIt
-import ui.isSongRequestEnabled
-import ui.isSongRequestEnabledAsCommand
 import kotlin.time.Duration.Companion.seconds
 
 val songRequestCommand = Command(
@@ -14,7 +13,7 @@ val songRequestCommand = Command(
     handler = {arguments ->
         val query = arguments.joinToString(" ").trim()
 
-        if(!isSongRequestEnabledAsCommand.value || !isSongRequestEnabled.value) {
+        if(!BotConfig.isSongRequestCommandEnabled || !BotConfig.isSongRequestEnabled) {
             logger.info("SongRequestCommand disabled. Aborting execution")
             return@Command
         }

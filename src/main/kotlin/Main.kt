@@ -23,9 +23,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import ui.Screen
 import ui.app
-import ui.isEmptySongDisplayFilesOnPauseEnabled
-import ui.isSpotifySongNameGetterEnabled
 import ui.screens.newVersionScreen
 import java.io.File
 import java.io.PrintWriter
@@ -49,6 +48,8 @@ val httpClient = HttpClient(CIO) {
 
 lateinit var spotifyClient: SpotifyClientApi
 var currentSongString = ""
+var windowWidth = mutableStateOf(Screen.HomeScreen.width)
+var windowHeight = mutableStateOf(Screen.HomeScreen.height)
 
 
 suspend fun main() = try {
@@ -87,7 +88,7 @@ suspend fun main() = try {
 
             onDispose {
                 sendMessageToTwitchChatAndLogIt(twitchClient.chat, "Bot shutting down peepoLeave")
-                if(isEmptySongDisplayFilesOnPauseEnabled.value && isSpotifySongNameGetterEnabled.value) {
+                if(BotConfig.isEmptySongDisplayFilesOnPauseEnabled && BotConfig.isSpotifySongNameGetterEnabled) {
                     emptyAllSongDisplayFiles()
                 }
                 logger.info("App shutting down...")
@@ -95,7 +96,7 @@ suspend fun main() = try {
         }
 
         Window(
-            state = WindowState(size = DpSize(400.dp, 800.dp)),
+            state = WindowState(size = DpSize(windowWidth.value, windowHeight.value)),
             resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,

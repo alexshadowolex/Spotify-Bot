@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,15 +24,73 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
+import config.BotConfig
 import config.BuildInfo
 import isSongRequestEnabledAsRedeem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logger
-import ui.*
 import java.awt.Desktop
 import java.net.URI
+
+
+private var isSongRequestEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSongRequestEnabled = value.value
+    }
+private var isSongRequestEnabledAsCommand = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSongRequestCommandEnabled = value.value
+    }
+private var isSpotifySongNameGetterEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSpotifySongNameGetterEnabled = value.value
+    }
+private var isSongInfoCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSongInfoCommandEnabled = value.value
+    }
+private var isEmptySongDisplayFilesOnPauseEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isEmptySongDisplayFilesOnPauseEnabled = value.value
+    }
+private var isAddSongCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isAddSongCommandEnabled = value.value
+    }
+private var addSongCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.addSongCommandSecurityLevel = value.value
+    }
+private var isSkipSongCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isSkipSongCommandEnabled = value.value
+    }
+private var skipSongCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.skipSongCommandSecurityLevel = value.value
+    }
+private var isRemoveSongFromQueueCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isRemoveSongFromQueueCommandEnabled = value.value
+    }
+private var removeSongFromQueueCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.removeSongFromQueueCommandSecurityLevel = value.value
+    }
+
 
 @Composable
 fun generalSettingsScreen() {
@@ -460,4 +520,20 @@ fun commandSecurityMultiToggleButton(
             }
         }
     }
+}
+
+
+@Composable
+fun initializeFlagVariables() {
+    isSongRequestEnabled = remember { mutableStateOf(BotConfig.isSongRequestEnabled) }
+    isSongRequestEnabledAsCommand = remember { mutableStateOf(BotConfig.isSongRequestCommandEnabled) }
+    isSpotifySongNameGetterEnabled = remember { mutableStateOf(BotConfig.isSpotifySongNameGetterEnabled) }
+    isSongInfoCommandEnabled = remember { mutableStateOf(BotConfig.isSongInfoCommandEnabled) }
+    isEmptySongDisplayFilesOnPauseEnabled = remember { mutableStateOf(BotConfig.isEmptySongDisplayFilesOnPauseEnabled) }
+    isAddSongCommandEnabled = remember { mutableStateOf(BotConfig.isAddSongCommandEnabled) }
+    addSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.addSongCommandSecurityLevel) }
+    isSkipSongCommandEnabled = remember { mutableStateOf(BotConfig.isSkipSongCommandEnabled) }
+    skipSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.skipSongCommandSecurityLevel) }
+    isRemoveSongFromQueueCommandEnabled = remember { mutableStateOf(BotConfig.isRemoveSongFromQueueCommandEnabled) }
+    removeSongFromQueueCommandSecurityLevel = remember { mutableStateOf(BotConfig.removeSongFromQueueCommandSecurityLevel) }
 }
