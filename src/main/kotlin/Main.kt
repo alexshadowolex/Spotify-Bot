@@ -56,6 +56,7 @@ suspend fun main() = try {
     setupLogging()
     val twitchClient = setupTwitchBot()
     val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())
+    var alreadyCheckedNewVersion = false
 
     application {
         DisposableEffect(Unit) {
@@ -105,20 +106,23 @@ suspend fun main() = try {
             app()
         }
 
-        if (BotConfig.isNewVersionCheckEnabled && isNewAppReleaseAvailable()) {
-            val isNewVersionWindowOpen = remember{ mutableStateOf(true) }
-            if(isNewVersionWindowOpen.value) {
-                Window(
-                    state = WindowState(size = DpSize(500.dp, 150.dp)),
-                    resizable = false,
-                    title = "New Version Available!",
-                    onCloseRequest = {
-                        isNewVersionWindowOpen.value = false
-                    },
-                    icon = painterResource("logo.png")
-                ) {
-                    window.requestFocus()
-                    newVersionScreen(isNewVersionWindowOpen)
+        if (BotConfig.isNewVersionCheckEnabled && !alreadyCheckedNewVersion) {
+            alreadyCheckedNewVersion = true
+            if(isNewAppReleaseAvailable()) {
+                val isNewVersionWindowOpen = remember { mutableStateOf(true) }
+                if (isNewVersionWindowOpen.value) {
+                    Window(
+                        state = WindowState(size = DpSize(500.dp, 150.dp)),
+                        resizable = false,
+                        title = "New Version Available!",
+                        onCloseRequest = {
+                            isNewVersionWindowOpen.value = false
+                        },
+                        icon = painterResource("logo.png")
+                    ) {
+                        window.requestFocus()
+                        newVersionScreen(isNewVersionWindowOpen)
+                    }
                 }
             }
         }
