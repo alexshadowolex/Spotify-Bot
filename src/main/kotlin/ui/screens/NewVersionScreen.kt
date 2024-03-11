@@ -1,4 +1,4 @@
-package ui
+package ui.screens
 
 import GITHUB_LATEST_VERSION_LINK
 import androidx.compose.foundation.clickable
@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logger
+import ui.darkColorPalette
 import java.awt.Desktop
 import java.net.URI
 
