@@ -162,7 +162,7 @@ object BotConfig {
 
     var customGroupUserNamesAddSongCommand: List<String> = getPropertyValue(
         properties, "customGroupUserNamesAddSongCommand", botConfigFile.path
-    ).lowercase(Locale.getDefault()).split(",")
+    ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty(
@@ -173,7 +173,7 @@ object BotConfig {
 
     var customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
         properties, "customGroupUserNamesSkipSongCommand", botConfigFile.path
-    ).lowercase(Locale.getDefault()).split(",")
+    ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty(
@@ -207,7 +207,7 @@ object BotConfig {
 
     var customGroupUserNamesRemoveSongFromQueueCommand: List<String> = getPropertyValue(
         properties, "customGroupUserNamesRemoveSongFromQueueCommand", botConfigFile.path
-    ).lowercase(Locale.getDefault()).split(",")
+    ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty(

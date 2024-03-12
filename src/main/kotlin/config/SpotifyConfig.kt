@@ -67,7 +67,7 @@ object SpotifyConfig {
 
     var blockedSongLinks: List<String> = getPropertyValue(
         properties, "blockedSongLinks", spotifyConfigFile.path
-    ).split(",")
+    ).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty("blockedSongLinks", value.joinToPropertiesString(","))
@@ -76,7 +76,7 @@ object SpotifyConfig {
 
     var blockedSongArtists: List<String> = getPropertyValue(
         properties, "blockedSongArtists", spotifyConfigFile.path
-    ).lowercase(Locale.getDefault()).split(",")
+    ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty("blockedSongArtists", value.joinToLowercasePropertiesString(","))

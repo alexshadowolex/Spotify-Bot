@@ -65,7 +65,7 @@ object TwitchBotConfig {
 
     var songRequestEmotes: List<String> = getPropertyValue(
         properties, "songRequestEmotes", twitchBotConfigFile.path
-    ).split(",")
+    ).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty("songRequestEmotes", value.joinToPropertiesString(","))
