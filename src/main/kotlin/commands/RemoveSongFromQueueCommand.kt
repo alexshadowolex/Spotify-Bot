@@ -17,12 +17,6 @@ val removeSongFromQueueCommand: Command = Command(
             return@Command
         }
 
-        if (inputString.isEmpty()) {
-            sendMessageToTwitchChatAndLogIt(chat, "No input provided.")
-            addedUserCoolDown = 5.seconds
-            return@Command
-        }
-
         if(!isUserEligibleForRemoveSongFromQueueCommand(messageEvent.permissions, messageEvent.user.name)) {
             logger.info("User ${messageEvent.user.name} tried using removeSongFromQueueCommand but was not eligible. " +
                     "Current security setting: ${BotConfig.removeSongFromQueueCommandSecurityLevel}"
@@ -31,6 +25,13 @@ val removeSongFromQueueCommand: Command = Command(
             sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
             return@Command
         }
+
+        if (inputString.isEmpty()) {
+            sendMessageToTwitchChatAndLogIt(chat, "No input provided.")
+            addedUserCoolDown = 5.seconds
+            return@Command
+        }
+
 
         val success = removeSongFromQueueHandler.addSongToSetMarkedForSkipping(inputString)
         val message = if(success) {
