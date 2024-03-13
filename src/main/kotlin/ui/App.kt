@@ -109,9 +109,7 @@ fun app() {
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    customNavigationHost(
-                        navController = navController
-                    )
+                    customNavigationHost(navController = navController)
                 }
             }
         }
