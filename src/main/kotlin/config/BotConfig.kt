@@ -42,7 +42,7 @@ object BotConfig {
 
     var blacklistedUsers = getPropertyValue(
         properties, "blacklistedUsers", botConfigFile.path
-    ).split(",")
+    ).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
             properties.setProperty("blacklistedUsers", value.joinToPropertiesString(","))

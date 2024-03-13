@@ -88,16 +88,6 @@ fun Duration.toDoublePropertiesString(durationUnit: DurationUnit) =
     this.toDouble(durationUnit).toString()
 
 
-/**
- * Creates a SnapshotStateList of Strings out of a List of Strings
- */
-fun List<String>.toMutableStateList(): SnapshotStateList<String> {
-    val tempStateList = mutableStateListOf<String>()
-    tempStateList.addAll(this)
-    return tempStateList
-}
-
-
 // TODO: remove when fix is in spotify library
 @Serializable
 data class PatchSpotifyTrackResponse(
