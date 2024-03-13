@@ -1,7 +1,10 @@
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.adamratzman.spotify.models.PlayableUri
 import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
+import config.BotConfig
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
 import java.util.*
@@ -83,6 +86,16 @@ fun Duration.toIntPropertiesString(durationUnit: DurationUnit) =
  */
 fun Duration.toDoublePropertiesString(durationUnit: DurationUnit) =
     this.toDouble(durationUnit).toString()
+
+
+/**
+ * Creates a SnapshotStateList of Strings out of a List of Strings
+ */
+fun List<String>.toMutableStateList(): SnapshotStateList<String> {
+    val tempStateList = mutableStateListOf<String>()
+    tempStateList.addAll(this)
+    return tempStateList
+}
 
 
 // TODO: remove when fix is in spotify library

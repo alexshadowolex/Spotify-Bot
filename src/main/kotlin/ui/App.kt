@@ -5,7 +5,9 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,9 +20,7 @@ import kotlinx.coroutines.delay
 import rememberNavController
 import ui.navigation.NavigationHost
 import ui.navigation.composable
-import ui.screens.generalSettingsScreen
-import ui.screens.homeScreen
-import ui.screens.initializeFlagVariables
+import ui.screens.*
 import windowHeight
 import windowWidth
 import kotlin.time.Duration.Companion.seconds
@@ -28,6 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 
 val darkColorPalette = darkColors(
     primary = Color(0xff5bbbfe),
+    onSecondary = Color(84, 84, 84),
     onPrimary = Color.White,
     secondary = Color(0xff2244bb),
     background = Color.DarkGray,
@@ -36,7 +37,8 @@ val darkColorPalette = darkColors(
 
 val lightColorPalette = lightColors(
     primary = Color(0xff4466ff),
-    onPrimary = Color.White,
+    onSecondary = Color(220, 220, 220),
+    onPrimary = Color.Black,
     secondary = Color(0xff0b5b8e),
     background = Color.White,
     onBackground = Color.Black,
@@ -133,8 +135,20 @@ enum class Screen(
     GeneralSettingsScreen(
         label = "General Settings",
         icon = Icons.Filled.Settings,
+        height = 1000.dp,
+        width = 500.dp
+    ),
+    SpotifySettingsScreen(
+        label = "Spotify Settings",
+        icon = Icons.Filled.PlayArrow,
         height = 800.dp,
-        width = 400.dp
+        width = 500.dp
+    ),
+    TwitchSettingsScreen(
+        label = "Twitch Settings",
+        icon = Icons.Filled.Edit,
+        height = 800.dp,
+        width = 500.dp
     )
 }
 
@@ -153,4 +167,23 @@ fun customNavigationHost(
             generalSettingsScreen()
         }
     }.build()
+
+    NavigationHost(navController) {
+        composable(Screen.SpotifySettingsScreen.name) {
+            spotifySettingsScreen()
+        }
+    }.build()
+
+    NavigationHost(navController) {
+        composable(Screen.TwitchSettingsScreen.name) {
+            twitchSettingsScreen()
+        }
+    }.build()
+}
+
+@Composable
+fun initializeFlagVariables() {
+    initializeGeneralFlagVariables()
+    initializeSpotifyFlagVariables()
+    initializeTwitchFlagVariables()
 }
