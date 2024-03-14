@@ -390,7 +390,13 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
             val track = result.track
             if(track != null) {
                 "Song ${createSongString(track.name, track.artists)} has been added to the queue " +
-                TwitchBotConfig.songRequestEmotes.random()
+                TwitchBotConfig.songRequestEmotes.run {
+                    if(this.isNotEmpty()) {
+                        this.random()
+                    } else {
+                        ""
+                    }
+                }
             } else {
                 success = false
                 "Couldn't add song to the queue. ${result.songRequestResultExplanation}"
