@@ -139,7 +139,7 @@ enum class Screen(
     SpotifySettingsScreen(
         label = "Spotify Settings",
         icon = Icons.Filled.PlayArrow,
-        height = 800.dp,
+        height = 450.dp,
         width = 500.dp
     ),
     TwitchSettingsScreen(

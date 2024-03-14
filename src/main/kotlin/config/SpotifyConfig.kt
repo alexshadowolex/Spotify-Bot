@@ -1,10 +1,10 @@
 package config
-import toDoublePropertiesString
 import getPropertyValue
 import joinToLowercasePropertiesString
 import joinToPropertiesString
 import logger
 import showErrorMessageWindow
+import toDoublePropertiesString
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -50,12 +50,11 @@ object SpotifyConfig {
         getPropertyValue(properties, "maximumLengthSongRequestMinutes", spotifyConfigFile.path)
             .toDouble().minutes
     } catch (e: NumberFormatException) {
-        // TODO: Remove when UI is ready
-        logger.info(
-            "Invalid number found while parsing property maximumLengthSongRequestMinutes, " +
-            "setting to maximum length"
+        val defaultValue = 60.0.minutes
+        logger.warn(
+            "Invalid number found while parsing property maximumLengthSongRequestMinutes, setting to $defaultValue"
         )
-        Double.MAX_VALUE.minutes
+        defaultValue
     }
         set(value) {
             field = value
