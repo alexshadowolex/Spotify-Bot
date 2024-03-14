@@ -145,7 +145,7 @@ enum class Screen(
     TwitchSettingsScreen(
         label = "Twitch Settings",
         icon = Icons.Filled.Edit,
-        height = 800.dp,
+        height = 550.dp,
         width = 500.dp
     )
 }

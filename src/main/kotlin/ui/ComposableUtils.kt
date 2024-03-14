@@ -437,3 +437,26 @@ fun dropDownStringPropertiesList(
         }
     }
 }
+
+
+@Composable
+fun propertiesTextField(
+    textFieldTitle: String,
+    textFieldContent: MutableState<String>,
+    onValueChange: (String) -> Unit
+) {
+    TextField(
+        value = textFieldContent.value,
+        onValueChange = onValueChange,
+        label = {
+            Text(
+                color = MaterialTheme.colors.onPrimary,
+                text = textFieldTitle
+            )
+        },
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 5.dp, bottom = 5.dp)
+    )
+}
