@@ -38,6 +38,6 @@ val skipSongCommand: Command = Command(
 
         sendMessageToTwitchChatAndLogIt(chat, "Skipped song ${currentSong?.name ?: ""}")
 
-        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
+        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }
 )

@@ -41,21 +41,21 @@ object TwitchBotConfig {
             savePropertiesToFile()
         }
 
-    var defaultCommandCoolDown = getPropertyValue(
-        properties, "defaultCommandCoolDown", twitchBotConfigFile.path
+    var defaultCommandCoolDownSeconds = getPropertyValue(
+        properties, "defaultCommandCoolDownSeconds", twitchBotConfigFile.path
     ).toInt().seconds
         set(value) {
             field = value
-            properties.setProperty("defaultCommandCoolDown", value.toIntPropertiesString(DurationUnit.SECONDS))
+            properties.setProperty("defaultCommandCoolDownSeconds", value.toIntPropertiesString(DurationUnit.SECONDS))
             savePropertiesToFile()
         }
 
-    var defaultUserCoolDown = getPropertyValue(
-        properties, "defaultUserCoolDown", twitchBotConfigFile.path
+    var defaultUserCoolDownSeconds = getPropertyValue(
+        properties, "defaultUserCoolDownSeconds", twitchBotConfigFile.path
     ).toInt().seconds
         set(value) {
             field = value
-            properties.setProperty("defaultUserCoolDown", value.toIntPropertiesString(DurationUnit.SECONDS))
+            properties.setProperty("defaultUserCoolDownSeconds", value.toIntPropertiesString(DurationUnit.SECONDS))
             savePropertiesToFile()
         }
 

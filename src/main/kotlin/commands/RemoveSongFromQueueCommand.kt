@@ -35,7 +35,7 @@ val removeSongFromQueueCommand: Command = Command(
 
         val success = removeSongFromQueueHandler.addSongToSetMarkedForSkipping(inputString)
         val message = if(success) {
-            addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
+            addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
             "Removed song ${inputString.substringBefore(" by")} from queue"
         } else {
             addedUserCoolDown = 5.seconds

@@ -27,8 +27,8 @@ val songRequestCommand = Command(
 
         val success = handleSongRequestQuery(chat, query)
         if (success) {
-            addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
-            addedUserCoolDown = TwitchBotConfig.defaultUserCoolDown
+            addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
+            addedUserCoolDown = TwitchBotConfig.defaultUserCoolDownSeconds
         } else {
             addedCommandCoolDown = 5.seconds
             addedUserCoolDown = 5.seconds

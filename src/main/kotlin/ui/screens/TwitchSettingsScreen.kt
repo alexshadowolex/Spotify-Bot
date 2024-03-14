@@ -21,16 +21,16 @@ private var songRequestEmotes = mutableStateOf(listOf<String>())
         TwitchBotConfig.songRequestEmotes = value.value
     }
 
-private var defaultUserCoolDown = mutableStateOf(0.seconds)
+private var defaultUserCoolDownSeconds = mutableStateOf("0")
     set(value) {
         field = value
-        TwitchBotConfig.defaultUserCoolDown = value.value
+        TwitchBotConfig.defaultUserCoolDownSeconds = value.value.toInt().seconds
     }
 
-private var defaultCommandCoolDown = mutableStateOf(0.seconds)
+private var defaultCommandCoolDownSeconds = mutableStateOf("0")
     set(value) {
         field = value
-        TwitchBotConfig.defaultCommandCoolDown = value.value
+        TwitchBotConfig.defaultCommandCoolDownSeconds = value.value.toInt().seconds
     }
 
 private var blacklistMessage = mutableStateOf("")
@@ -49,7 +49,11 @@ fun twitchSettingsScreen() {
 fun initializeTwitchFlagVariables() {
     commandPrefix = remember { mutableStateOf(TwitchBotConfig.commandPrefix) }
     songRequestEmotes = remember { mutableStateOf(TwitchBotConfig.songRequestEmotes) }
-    defaultUserCoolDown = remember { mutableStateOf(TwitchBotConfig.defaultUserCoolDown) }
-    defaultCommandCoolDown = remember { mutableStateOf(TwitchBotConfig.defaultCommandCoolDown) }
+    defaultUserCoolDownSeconds = remember { mutableStateOf(
+        TwitchBotConfig.defaultUserCoolDownSeconds.toIntPropertiesString(DurationUnit.SECONDS)
+    ) }
+    defaultCommandCoolDownSeconds = remember { mutableStateOf(
+        TwitchBotConfig.defaultCommandCoolDownSeconds.toIntPropertiesString(DurationUnit.SECONDS)
+    ) }
     blacklistMessage = remember { mutableStateOf(TwitchBotConfig.blacklistMessage) }
 }

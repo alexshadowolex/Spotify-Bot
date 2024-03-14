@@ -15,8 +15,8 @@ val propertiesFilesToProperties = listOf(
         Pair("channel", "channelName"),
         // Since Version: 2.0.0
         Pair("commandPrefix", "#"),
-        Pair("defaultCommandCoolDown", "20"),
-        Pair("defaultUserCoolDown", "30"),
+        Pair("defaultCommandCoolDownSeconds", "20"),
+        Pair("defaultUserCoolDownSeconds", "30"),
         Pair("songRequestRedeemId", "UseTheNameIfYouDontHaveTheId"),
         Pair("blacklistMessage", "Imagine not being a blacklisted user. Couldn't be you FeelsOkayMan"),
         Pair("songRequestEmotes", "carJAM,catJAM,Jammies,blobDance")

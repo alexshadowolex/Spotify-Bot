@@ -52,10 +52,10 @@ val propertiesToRename = mapOf(
     ),
     File("data\\properties\\twitchBotConfig.properties") to
     mapOf(
-        "default_user_cool_down" to "defaultUserCoolDown",
+        "default_user_cool_down" to "defaultUserCoolDownSeconds",
         "song_request_redeem_id" to "songRequestRedeemId",
         "command_prefix" to "commandPrefix",
-        "default_command_cool_down" to "defaultCommandCoolDown",
+        "default_command_cool_down" to "defaultCommandCoolDownSeconds",
         "song_request_emotes" to "songRequestEmotes",
         "blacklist_emote" to "blacklistMessage"
     ),

@@ -35,6 +35,6 @@ val addSongCommand: Command = Command(
 
         sendMessageToTwitchChatAndLogIt(chat, message)
 
-        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
+        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }
 )
