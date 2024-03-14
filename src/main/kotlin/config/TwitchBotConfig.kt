@@ -41,18 +41,34 @@ object TwitchBotConfig {
             savePropertiesToFile()
         }
 
-    var defaultCommandCoolDownSeconds = getPropertyValue(
-        properties, "defaultCommandCoolDownSeconds", twitchBotConfigFile.path
-    ).toInt().seconds
+    var defaultCommandCoolDownSeconds = try {
+        getPropertyValue(
+            properties, "defaultCommandCoolDownSeconds", twitchBotConfigFile.path
+        ).toInt().seconds
+    } catch (e: NumberFormatException) {
+        val defaultValue = 0.seconds
+        logger.warn(
+            "Invalid number found while parsing property defaultCommandCoolDownSeconds, setting to $defaultValue"
+        )
+        defaultValue
+    }
         set(value) {
             field = value
             properties.setProperty("defaultCommandCoolDownSeconds", value.toIntPropertiesString(DurationUnit.SECONDS))
             savePropertiesToFile()
         }
 
-    var defaultUserCoolDownSeconds = getPropertyValue(
-        properties, "defaultUserCoolDownSeconds", twitchBotConfigFile.path
-    ).toInt().seconds
+    var defaultUserCoolDownSeconds = try {
+        getPropertyValue(
+            properties, "defaultUserCoolDownSeconds", twitchBotConfigFile.path
+        ).toInt().seconds
+    } catch (e: NumberFormatException) {
+        val defaultValue = 0.seconds
+        logger.warn(
+            "Invalid number found while parsing property defaultUserCoolDownSeconds, setting to $defaultValue"
+        )
+        defaultValue
+    }
         set(value) {
             field = value
             properties.setProperty("defaultUserCoolDownSeconds", value.toIntPropertiesString(DurationUnit.SECONDS))
