@@ -15,16 +15,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
 import config.BuildInfo
+import joinToLowercasePropertiesString
+import joinToPropertiesString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logger
 import java.awt.Desktop
 import java.net.URI
+import java.util.Locale
 
 
 @Composable
@@ -142,7 +146,7 @@ fun dropDownStringPropertiesList(
     val defaultIndex = -1
     var editIndex by remember { mutableStateOf(defaultIndex) }
     var expanded by remember { mutableStateOf(false) }
-    val textFieldContent = remember { mutableStateOf("") }
+    val textFieldContent = remember { mutableStateOf(entries.toList().joinToString(",")) }
     var isEditModeEnabled by remember { mutableStateOf(false) }
     val borderColor = Color(46,46,46)
     val widthPercentage = 0.8F
@@ -159,7 +163,7 @@ fun dropDownStringPropertiesList(
 
     Row (
         modifier = Modifier
-            .padding(top = 5.dp)
+            .padding(top = 5.dp, bottom = 5.dp)
     ) {
         val isEntryGettingAdded = editIndex > entries.lastIndex && isEditModeEnabled
         val isEntryGettingEdited = editIndex != defaultIndex && isEditModeEnabled
@@ -226,7 +230,7 @@ fun dropDownStringPropertiesList(
 
                                 isEditModeEnabled = false
                                 editIndex = defaultIndex
-                                textFieldContent.value = ""
+                                textFieldContent.value = entries.toList().joinToString(",")
                                 backgroundCoroutineScope.launch {
                                     scaffoldState.snackbarHostState.showSnackbar(
                                         message = message
@@ -260,7 +264,7 @@ fun dropDownStringPropertiesList(
                                 // discard changes
                                 editIndex = defaultIndex
                                 isEditModeEnabled = false
-                                textFieldContent.value = ""
+                                textFieldContent.value = entries.toList().joinToString(",")
                                 backgroundCoroutineScope.launch {
                                     scaffoldState.snackbarHostState.showSnackbar(
                                         message = "Discarded changes"
@@ -288,7 +292,7 @@ fun dropDownStringPropertiesList(
         modifier = Modifier
             .background(MaterialTheme.colors.background)
             .fillMaxWidth(widthPercentage)
-            .height(500.dp)
+            .height(400.dp)
             .border(2.dp, borderColor)
     ) {
         Column (
@@ -375,6 +379,7 @@ fun dropDownStringPropertiesList(
                                         )
                                     }
                                     entries.removeAt(index)
+                                    textFieldContent.value = entries.toList().joinToString(",")
                                     logger.info("Removed entry $entry of $textFieldTitle")
                                 }
                             ) {
@@ -396,6 +401,7 @@ fun dropDownStringPropertiesList(
             onClick = {
                 // add new entry
                 editIndex = entries.lastIndex + 1
+                textFieldContent.value = ""
                 isEditModeEnabled = true
                 expanded = false
                 logger.info("Started adding new entry to $textFieldTitle")
@@ -421,6 +427,7 @@ fun dropDownStringPropertiesList(
                         onClick = {
                             // add new entry
                             editIndex = entries.lastIndex + 1
+                            textFieldContent.value = ""
                             isEditModeEnabled = true
                             expanded = false
                             logger.info("Started adding new entry to $textFieldTitle")

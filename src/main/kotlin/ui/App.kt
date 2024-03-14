@@ -133,7 +133,7 @@ enum class Screen(
     GeneralSettingsScreen(
         label = "General Settings",
         icon = Icons.Filled.Settings,
-        height = 1050.dp,
+        height = 1065.dp,
         width = 500.dp
     ),
     SpotifySettingsScreen(
