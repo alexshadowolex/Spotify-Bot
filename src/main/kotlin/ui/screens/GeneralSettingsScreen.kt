@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import config.BotConfig
 import isSongRequestEnabledAsRedeem
 import logger
-import ui.dropDownListCustomGroup
+import ui.dropDownStringPropertiesList
 import ui.sectionDivider
 import ui.toggleFunctionalityRow
 import ui.versionAndCreditsRow
@@ -191,8 +191,8 @@ fun generalSettingsScreen() {
                     }
                 )
 
-                dropDownListCustomGroup(
-                    customGroup = customGroupUserNamesAddSongCommand,
+                dropDownStringPropertiesList(
+                    entries = customGroupUserNamesAddSongCommand,
                     textFieldTitle = "Custom Group Add Song Command",
                     scaffoldState = scaffoldState
                 )
@@ -237,8 +237,8 @@ fun generalSettingsScreen() {
                     }
                 )
 
-                dropDownListCustomGroup(
-                    customGroup = customGroupUserNamesSkipSongCommand,
+                dropDownStringPropertiesList(
+                    entries = customGroupUserNamesSkipSongCommand,
                     textFieldTitle = "Custom Group Skip Song Command",
                     scaffoldState = scaffoldState
                 )
@@ -283,16 +283,16 @@ fun generalSettingsScreen() {
                     }
                 )
 
-                dropDownListCustomGroup(
-                    customGroup = customGroupUserNamesRemoveSongFromQueueCommand,
+                dropDownStringPropertiesList(
+                    entries = customGroupUserNamesRemoveSongFromQueueCommand,
                     textFieldTitle = "Custom Group Skip Song Command",
                     scaffoldState = scaffoldState
                 )
 
                 sectionDivider()
 
-                dropDownListCustomGroup(
-                    customGroup = blacklistedUsers,
+                dropDownStringPropertiesList(
+                    entries = blacklistedUsers,
                     textFieldTitle = "Blacklisted Users",
                     scaffoldState = scaffoldState
                 )

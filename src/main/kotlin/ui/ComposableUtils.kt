@@ -134,8 +134,8 @@ fun versionAndCreditsRow() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun dropDownListCustomGroup(
-    customGroup: SnapshotStateList<String>,
+fun dropDownStringPropertiesList(
+    entries: SnapshotStateList<String>,
     textFieldTitle: String,
     scaffoldState: ScaffoldState
 ) {
@@ -161,7 +161,7 @@ fun dropDownListCustomGroup(
         modifier = Modifier
             .padding(top = 5.dp)
     ) {
-        val isEntryGettingAdded = editIndex > customGroup.lastIndex && isEditModeEnabled
+        val isEntryGettingAdded = editIndex > entries.lastIndex && isEditModeEnabled
         val isEntryGettingEdited = editIndex != defaultIndex && isEditModeEnabled
         TextField(
             value = textFieldContent.value,
@@ -215,14 +215,14 @@ fun dropDownListCustomGroup(
                             onClick = {
                                 // save changes
                                 val message = if (isEntryGettingAdded) {
-                                    customGroup.add(textFieldContent.value)
+                                    entries.add(textFieldContent.value)
                                     "Successfully added entry"
                                 } else {
-                                    customGroup.removeAt(editIndex)
-                                    customGroup.add(editIndex, textFieldContent.value)
+                                    entries.removeAt(editIndex)
+                                    entries.add(editIndex, textFieldContent.value)
                                     "Successfully saved changes"
                                 }
-                                logger.info("$message ${customGroup[editIndex]} to $textFieldTitle")
+                                logger.info("$message ${entries[editIndex]} to $textFieldTitle")
 
                                 isEditModeEnabled = false
                                 editIndex = defaultIndex
@@ -302,7 +302,7 @@ fun dropDownListCustomGroup(
                     .align(Alignment.CenterHorizontally)
             )
         }
-        if(customGroup.isEmpty()) {
+        if(entries.isEmpty()) {
             Column (
                 modifier = Modifier
                     .padding(top = 2.dp)
@@ -315,15 +315,15 @@ fun dropDownListCustomGroup(
                 )
             }
         } else {
-            customGroup.forEachIndexed { index, customGroupEntry ->
+            entries.forEachIndexed { index, customGroupEntry ->
                 DropdownMenuItem(
                     onClick = {
                         // edit entry
                         editIndex = index
                         isEditModeEnabled = true
                         expanded = false
-                        textFieldContent.value = customGroup[index]
-                        logger.info("Started editing entry ${customGroup[index]} of $textFieldTitle")
+                        textFieldContent.value = entries[index]
+                        logger.info("Started editing entry ${entries[index]} of $textFieldTitle")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -354,8 +354,8 @@ fun dropDownListCustomGroup(
                                     editIndex = index
                                     isEditModeEnabled = true
                                     expanded = false
-                                    textFieldContent.value = customGroup[index]
-                                    logger.info("Started editing entry ${customGroup[index]} of $textFieldTitle")
+                                    textFieldContent.value = entries[index]
+                                    logger.info("Started editing entry ${entries[index]} of $textFieldTitle")
                                 }
                             ) {
                                 Icon(
@@ -368,13 +368,13 @@ fun dropDownListCustomGroup(
                             IconButton(
                                 onClick = {
                                     // delete entry
-                                    val entry = customGroup[index]
+                                    val entry = entries[index]
                                     backgroundCoroutineScope.launch {
                                         scaffoldState.snackbarHostState.showSnackbar(
                                             message = "Removed entry \"$entry\""
                                         )
                                     }
-                                    customGroup.removeAt(index)
+                                    entries.removeAt(index)
                                     logger.info("Removed entry $entry of $textFieldTitle")
                                 }
                             ) {
@@ -395,7 +395,7 @@ fun dropDownListCustomGroup(
         DropdownMenuItem(
             onClick = {
                 // add new entry
-                editIndex = customGroup.lastIndex + 1
+                editIndex = entries.lastIndex + 1
                 isEditModeEnabled = true
                 expanded = false
                 logger.info("Started adding new entry to $textFieldTitle")
@@ -420,7 +420,7 @@ fun dropDownListCustomGroup(
                     IconButton(
                         onClick = {
                             // add new entry
-                            editIndex = customGroup.lastIndex + 1
+                            editIndex = entries.lastIndex + 1
                             isEditModeEnabled = true
                             expanded = false
                             logger.info("Started adding new entry to $textFieldTitle")
