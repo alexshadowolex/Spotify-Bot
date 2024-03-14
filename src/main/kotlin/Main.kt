@@ -112,7 +112,7 @@ suspend fun main() = try {
                 val isNewVersionWindowOpen = remember { mutableStateOf(true) }
                 if (isNewVersionWindowOpen.value) {
                     Window(
-                        state = WindowState(size = DpSize(500.dp, 150.dp)),
+                        state = WindowState(size = DpSize(500.dp, 200.dp)),
                         resizable = false,
                         title = "New Version Available!",
                         onCloseRequest = {
