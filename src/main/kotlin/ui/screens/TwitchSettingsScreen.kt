@@ -48,6 +48,12 @@ private var blacklistMessage = mutableStateOf("")
         TwitchBotConfig.blacklistMessage = value.value
     }
 
+private var songRequestRedeemId = mutableStateOf("")
+    set(value) {
+        field = value
+        TwitchBotConfig.songRequestRedeemId = value.value
+    }
+
 
 @Composable
 fun twitchSettingsScreen() {
@@ -119,6 +125,16 @@ fun twitchSettingsScreen() {
 
                 sectionDivider()
 
+                propertiesTextField(
+                    textFieldTitle = "Song Request Redeem ID",
+                    textFieldContent = songRequestRedeemId,
+                    onValueChange = {
+                        songRequestRedeemId.value = it
+                    }
+                )
+
+                sectionDivider()
+
                 versionAndCreditsRow()
             }
         }
@@ -137,4 +153,5 @@ fun initializeTwitchFlagVariables() {
         TwitchBotConfig.defaultCommandCoolDownSeconds.toIntPropertiesString(DurationUnit.SECONDS)
     ) }
     blacklistMessage = remember { mutableStateOf(TwitchBotConfig.blacklistMessage) }
+    songRequestRedeemId = remember { mutableStateOf(TwitchBotConfig.songRequestRedeemId) }
 }

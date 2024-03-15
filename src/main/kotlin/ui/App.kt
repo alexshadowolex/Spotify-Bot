@@ -57,6 +57,7 @@ fun app() {
         }
     }
 
+    // TODO calling it here will call it on each recomposition again. Should not matter, but is not nice either
     initializeFlagVariables()
 
     val screens = Screen.values().toList()
@@ -145,7 +146,7 @@ enum class Screen(
     TwitchSettingsScreen(
         label = "Twitch Settings",
         icon = Icons.Filled.Edit,
-        height = 550.dp,
+        height = 570.dp,
         width = 500.dp
     )
 }

@@ -1,10 +1,11 @@
 package config
 
-import toIntPropertiesString
 import getPropertyValue
 import joinToPropertiesString
 import logger
+import redeems.songRequestRedeem
 import showErrorMessageWindow
+import toIntPropertiesString
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -75,9 +76,15 @@ object TwitchBotConfig {
             savePropertiesToFile()
         }
 
-    val songRequestRedeemId: String = getPropertyValue(
+    var songRequestRedeemId: String = getPropertyValue(
         properties, "songRequestRedeemId", twitchBotConfigFile.path
     )
+        set(value) {
+            field = value
+            properties.setProperty("songRequestRedeemId", value)
+            songRequestRedeem.id = value
+            savePropertiesToFile()
+        }
 
     var songRequestEmotes: List<String> = getPropertyValue(
         properties, "songRequestEmotes", twitchBotConfigFile.path
