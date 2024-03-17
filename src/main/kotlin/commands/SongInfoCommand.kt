@@ -1,5 +1,6 @@
 package commands
 
+import config.BotConfig
 import config.TwitchBotConfig
 import createSongString
 import getCurrentSpotifySong
@@ -7,12 +8,11 @@ import handler.Command
 import isSpotifyPlaying
 import logger
 import sendMessageToTwitchChatAndLogIt
-import ui.isSongInfoCommandEnabled
 
 val songInfoCommand: Command = Command(
     names = listOf("songinfo", "si"),
     handler = {
-        if(!isSongInfoCommandEnabled.value) {
+        if(!BotConfig.isSongInfoCommandEnabled) {
             logger.info("SongInfoCommand disabled. Aborting execution")
             return@Command
         }
@@ -26,6 +26,6 @@ val songInfoCommand: Command = Command(
 
         sendMessageToTwitchChatAndLogIt(chat, message)
 
-        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
+        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }
 )

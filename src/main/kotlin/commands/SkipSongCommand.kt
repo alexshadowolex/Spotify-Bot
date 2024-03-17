@@ -1,5 +1,6 @@
 package commands
 
+import config.BotConfig
 import config.TwitchBotConfig
 import getCurrentSpotifySong
 import handler.Command
@@ -7,13 +8,11 @@ import isUserEligibleForSkipSongCommand
 import logger
 import sendMessageToTwitchChatAndLogIt
 import spotifyClient
-import ui.isSkipSongCommandEnabled
-import ui.skipSongCommandSecurityLevel
 
 val skipSongCommand: Command = Command(
     names = listOf("skipsong", "skip", "next", "ss"),
     handler = {
-        if(!isSkipSongCommandEnabled.value) {
+        if(!BotConfig.isSkipSongCommandEnabled) {
             logger.info("skipSongCommand disabled. Aborting execution")
             return@Command
         }
@@ -21,7 +20,7 @@ val skipSongCommand: Command = Command(
 
         if(!isUserEligibleForSkipSongCommand(messageEvent.permissions, messageEvent.user.name)) {
             logger.info("User ${messageEvent.user.name} tried using skipSongCommand but was not eligible. " +
-                    "Current security setting: ${skipSongCommandSecurityLevel.value}"
+                    "Current security setting: ${BotConfig.skipSongCommandSecurityLevel}"
             )
 
             sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
@@ -39,6 +38,6 @@ val skipSongCommand: Command = Command(
 
         sendMessageToTwitchChatAndLogIt(chat, "Skipped song ${currentSong?.name ?: ""}")
 
-        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
+        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }
 )

@@ -1,6 +1,5 @@
 package scripts
 
-import SpotifyConfig
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +15,7 @@ import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyScope
 import com.adamratzman.spotify.getSpotifyAuthorizationUrl
 import com.adamratzman.spotify.spotifyClientApi
+import config.SpotifyConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,7 +29,7 @@ import java.net.URI
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
-// Current Version: v3
+// Current Version: v4
 
 fun main() = try {
     val redirectUri = "https://www.example.com"

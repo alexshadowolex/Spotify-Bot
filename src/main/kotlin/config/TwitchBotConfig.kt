@@ -1,60 +1,109 @@
 package config
 
 import getPropertyValue
+import joinToPropertiesString
+import logger
+import redeems.songRequestRedeem
+import showErrorMessageWindow
+import toIntPropertiesString
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
+import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 object TwitchBotConfig {
     private val twitchBotConfigFile = File("data\\properties\\twitchBotConfig.properties")
     private val properties = Properties().apply {
+        if(!twitchBotConfigFile.exists()) {
+            logger.error(
+                "Error while reading property file ${twitchBotConfigFile.path} in TwitchBotConfig init: " +
+                "File does not exist!"
+            )
+            showErrorMessageWindow(
+                title = "Error while reading properties file",
+                message = "Property file \"${twitchBotConfigFile.path}\" does not exist!"
+            )
+
+            exitProcess(-1)
+        }
         load(twitchBotConfigFile.inputStream())
     }
 
     val chatAccountToken = File("data\\tokens\\twitchToken.txt").readText()
+
     val channel: String = getPropertyValue(properties, "channel", twitchBotConfigFile.path)
-    val commandPrefix: String = getPropertyValue(properties, "command_prefix", twitchBotConfigFile.path)
-    val defaultCommandCoolDown = getPropertyValue(
-        properties, "default_command_cool_down", twitchBotConfigFile.path
-    ).toInt().seconds
-    val defaultUserCoolDown = getPropertyValue(
-        properties, "default_user_cool_down", twitchBotConfigFile.path
-    ).toInt().seconds
-    val songRequestRedeemId: String = getPropertyValue(
-        properties, "song_request_redeem_id", twitchBotConfigFile.path
+
+    var commandPrefix: String = getPropertyValue(properties, "commandPrefix", twitchBotConfigFile.path)
+        set(value) {
+            field = value
+            properties.setProperty("commandPrefix", value)
+            savePropertiesToFile()
+        }
+
+    var defaultCommandCoolDownSeconds = try {
+        getPropertyValue(
+            properties, "defaultCommandCoolDownSeconds", twitchBotConfigFile.path
+        ).toInt().seconds
+    } catch (e: NumberFormatException) {
+        val defaultValue = 0.seconds
+        logger.warn(
+            "Invalid number found while parsing property defaultCommandCoolDownSeconds, setting to $defaultValue"
+        )
+        defaultValue
+    }
+        set(value) {
+            field = value
+            properties.setProperty("defaultCommandCoolDownSeconds", value.toIntPropertiesString(DurationUnit.SECONDS))
+            savePropertiesToFile()
+        }
+
+    var defaultUserCoolDownSeconds = try {
+        getPropertyValue(
+            properties, "defaultUserCoolDownSeconds", twitchBotConfigFile.path
+        ).toInt().seconds
+    } catch (e: NumberFormatException) {
+        val defaultValue = 0.seconds
+        logger.warn(
+            "Invalid number found while parsing property defaultUserCoolDownSeconds, setting to $defaultValue"
+        )
+        defaultValue
+    }
+        set(value) {
+            field = value
+            properties.setProperty("defaultUserCoolDownSeconds", value.toIntPropertiesString(DurationUnit.SECONDS))
+            savePropertiesToFile()
+        }
+
+    var songRequestRedeemId: String = getPropertyValue(
+        properties, "songRequestRedeemId", twitchBotConfigFile.path
     )
-    val songRequestEmotes: List<String> = getPropertyValue(
-        properties, "song_request_emotes", twitchBotConfigFile.path
-    ).split(",")
-    val isSongRequestCommandEnabledByDefault = getPropertyValue(
-        properties, "is_song_request_command_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val blacklistedUsers = getPropertyValue(
-        properties, "blacklisted_users", twitchBotConfigFile.path
-    ).split(",")
-    val blacklistEmote: String = getPropertyValue(properties, "blacklist_emote", twitchBotConfigFile.path)
-    val isSpotifySongNameGetterEnabledByDefault = getPropertyValue(
-        properties, "is_spotify_song_name_getter_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val showNewVersionAvailableWindowOnStartUp = getPropertyValue(
-        properties, "show_new_version_available_window_on_start_up", twitchBotConfigFile.path
-    ).toBoolean()
-    val isSongRequestEnabledByDefault = getPropertyValue(
-        properties, "is_song_request_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val isSongInfoCommandEnabledByDefault = getPropertyValue(
-        properties, "is_song_info_command_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val isEmptySongDisplayFilesOnPauseEnabledByDefault = getPropertyValue(
-        properties, "is_empty_song_display_files_on_pause_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val isAddSongCommandEnabledByDefault = getPropertyValue(
-        properties, "is_add_song_command_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val isSkipSongCommandEnabledByDefault = getPropertyValue(
-        properties, "is_skip_song_command_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
-    val isRemoveSongFromQueueCommandEnabledByDefault = getPropertyValue(
-        properties, "is_remove_song_from_queue_command_enabled_by_default", twitchBotConfigFile.path
-    ).toBoolean()
+        set(value) {
+            field = value
+            properties.setProperty("songRequestRedeemId", value)
+            songRequestRedeem.id = value
+            savePropertiesToFile()
+        }
+
+    var songRequestEmotes: List<String> = getPropertyValue(
+        properties, "songRequestEmotes", twitchBotConfigFile.path
+    ).split(",").filter { it.isNotEmpty() }
+        set(value) {
+            field = value
+            properties.setProperty("songRequestEmotes", value.joinToPropertiesString(","))
+            savePropertiesToFile()
+        }
+
+    var blacklistMessage: String = getPropertyValue(properties, "blacklistMessage", twitchBotConfigFile.path)
+        set(value) {
+            field = value
+            properties.setProperty("blacklistMessage", value)
+            savePropertiesToFile()
+        }
+
+
+    private fun savePropertiesToFile() {
+        properties.store(FileOutputStream(twitchBotConfigFile.path), null)
+    }
 }

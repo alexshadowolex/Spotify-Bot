@@ -2,54 +2,53 @@ package scripts
 
 import java.io.File
 
-// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_1-2-5.jar
+// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-0-0.jar
 
-const val latestVersion = "1.2.5"
+const val latestVersion = "2.0.0"
 
+// In Version 2.0.0 almost all properties got renamed to camel case spelling. That's why all of them are noted down as
+// "Since Version: 2.0.0" though their functionality exists for much longer already.
 val propertiesFilesToProperties = listOf(
     File("data\\properties\\twitchBotConfig.properties") to
     mapOf(
         // Since Version: 1.0.0
         Pair("channel", "channelName"),
-        Pair("command_prefix", "#"),
-        Pair("default_command_cool_down", "20"),
-        Pair("default_user_cool_down", "30"),
-        Pair("song_request_redeem_id", "UseTheNameIfYouDontHaveTheId"),
-        Pair("is_song_request_command_enabled_by_default", "true"),
-        Pair("blacklisted_users", ""),
-        Pair("blacklist_emote", "FeelsOkayMan"),
-        // Since Version: 1.0.1
-        Pair("song_request_emotes", "carJAM,catJAM,Jammies,blobDance"),
-        // Since Version: 1.2.0
-        Pair("is_spotify_song_name_getter_enabled_by_default", "true"),
-        // Since Version: 1.2.1
-        Pair("show_new_version_available_window_on_start_up", "true"),
-        // Since Version: 1.2.3
-        Pair("is_song_request_enabled_by_default", "true"),
-        Pair("is_song_info_command_enabled_by_default", "true"),
-        Pair("is_empty_song_display_files_on_pause_enabled_by_default", "true"),
-        // Since Version: 1.2.4
-        Pair("is_add_song_command_enabled_by_default", "true"),
-        // Since Version: 1.2.5
-        Pair("is_skip_song_command_enabled_by_default", "true"),
-        Pair("is_remove_song_from_queue_command_enabled_by_default", "true")
+        // Since Version: 2.0.0
+        Pair("commandPrefix", "#"),
+        Pair("defaultCommandCoolDownSeconds", "20"),
+        Pair("defaultUserCoolDownSeconds", "30"),
+        Pair("songRequestRedeemId", "UseTheNameIfYouDontHaveTheId"),
+        Pair("blacklistMessage", "Imagine not being a blacklisted user. Couldn't be you FeelsOkayMan"),
+        Pair("songRequestEmotes", "carJAM,catJAM,Jammies,blobDance")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(
-        // Since Version: 1.2.0
-        Pair("spotify_client_id", "ABC123VeryLong"),
-        // Since Version: 1.2.4
-        Pair("playlist_id_for_add_song_command", "playlistId"),
-        Pair("add_song_command_security_level_on_start_up", "BROADCASTER"),
-        Pair("maximum_length_minutes_song_request", ""),
-        // Since Version: 1.2.5
-        Pair("blocked_song_links", ""),
-        Pair("blocked_song_artists", ""),
-        Pair("skip_song_command_security_level_on_start_up", "BROADCASTER"),
-        Pair("custom_group_user_names_add_song_command", ""),
-        Pair("custom_group_user_names_skip_song_command", ""),
-        Pair("remove_song_from_queue_command_security_level_on_start_up", "BROADCASTER"),
-        Pair("custom_group_user_names_remove_song_from_queue_command", "")
+        // Since Version: 2.0.0
+        Pair("spotifyClientId", "ABC123VeryLong"),
+        Pair("playlistIdForAddSongCommand", "playlistId"),
+        Pair("maximumLengthSongRequestMinutes", ""),
+        Pair("blockedSongLinks", ""),
+        Pair("blockedSongArtists", "")
+    ),
+    File("data\\properties\\botConfig.properties") to
+    mapOf(
+        // Since Version: 2.0.0
+        Pair("isSongRequestCommandEnabled", "true"),
+        Pair("blacklistedUsers", ""),
+        Pair("isSpotifySongNameGetterEnabled", "true"),
+        Pair("isNewVersionCheckEnabled", "true"),
+        Pair("isSongRequestEnabled", "true"),
+        Pair("isSongInfoCommandEnabled", "true"),
+        Pair("isEmptySongDisplayFilesOnPauseEnabled", "true"),
+        Pair("isAddSongCommandEnabled", "true"),
+        Pair("isSkipSongCommandEnabled", "true"),
+        Pair("isRemoveSongFromQueueCommandEnabled", "true"),
+        Pair("addSongCommandSecurityLevel", "BROADCASTER"),
+        Pair("skipSongCommandSecurityLevel", "BROADCASTER"),
+        Pair("customGroupUserNamesAddSongCommand", ""),
+        Pair("customGroupUserNamesSkipSongCommand", ""),
+        Pair("removeSongFromQueueCommandSecurityLevel", "BROADCASTER"),
+        Pair("customGroupUserNamesRemoveSongFromQueueCommand", "")
     )
 )
 

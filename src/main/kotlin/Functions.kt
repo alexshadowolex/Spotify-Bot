@@ -1,4 +1,3 @@
-import androidx.compose.runtime.MutableState
 import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.endpoints.pub.SearchApi
 import com.adamratzman.spotify.models.SimpleArtist
@@ -13,7 +12,9 @@ import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import config.BotConfig
 import config.BuildInfo
+import config.SpotifyConfig
 import config.TwitchBotConfig
 import handler.*
 import io.ktor.client.request.*
@@ -25,14 +26,12 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
-import ui.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.text.ParseException
 import java.time.format.DateTimeFormatterBuilder
 import java.util.*
 import javax.swing.JOptionPane
@@ -86,8 +85,6 @@ suspend fun setupTwitchBot(): TwitchClient {
 
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelId)
 
-    val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
-
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
     }
@@ -114,10 +111,7 @@ suspend fun setupTwitchBot(): TwitchClient {
         )
 
         if(isUserBlacklisted(userName, userId)) {
-            sendMessageToTwitchChatAndLogIt(
-                chat,
-                "Imagine not being a blacklisted user. Couldn't be you $userName ${TwitchBotConfig.blacklistEmote}"
-            )
+            sendMessageToTwitchChatAndLogIt(chat, "$userName ${TwitchBotConfig.blacklistMessage}")
             return@onEvent
         }
 
@@ -161,6 +155,12 @@ suspend fun setupTwitchBot(): TwitchClient {
 
             return@onEvent
         }
+
+        // Do not call the init of RemoveSongFromQueueHandler earlier in this setup function.
+        // For some reason, doing so will cause an error in the startRemoveSongFromQueueChecker-function
+        // while checking for the parameter isSpotifySongNameGetterEnabled. This results in an empty error window
+        // when any property is missing in the same file as isSpotifySongNameGetterEnabled (for now: botConfig.properties)
+        val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
 
         val commandHandlerScope = CommandHandlerScope(
             chat = chat,
@@ -260,8 +260,7 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
         logger.error("Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ", e)
         showErrorMessageWindow(
             message =   "Error while reading value of property ${propertyName.addQuotationMarks()} " +
-                        "in file $propertiesFileRelativePath.\n" +
-                        "Check logs for more information",
+                        "in file $propertiesFileRelativePath.",
             title = "Error while reading properties"
         )
         exitProcess(-1)
@@ -277,7 +276,7 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
 fun showErrorMessageWindow(message: String, title: String) {
     JOptionPane.showMessageDialog(
         null,
-        message,
+        "$message\nCheck logs for more information",
         title,
         JOptionPane.ERROR_MESSAGE
     )
@@ -299,10 +298,10 @@ fun displayEnumParsingErrorWindow(
 ) {
     logger.error("Exception occurred while reading property \"$propertyName\" in file $propertyFilePath: ", exception)
     showErrorMessageWindow(
-        "Error while reading value of property \"$propertyName\" in file $propertyFilePath\n" +
+        message = "Error while reading value of property \"$propertyName\" in file $propertyFilePath\n" +
                 "Following values are allowed: " +
                 enumClassValues.joinToString(),
-        "Invalid value of property"
+        title = "Invalid value of property"
     )
 }
 
@@ -345,8 +344,8 @@ fun isUserBroadcaster(userName: String): Boolean {
  * @return {Boolean} true, if the user is blacklisted, else false
  */
 fun isUserBlacklisted(userName: String, userId: String): Boolean {
-    if(userName in TwitchBotConfig.blacklistedUsers || userId in TwitchBotConfig.blacklistedUsers) {
-        if(userId !in TwitchBotConfig.blacklistedUsers) {
+    if(userName in BotConfig.blacklistedUsers || userId in BotConfig.blacklistedUsers) {
+        if(userId !in BotConfig.blacklistedUsers) {
             logger.warn(
                 "Blacklisted user $userName tried using a command. " +
                 "Please use following ID in the properties file instead of the name: $userId"
@@ -395,7 +394,13 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
             val track = result.track
             if(track != null) {
                 "Song ${createSongString(track.name, track.artists)} has been added to the queue " +
-                TwitchBotConfig.songRequestEmotes.random()
+                TwitchBotConfig.songRequestEmotes.run {
+                    if(this.isNotEmpty()) {
+                        this.random()
+                    } else {
+                        ""
+                    }
+                }
             } else {
                 success = false
                 "Couldn't add song to the queue. ${result.songRequestResultExplanation}"
@@ -455,11 +460,11 @@ private suspend fun updateQueuePatch(query: String): SongRequestResultPatch {
         )
     }
 
-    if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
-        logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+    if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthSongRequestMinutes) {
+        logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}")
         return SongRequestResultPatch(
             track = null,
-            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
+            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}."
         )
     }
 
@@ -531,11 +536,11 @@ private suspend fun updateQueue(query: String): SongRequestResult {
         )
     }
 
-    if(result.length.milliseconds > SpotifyConfig.maximumLengthMinutesSongRequest) {
-        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}")
+    if(result.length.milliseconds > SpotifyConfig.maximumLengthSongRequestMinutes) {
+        logger.info("Song length ${result.length / 60000f} was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}")
         return SongRequestResult(
             track = null,
-            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthMinutesSongRequest}."
+            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}."
         )
     }
 
@@ -599,7 +604,7 @@ private fun getFirstBlockedArtistName(artists: List<String?>): String {
  * @return {Boolean} true, if the song is blocked, else false
  */
 private fun isSongBlocked(songId: String): Boolean {
-    return SpotifyConfig.blockedSongIds.contains(songId)
+    return SpotifyConfig.blockedSongLinks.map { getSongIdFromSpotifyDirectLink(it) ?: "" }.contains(songId)
 }
 
 
@@ -802,7 +807,7 @@ fun startSpotifySongGetter() {
                 continue
             }
 
-            val isPlaying = if(isEmptySongDisplayFilesOnPauseEnabled.value) {
+            val isPlaying = if(BotConfig.isEmptySongDisplayFilesOnPauseEnabled) {
                 isSpotifyPlaying()
             } else {
                 true
@@ -835,7 +840,7 @@ fun startSpotifySongGetter() {
  */
 fun isSpotifySongNameGetterEnabled(): Boolean {
     return try {
-        isSpotifySongNameGetterEnabled.value
+        BotConfig.isSpotifySongNameGetterEnabled
     } catch (e: Exception) {
         false
     }
@@ -931,7 +936,7 @@ fun emptyAllSongDisplayFiles() {
  * @return {Boolean} true, if song request redeem is enabled, else false
  */
 fun isSongRequestEnabledAsRedeem(): Boolean {
-    return !isSongRequestEnabledAsCommand.value
+    return !BotConfig.isSongRequestCommandEnabled
 }
 
 
@@ -1000,7 +1005,7 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
 
 /**
  * Checks if the user is eligible for using the add song command. The eligibility is set
- * in the parameter add_song_command_security_level_on_start_up
+ * in the parameter addSongCommandSecurityLevel
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @param userName {String} username of the user
  * @return {Boolean} true, if the user is eligible, else false
@@ -1010,8 +1015,8 @@ fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userNam
     return isUserEligibleForCommand(
         permissions,
         userName,
-        addSongCommandSecurityLevel,
-        SpotifyConfig.customGroupUserNamesAddSongCommand
+        BotConfig.addSongCommandSecurityLevel,
+        BotConfig.customGroupUserNamesAddSongCommand
     )
 }
 
@@ -1100,7 +1105,7 @@ suspend fun getAddSongPlaylistNameString(): String {
 
 /**
  * Checks if the user is eligible for using the skip song command. The eligibility is set
- * in the parameter add_song_command_security_level_on_start_up
+ * in the parameter skipSongCommandSecurityLevel
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @param userName {String} username of the user
  * @return {Boolean} true, if the user is eligible, else false
@@ -1110,15 +1115,15 @@ fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userNa
     return isUserEligibleForCommand(
         permissions,
         userName,
-        skipSongCommandSecurityLevel,
-        SpotifyConfig.customGroupUserNamesSkipSongCommand
+        BotConfig.skipSongCommandSecurityLevel,
+        BotConfig.customGroupUserNamesSkipSongCommand
     )
 }
 
 
 /**
  * Checks if the user is eligible for using the remove song from queue command. The eligibility is set
- * in the parameter remove_song_from_queue_command_security_level_on_start_up
+ * in the parameter removeSongFromQueueCommandSecurityLevel
  * @param permissions {Set<CommandPermission>} permissions of current user
  * @param userName {String} username of the user
  * @return {Boolean} true, if the user is eligible, else false
@@ -1128,8 +1133,8 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
     return isUserEligibleForCommand(
         permissions,
         userName,
-        removeSongFromQueueCommandSecurityLevel,
-        SpotifyConfig.customGroupUserNamesRemoveSongFromQueueCommand
+        BotConfig.removeSongFromQueueCommandSecurityLevel,
+        BotConfig.customGroupUserNamesRemoveSongFromQueueCommand
     )
 }
 
@@ -1149,13 +1154,13 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 fun isUserEligibleForCommand(
     permissions: Set<CommandPermission>,
     userName: String,
-    commandSecurityLevel: MutableState<CustomCommandPermissions>,
+    commandSecurityLevel: CustomCommandPermissions,
     customGroup: List<String>
 ): Boolean {
-    return if(commandSecurityLevel.value == CustomCommandPermissions.CUSTOM) {
+    return if(commandSecurityLevel == CustomCommandPermissions.CUSTOM) {
         isUserPartOfCustomGroupOrBroadcaster(userName, customGroup)
     } else {
-        permissions.contains(CommandPermission.valueOf(commandSecurityLevel.value.toString()))
+        permissions.contains(CommandPermission.valueOf(commandSecurityLevel.toString()))
     }
 }
 

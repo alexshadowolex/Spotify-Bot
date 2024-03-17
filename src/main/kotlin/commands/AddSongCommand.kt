@@ -1,5 +1,6 @@
 package commands
 
+import config.BotConfig
 import config.TwitchBotConfig
 import getCurrentSpotifySong
 import handleAddSongCommandFunctionality
@@ -7,20 +8,18 @@ import handler.Command
 import isUserEligibleForAddSongCommand
 import logger
 import sendMessageToTwitchChatAndLogIt
-import ui.addSongCommandSecurityLevel
-import ui.isAddSongCommandEnabled
 
 val addSongCommand: Command = Command(
     names = listOf("addsong", "as", "add"),
     handler = {
-        if(!isAddSongCommandEnabled.value) {
+        if(!BotConfig.isAddSongCommandEnabled) {
             logger.info("AddSongCommand disabled. Aborting execution")
             return@Command
         }
 
         if(!isUserEligibleForAddSongCommand(messageEvent.permissions, messageEvent.user.name)) {
             logger.info("User ${messageEvent.user.name} tried using addSongCommand but was not eligible. " +
-                    "Current security setting: ${addSongCommandSecurityLevel.value}"
+                    "Current security setting: ${BotConfig.addSongCommandSecurityLevel}"
             )
 
             sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
@@ -36,6 +35,6 @@ val addSongCommand: Command = Command(
 
         sendMessageToTwitchChatAndLogIt(chat, message)
 
-        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDown
+        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }
 )
