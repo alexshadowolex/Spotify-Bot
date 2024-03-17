@@ -85,8 +85,6 @@ suspend fun setupTwitchBot(): TwitchClient {
 
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelId)
 
-    val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
-
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
     }
@@ -157,6 +155,12 @@ suspend fun setupTwitchBot(): TwitchClient {
 
             return@onEvent
         }
+
+        // Do not call the init of RemoveSongFromQueueHandler earlier in this setup function.
+        // For some reason, doing so will cause an error in the startRemoveSongFromQueueChecker-function
+        // while checking for the parameter isSpotifySongNameGetterEnabled. This results in an empty error window
+        // when any property is missing in the same file as isSpotifySongNameGetterEnabled (for now: botConfig.properties)
+        val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
 
         val commandHandlerScope = CommandHandlerScope(
             chat = chat,
