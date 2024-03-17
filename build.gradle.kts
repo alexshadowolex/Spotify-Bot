@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "alex.spotify.bot"
-version = "1.2.6"
+version = "2.0.0"
 
 repositories {
     google()
