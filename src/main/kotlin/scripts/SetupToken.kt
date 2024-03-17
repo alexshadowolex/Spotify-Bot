@@ -29,7 +29,7 @@ import java.net.URI
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
-// Current Version: v3
+// Current Version: v4
 
 fun main() = try {
     val redirectUri = "https://www.example.com"
