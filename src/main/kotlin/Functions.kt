@@ -390,7 +390,7 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
     var success = true
     try {
-        val message = updateQueuePatch(query).let { result ->
+        val message = updateQueue(query).let { result ->
             val track = result.track
             if(track != null) {
                 "Song ${createSongString(track.name, track.artists)} has been added to the queue " +
@@ -414,84 +414,6 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     }
 
     return success
-}
-
-
-/**
- * Updates the spotify queue adding a song to it
- * This function is a patch due to new Spotify API changes that are not handled yet in the library.
- * It will be removed and replaced by updateQueue as soon as the library has a new version
- * @param query {String} either a spotify link or a query that will be searched for
- * @return {SongRequestResultPatch} {PatchSpotifyTrackResponse?} and {String}, on success: track and explanation message,
- * on failure: null and explanation message
- */
-private suspend fun updateQueuePatch(query: String): SongRequestResultPatch {
-    logger.info("called updateQueue with query $query")
-    val result = try {
-        getSongIdFromSpotifyDirectLink(query)?.let {
-            getSpotifyTrackByIdPatch(it)
-        } ?: run {
-            getSpotifyTrackByQueryPatch(query)
-        } ?: return SongRequestResultPatch(
-            track = null,
-            songRequestResultExplanation = "No Result when searching for song."
-        )
-    } catch (e: Exception) {
-        logger.error("Error while searching for track:", e)
-        return SongRequestResultPatch(
-            track = null,
-            songRequestResultExplanation = "Exception when accessing spotify endpoints for searching the song."
-        )
-    }
-
-    logger.info("Result after accessing spotify endpoints: $result")
-    val artistNames = result.artists.map { it.name }
-
-    if(isSongBlocked(result.uri.id) || isSongArtistBlocked(artistNames)) {
-        val message = "Song \"${result.name}\" was blocked because of " + if(isSongArtistBlocked(artistNames)) {
-            "the artist \"${getFirstBlockedArtistName(artistNames)}\" being blocked."
-        } else {
-            "the song itself being blocked."
-        }
-
-        return SongRequestResultPatch(
-            track = null,
-            songRequestResultExplanation = message
-        )
-    }
-
-    if(result.duration_ms.toInt().milliseconds > SpotifyConfig.maximumLengthSongRequestMinutes) {
-        logger.info("Song length ${result.duration_ms.toInt() / 60000f} was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}")
-        return SongRequestResultPatch(
-            track = null,
-            songRequestResultExplanation = "The song was longer than ${SpotifyConfig.maximumLengthSongRequestMinutes}."
-        )
-    }
-
-    try {
-        spotifyClient.player.addItemToEndOfQueue(result.uri)
-        logger.info("Added Song with URI ${result.uri.uri} successfully to the queue.")
-    } catch (e: Exception) {
-        val message = when(e) {
-            is SpotifyException.BadRequestException -> {
-                logger.error("Spotify player is not active.", e)
-                "Spotify Player is currently not active. Click on the spotify play button strimmer!"
-            }
-            else -> {
-                logger.error("An exception occurred while calling addItemToEndOfQueue: ", e)
-                "Adding the song to the queue failed."
-            }
-        }
-        return SongRequestResultPatch(
-            track = null,
-            songRequestResultExplanation = message
-        )
-    }
-
-    return SongRequestResultPatch(
-        track = result,
-        songRequestResultExplanation = "Successfully added the song to the queue."
-    )
 }
 
 
@@ -653,35 +575,6 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
 
 
 /**
- * Gets the track from the Spotify APIs track endpoint.
- * This function is a patch due to new Spotify API changes that are not handled yet in the library.
- * It will be removed and replaced by getSpotifyTrackById as soon as the library has a new version
- * @param songId {String} the link's songId
- * @return {PatchSpotifyTrackResponse?} a track on success, null on error
- */
-private suspend fun getSpotifyTrackByIdPatch(songId: String): PatchSpotifyTrackResponse? {
-    logger.info("called getSpotifyTrackByIdPatch with ID: $songId")
-    val json = Json {
-        ignoreUnknownKeys = true
-    }
-    return try {
-        val response = httpClient.get("https://api.spotify.com/v1/tracks/$songId") {
-            header("Authorization", " Bearer ${spotifyClient.token.accessToken}")
-        }
-
-        if(response.status == HttpStatusCode.OK) {
-            json.decodeFromString<PatchSpotifyTrackResponse>(response.bodyAsText())
-        } else {
-            throw SpotifyException.ParseException("Error while parsing response from spotify")
-        }
-    } catch (e: Exception) {
-        logger.error("Exception while accessing tracks endpoint of spotify: ", e)
-        null
-    }
-}
-
-
-/**
  * Gets the track from the Spotify APIs search endpoint.
  * @param query {String} the search query
  * @return {Track?} a track on success, null on error
@@ -703,44 +596,6 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
         null
     }
 }
-
-
-/**
- * Gets the track from the Spotify APIs search endpoint.
- * This function is a patch due to new Spotify API changes that are not handled yet in the library.
- * It will be removed and replaced by getSpotifyTrackByQuery as soon as the library has a new version
- * @param query {String} the search query
- * @return {PatchSpotifyTrackResponse?} a track on success, null on error
- */
-private suspend fun getSpotifyTrackByQueryPatch(query: String): PatchSpotifyTrackResponse? {
-    logger.info("called getSpotifyTrackByQueryPatch with query: $query")
-    return try {
-        val result = spotifyClient.search.search(
-            query = query,
-            searchTypes = arrayOf(
-                SearchApi.SearchType.Artist,
-                SearchApi.SearchType.Album,
-                SearchApi.SearchType.Track
-            ),
-            market = Market.DE
-        ).tracks?.firstOrNull()
-
-        if(result == null) {
-            null
-        } else {
-            PatchSpotifyTrackResponse(
-                artists = result.artists,
-                uri = result.uri,
-                name = result.name,
-                duration_ms = result.length.toFloat()
-            )
-        }
-    } catch (e: Exception) {
-        logger.error("Exception while accessing search endpoint of spotify: ", e)
-        null
-    }
-}
-
 
 
 /**

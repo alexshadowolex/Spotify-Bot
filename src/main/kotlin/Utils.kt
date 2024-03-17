@@ -86,19 +86,3 @@ fun Duration.toIntPropertiesString(durationUnit: DurationUnit) =
  */
 fun Duration.toDoublePropertiesString(durationUnit: DurationUnit) =
     this.toDouble(durationUnit).toString()
-
-
-// TODO: remove when fix is in spotify library
-@Serializable
-data class PatchSpotifyTrackResponse(
-    val artists: List<SimpleArtist>,
-    val uri: PlayableUri,
-    val name: String,
-    val duration_ms: Float
-)
-
-
-data class SongRequestResultPatch(
-    val track: PatchSpotifyTrackResponse?,
-    val songRequestResultExplanation: String
-)
