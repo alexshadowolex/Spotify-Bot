@@ -18,10 +18,10 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v1.2.6 [Download from Release v1.2.6](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.6/Spotify.Bot-windows-x64-1.2.6.jar)
-* SetupToken.jar: v3 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupToken_v3.jar)
-* SetupProject.jar: v1 [Download from Release v1.2.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.1/SetupProject_v1.jar)
-* UpdateProperties.jar: v1.2.5 [Download from Release v1.2.5](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v1.2.5/UpdateProperties_1-2-5.jar)
+* Spotify-Bot.jar: v2.0.0 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/Spotify.Bot-windows-x64-2.0.0.jar)
+* SetupToken.jar: v4 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupToken_v4.jar)
+* SetupProject.jar: v2 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupProject_v2.jar)
+* UpdateProperties.jar: v2.0.0 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/UpdateProperties_2-0-0.jar)
 
 ## How to set up
 
@@ -42,7 +42,7 @@ Download all files and put them on the same level, like this:
     -> UpdateProperties.jar
     -> Spotify-Bot.jar
 ````
-During the setup process, you will need to execute those jars in a specific order. Execute them from that location.
+During the setup process, you will need to execute those jars in a specific order. Execute them from the same location.
 <br><br>
 #### Set Up Project Structure
 First we need to set up the project structure. Execute the newest version of the file SetupProject.jar.<br>
@@ -51,6 +51,8 @@ You will see this window:
 ![setupProject.png](images/setupProject.png)
 <br>
 To get the Twitch Token, login into the twitch account and go in another tab to [Token Generator](https://twitchtokengenerator.com/) and click on "bot chat token", then copy the "access token" into the field.
+<br><br>
+Into the field "Twitch Channel", type the twitch channel's name the bot is supposed to be used on. Note that the bot should moderator on that channel.
 <br><br>
 Both the Spotify ID and Spotify Secret need to get copied from the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard). Login with your spotify credentials and do following steps to get them:<br>
 1.) Click on "Create App"<br>
@@ -66,6 +68,7 @@ Now the data-folder should exist with following structure:
 ````
 -> data
     -> properties
+        -> botConfig.properties
         -> spotifyConfig.properties
         -> twitchBotconfig.properties
     -> tokens
@@ -78,12 +81,12 @@ Now we need to fill the files with the needed properties. For that, execute the 
 After doing that, a cmd will open and log the added properties:<br>
 ![updateProperties.png](images/updateProperties.png)
 <br>
-The properties-files in folder data\properties now have the needed entries. They only have default values at the moment.<br>
-You will get a detailed explanation of the properties later. For now, we only need to change 1 property:<br>
-Go into the file data\properties\twitchBotConfig.properties. There you have the entry "channel_name" -> remove everything after the "=" and add your twitch-channel name.
+The properties-files in folder data\properties now have the needed entries. They only have default values at the moment.
+<br>
+You can change the properties' values later in the UI. If you are interested in what property has which functionality, you can check the detailed explanation of the properties under [Contents of data-files explained](#contents-of-data-files-explained).<br>
 <br><br>
 #### Set Up Spotify Token
-Now we need to set up the spotify token. Execute the latest version of SetupToken.jar. Two things will happen: A Browser Tab opens and following window will be visible:<br>
+Now we need to set up the Spotify token. Execute the latest version of SetupToken.jar. Two things will happen: A Browser Tab opens and following window will be visible:<br>
 ![setupToken.png](images/setupToken.png)
 <br>
 Go into the browser tab. It has the website of the redirect URI open, example.com. In the URL, you will see following text:<br>
@@ -98,7 +101,7 @@ With this, the setup is done. You can execute the Spotify-Bot.jar with the curre
 On start up, the bot will display a message in chat to confirm start up. <br>
 
 ## How to Update
-If an update is released, you can find it under [Releases](https://github.com/alexshadowolex/spotify-bot/releases/latest). In this release, the latest files are found.
+If an update is released, you can find it under [Releases](https://github.com/alexshadowolex/spotify-bot/releases). In every release you can find a changelog for big changes and some attached files.
 <br>
 If the release includes a file "UpdateProperties_<version>.jar" it means that new properties have been added during the release. Download this file and execute it first so all needed properties are there. The cmd will inform you, which properties in which files are new.
 <br>
@@ -107,55 +110,51 @@ If the release includes new versions of the other script files (SetupProject, Se
 The file, that will always be included, is the new Bot version. Download it and swap out the old version with the new one.
 
 ## Current functionalities
-* Song Request -> Can be toggled off (is_song_request_enabled_by_default, switch in UI). Either with redeem or chat command.<br>
+* Song Request -> Can be toggled off (switch in UI under "General Settings"). Either with redeem or chat command.<br>
   Command names: "songrequest", "sr"<br>
   Takes a spotify-link or a text and then adds the result to the queue.<br><br>
-  You can set the maximum length of song duration in spotifyConfig.properties (maximum_length_minutes_song_request).<br><br>
-  You can block songs by adding their direct link (share link) to a property (blocked_song_links) in spotifyConfig.properties.<br><br>
-  You can block artists by adding their name to a property (blocked_song_artists) in spotifyConfig.properties.
-* Song Name Getter -> Can be toggled off (is_spotify_song_name_getter_enabled_by_default, switch in UI). Gets the current song name, artists and album image and writes it into different files:
-  * data\displayFiles\currentSong.txt -> Song Name + "by" + Artists + 10 spaces (for moving text display)
+  You can set the maximum length of song duration in the UI under Spotify Settings.<br><br>
+  You can block songs by adding their direct link (share link) to the list "Blocked Song Links" in the UI under Spotify Settings.<br><br>
+  You can block artists by adding their name to the list Blocked Song Artists in the UI under Spotify Settings.
+* Song Name Getter -> Can be toggled off (switch in UI under "General Settings"). Gets the current song name, artists and album image and writes it into different files:
+  * data\displayFiles\currentSong.txt -> Song Name + "by" + Artists + 10 spaces (thought for moving text display)
   * data\displayFiles\currentSongName.txt -> Song Name
   * data\displayFiles\currentSongArtists.txt -> Song Artists
   * data\displayFiles\currentAlbumImage.jpg -> Current song album's image
   <br><br>
   The different files are thought so every user can use the parts they want to use.
   <br>
-  There is a functionality to empty those files on pause (is_empty_song_display_files_on_pause_enabled_by_default, switch in UI).
+  There is a functionality to empty those files on pause (Empty Song Display Files On Pause switch in UI under "General Settings").
   <br>
-  This will only happen, if the function is active and the bot has been started.
-* Update Checker -> Can be toggled off (show_new_version_available_window_on_start_up). Checks for new versions on GitHub and if there is one, a window will appear.
-* Song Info Command -> Can be toggled off (is_song_info_command_enabled_by_default, switch in UI).<br>
+  This functionality will only happen, if the function is active and the bot has been started.
+* Update Checker -> Can be toggled off (switch in UI under "General Settings"). Checks for new versions on GitHub and if there is one, a window will appear.
+* Song Info Command -> Can be toggled off (switch in UI under "General Settings").<br>
   Command names: "songinfo", "si"<br>
   Command to display the current song in twitch chat together with a spotify link.
-* Add Song Command -> Can be toggled off (is_add_song_command_enabled_by_default, switch in UI).<br>
+* Add Song Command -> Can be toggled off (switch in UI under "General Settings").<br>
   Command names: "addsong", "as", "add"<br>
-  Command to add the current song to a certain playlist. This playlist is identified by an ID set in spotifyConfig.properties with the parameter playlist_id_for_add_song_command. <br>
+  Command to add the current song to a certain playlist. This playlist is identified by an ID set in the UI under "Spotify Settings" with the field Playlist ID For Add Song Command. <br>
   To obtain this ID, simply extract it from the share-link: <br>
-  E.g. the ID in this share link: https://open.spotify.com/playlist/idinsidethislink?si=abc1234569ada is "idinsidethislink", the random characters between "playlist/" and "?si". Just crop it out and paste it into the properties-file.<br>
+  E.g. the ID in this share link: https://open.spotify.com/playlist/idinsidethislink?si=abc1234569ada is "idinsidethislink", the random characters between "playlist/" and "?si". Just crop it out and paste it into the fitting field.<br>
   This functionality can be restricted to be used only by certain user groups:
   * BROADCASTER: Only the broadcaster
   * MODERATOR: Owner and Moderators
-  * CUSTOM: Custom group of users, specified per username in property custom_group_user_names_add_song_command<br>
-  
-  This security setting can be done in the UI and in the properties files. Note that the value is case-sensitive.
-* Skip Song Command -> Can be toggled off (is_skip_song_command_enabled_by_default, switch in UI).<br>
+  * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames For Add Song Command under General Settings.<br>
+* Skip Song Command -> Can be toggled off (switch in UI under "General Settings").<br>
   Command names: "skipsong", "skip", "next", "ss"<br>
   Command to skip the current song.<br>
   This functionality can be restricted to be used only by certain user groups:
     * BROADCASTER: Only the broadcaster
     * MODERATOR: Owner and Moderators
-    * CUSTOM: Custom group of users, specified per username in property custom_group_user_names_skip_song_command<br>
-* Remove Song From Queue Command -> Can be toggled off (is_remove_song_from_queue_command_enabled_by_default, switch in UI).<br>
+    * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames For Skip Song Command under General Settings.<br>
+* Remove Song From Queue Command -> Can be toggled off (switch in UI under "General Settings").<br>
   Command names: "removesongfromqueue", "rsfq", "remove", "removesong", "rs"<br>
   Command to remove a song from the queue.<br>
   To use this command, type (or rather copy and paste) the song name string that the bot responds with after a song request (or when you use the song info command) after the command. E.g. ""Ghost" by Confetti"<br>
   This functionality can be restricted to be used only by certain user groups:
   * BROADCASTER: Only the broadcaster
   * MODERATOR: Owner and Moderators
-  * CUSTOM: Custom group of users, specified per username in property custom_group_user_names_remove_song_from_queue_command<br>
-
-  This security setting can be done in the UI and in the properties files. Note that the value is case-sensitive.
+  * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames Remove Song From Queue Command under General Settings.<br>
 
 ## Contents of data-files explained
 The files consist of following content:
@@ -168,59 +167,54 @@ data\tokens\spotifyClientSecret.txt: only the spotify client secret from the app
 ````
 data\properties\twitchBotConfig.properties:
     ->channel=<Twitch channel Name>
-    ->command_prefix=<prefix for command usage>
-    ->default_command_cool_down=<cool down in seconds for commands>
-    ->default_user_cool_down=<cool down in seconds for users per command>
-    ->song_request_redeem_id=<the ID of the song request redeem>
-    ->song_request_emotes=<Twitch emotes that will be used after confirmation of an added song, seperated by ",">
-    ->is_song_request_command_enabled_by_default=<true or false. If this is false, the redeem will be enabled on app start instead>
-    ->blacklisted_users=<list of Twitch names/IDs of users that can't use the redeem/command, seperated by ",">
-    ->blacklist_emote=<Twitch emote that will be displayed after the message towards a blacklisted user>
-    ->is_spotify_song_name_getter_enabled_by_default=<true or false. If this is true, the name getter functionality is enabled on start up>
-    ->show_new_version_available_window_on_start_up=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
-    ->is_song_request_enabled_by_default=<true or false. If this is true, the song request functionality is enabled on start up>
-    ->is_song_info_command_enabled_by_default=<true or false. If this is true, the song info command is enabled on start up>
-    ->is_empty_song_display_files_on_pause_enabled_by_default=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
-    ->is_add_song_command_enabled_by_default=<true or false. If this is true, the add song command is enabled on start up>
-    ->is_skip_song_command_enabled_by_default=<true or false. If this is true, the skip song command is enabled on start up>
-    ->is_remove_song_from_queue_command_enabled_by_default=<true or false. If this is true, the remove song from queue command is enabled on start up>
+    ->commandPrefix=<prefix for command usage>
+    ->defaultCommandCoolDownSeconds=<cool down in seconds for commands>
+    ->defaultUserCoolDownSeconds=<cool down in seconds for users per command>
+    ->songRequestRedeemId=<the ID of the song request redeem>
+    ->songRequestEmotes=<Twitch emotes that will be used after confirmation of an added song, seperated by ",">
+    ->isSongRequestCommandEnabled=<true or false. If this is false, the redeem will be enabled on app start instead>
+    ->blacklistedUsers=<list of Twitch names/IDs of users that can't use the redeem/command, seperated by ",">
+    ->blacklistMessage=<Message will be displayed after a blacklisted user tried using a command/redeem>
+    ->isSpotifySongNameGetterEnabled=<true or false. If this is true, the name getter functionality is enabled on start up>
+    ->isNewVersionCheckEnabled=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
+    ->isSongRequestEnabled=<true or false. If this is true, the song request functionality is enabled on start up>
+    ->isSongInfoCommandEnabled=<true or false. If this is true, the song info command is enabled on start up>
+    ->isEmptySongDisplayFilesOnPauseEnabled=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
+    ->isAddSongCommandEnabled=<true or false. If this is true, the add song command is enabled on start up>
+    ->isSkipSongCommandEnabled=<true or false. If this is true, the skip song command is enabled on start up>
+    ->isRemoveSongFromQueueCommandEnabled=<true or false. If this is true, the remove song from queue command is enabled on start up>
 ````
 ````
 data\properties\spotifyConfig.properties:
-    ->spotify_client_id=<client ID from spotify app>
-    ->playlist_id_for_add_song_command=<playlist ID for add song command. Check the command description for how to obtain the ID>
-    ->add_song_command_security_level_on_start_up=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
-    ->maximum_length_minutes_song_request=<Maximum song length for songrequests. This value is interpreted as Minutes (you can also use decimal numbers). If you don't want a maximum lenght limit, just leave this property empty.>
-    ->blocked_song_links=<Spotify direct links of songs that are blocked and will not be added to the queue, seperated by ",">
-    ->blocked_song_artists=<Names of artists that are blocked and their songs will not be added to the queue, seperated by ",">
-    ->skip_song_command_security_level_on_start_up=<security level that decides, who can use the skip song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
-    ->custom_group_user_names_add_song_command=<custom group of users for the add song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
-    ->custom_group_user_names_skip_song_command=<custom group of users for the skip song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
-    ->remove_song_from_queue_command_security_level_on_start_up=<security level that decides, who can use the remove song from queue command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
-    ->custom_group_user_names_remove_song_from_queue_command=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->spotifyClientId=<client ID from spotify app>
+    ->playlistIdForAddSongCommand=<playlist ID for add song command. Check the command description for how to obtain the ID>
+    ->addSongCommandSecurityLevel=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->maximumLengthSongRequestMinutes=<Maximum song length for songrequests. This value is interpreted as Minutes (you can also use decimal numbers). If you don't want a maximum lenght limit, just leave this property empty.>
+    ->blockedSongLinks=<Spotify direct links of songs that are blocked and will not be added to the queue, seperated by ",">
+    ->blockedSongArtists=<Names of artists that are blocked and their songs will not be added to the queue, seperated by ",">
+    ->skipSongCommandSecurityLevel=<security level that decides, who can use the skip song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->customGroupUserNamesAddSongCommand=<custom group of users for the add song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->customGroupUserNamesSkipSongCommand=<custom group of users for the skip song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->removeSongFromQueueCommandSecurityLevel=<security level that decides, who can use the remove song from queue command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->customGroupUserNamesRemoveSongFromQueueCommand=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
 ````
-Fill out all the properties in twitchBotConfig.properties and spotifyConfig.properties with data that fits.<br>
-You can leave empty following properties: 
-* twitchBotConfig.properties:
-   * blacklisted_users
-   * song_request_redeem_id (if you are not going to use it)
-* spotifyConfig.properties:
-   * maximum_length_minutes_song_request
-   * blocked_song_links
-   * blocked_song_artists
-   * custom_group_user_names_add_song_command
-   * custom_group_user_names_skip_song_command
-   * custom_group_user_names_remove_song_from_queue_command.<br>
-If you want to leave them empty, you still have to include them in the file. An empty property looks like this "blacklisted_users=".
 <br>
+Following properties are not changeable in the UI:
+
+* spotifyClientId in spotifyConfig.properties
+* channel in twitchBotConfig.properties
+
+If you need to change them you need to do that directly inside the properties files and restart the bot.
+<br><br>
 If you don't have the redeem ID, you have 2 possible solutions:<br>
-1.) Use the redeem's name instead (on the property song_request_redeem_id). Start the bot and use the redeem once. Then go into the latest log-file and check for a warning that says you used the name and should use the ID instead. Copy and Paste it and done.<br>
-2.) Go to https://www.instafluff.tv/TwitchCustomRewardID/?channel=<channel_name> (swap out <channel_name> with your channel). Then use the redeem on your channel, the site will show you the redeem ID.
+1.) Use the redeem's name instead (on the property songRequestRedeemId). Start the bot and use the redeem once. Then go into the latest log-file and check for a warning that says you used the name and should use the ID instead. Copy and Paste it and done.<br>
+2.) Go to https://www.instafluff.tv/TwitchCustomRewardID/?channel=channel_name (swap out channel_name with your channel). Then use the redeem on your channel, the site will show you the redeem ID.
 
 
 ## Additional Information
 * Use any compiled binary (.jar-files) at your own risk. They could be doing anything without you knowing it. Either you trust me and my builds or not. I will take no responsibility for anything.
-* You can change the properties' values at any time, but they will only be applied after the next start up.
+* If you change the properties' values directly in the properties files while the bot is running, they will not be applied until next start up and might even be overwritten.
+* It is not recommended to overwrite properties directly in the properties files since almost all of them can be changed in the UI. But feel free to go wild! 
 * Make sure to check on releases, if there are newer version of the project-setup- or setup-token-jar, if needed.
 * If an error occurred (a window with an error message appeared), read the error message. The most common mistake is a property missing or having invalid data. A property missing can be identified like this: <br>
   ![exampleMissingProperty.png](images/exampleMissingProperty.png)
