@@ -26,6 +26,10 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
+import java.awt.Color
+import java.awt.Image
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
@@ -34,6 +38,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatterBuilder
 import java.util.*
+import javax.imageio.ImageIO
 import javax.swing.JOptionPane
 import kotlin.collections.set
 import kotlin.system.exitProcess
@@ -722,7 +727,8 @@ private fun writeCurrentSongTextFiles(currentTrack: Track) {
 
 
 /**
- * Downloads the current song's album image
+ * Downloads the current song's album image. If the image is not the default size 640x640 pixels, it gets scaled
+ * to be the default size.
  * @param currentTrack {Track} current Track
  */
 private fun downloadAndSaveAlbumImage(currentTrack: Track) {
@@ -730,8 +736,28 @@ private fun downloadAndSaveAlbumImage(currentTrack: Track) {
         val images = currentTrack.album.images
         if (images.isNotEmpty()) {
             val imageUrl = images.first().url
-            val imageData = URL(imageUrl).readBytes()
-            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(imageData)
+            val url = URL(imageUrl)
+            val bufferedImageData = ImageIO.read(url)
+
+            val defaultWidth = 640
+            val defaultHeight = 640
+            val isImageWidthWrong = bufferedImageData.width != defaultWidth
+            val isImageHeightWrong = bufferedImageData.height != defaultHeight
+
+            val imageBytes = if(isImageWidthWrong || isImageHeightWrong) {
+                val resizedImage = bufferedImageData.getScaledInstance(defaultWidth, defaultHeight, Image.SCALE_DEFAULT)
+                val newImageBuffer = BufferedImage(defaultWidth, defaultHeight, BufferedImage.TYPE_INT_RGB)
+                newImageBuffer.graphics.drawImage(resizedImage, 0, 0, Color(0, 0, 0), null)
+
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                ImageIO.write(newImageBuffer, "jpg", byteArrayOutputStream)
+
+                byteArrayOutputStream.toByteArray()
+            } else {
+                url.readBytes()
+            }
+
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(imageBytes)
         }
     } catch (e: Exception) {
         logger.error("Exception occurred while trying to get the image in downloadAndSaveAlbumImage ", e)
