@@ -78,29 +78,31 @@ fun app() {
                         .fillMaxWidth()
                 ) {
                     Row {
-                        BottomNavigation(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            screens.forEach {
-                                BottomNavigationItem(
-                                    selected = currentScreen == it.name,
-                                    icon = {
-                                        Icon(
-                                            imageVector = it.icon,
-                                            contentDescription = it.label
-                                        )
-                                    },
-                                    label = {
-                                        Text(it.label)
-                                    },
-                                    alwaysShowLabel = true,
-                                    onClick = {
-                                        navController.navigate(it.name)
-                                        windowHeight.value = it.height
-                                        windowWidth.value = it.width
-                                    }
-                                )
+                        BottomNavigation {
+                            Row (
+                                modifier = Modifier
+                                    .width(500.dp)
+                            ) {
+                                screens.forEach {
+                                    BottomNavigationItem(
+                                        selected = currentScreen == it.name,
+                                        icon = {
+                                            Icon(
+                                                imageVector = it.icon,
+                                                contentDescription = it.label
+                                            )
+                                        },
+                                        label = {
+                                            Text(it.label)
+                                        },
+                                        alwaysShowLabel = true,
+                                        onClick = {
+                                            navController.navigate(it.name)
+                                            windowHeight.value = it.height
+                                            windowWidth.value = it.width
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -134,8 +136,8 @@ enum class Screen(
     GeneralSettingsScreen(
         label = "General Settings",
         icon = Icons.Filled.Settings,
-        height = 1065.dp,
-        width = 500.dp
+        height = 700.dp,
+        width = 900.dp
     ),
     SpotifySettingsScreen(
         label = "Spotify Settings",

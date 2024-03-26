@@ -4,10 +4,7 @@ import CustomCommandPermissions
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -25,10 +22,7 @@ import androidx.compose.ui.unit.sp
 import config.BotConfig
 import isSongRequestEnabledAsRedeem
 import logger
-import ui.dropDownStringPropertiesList
-import ui.sectionDivider
-import ui.toggleFunctionalityRow
-import ui.versionAndCreditsRow
+import ui.*
 
 
 private var isSongRequestEnabled = mutableStateOf(false)
@@ -124,191 +118,215 @@ fun generalSettingsScreen() {
             Column (
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
+                    .fillMaxSize()
             ) {
-                songRequestRow()
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Song Name Getter ",
-                    true,
-                    null,
-                    isSpotifySongNameGetterEnabled
-                )
-
-                toggleFunctionalityRow(
-                    "Empty Song Display Files on Pause ",
-                    false,
-                    isSpotifySongNameGetterEnabled,
-                    isEmptySongDisplayFilesOnPauseEnabled
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Song Info Command ",
-                    true,
-                    null,
-                    isSongInfoCommandEnabled
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Add Song Command ",
-                    true,
-                    null,
-                    isAddSongCommandEnabled
-                )
-
-                Row(
+                Row (
                     modifier = Modifier
-                        .padding(top = 3.dp)
-                        .fillMaxWidth()
+                        .fillMaxSize()
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(0.49f)
+                            .padding(end = 10.dp)
                     ) {
-                        Text(
-                            text = "Security Level of Add Song Command: ",
-                            modifier = Modifier
-                                .align(Alignment.Start)
+
+                        songRequestRow()
+
+                        sectionDivider()
+
+                        toggleFunctionalityRow(
+                            "Song Name Getter ",
+                            true,
+                            null,
+                            isSpotifySongNameGetterEnabled
                         )
+
+                        toggleFunctionalityRow(
+                            "Empty Song Display Files on Pause ",
+                            false,
+                            isSpotifySongNameGetterEnabled,
+                            isEmptySongDisplayFilesOnPauseEnabled
+                        )
+
+                        sectionDivider()
+
+                        toggleFunctionalityRow(
+                            "Song Info Command ",
+                            true,
+                            null,
+                            isSongInfoCommandEnabled
+                        )
+
+                        sectionDivider()
+
+                        dropDownStringPropertiesList(
+                            entries = blacklistedUsers,
+                            textFieldTitle = "Blacklisted Users",
+                            scaffoldState = scaffoldState
+                        )
+
+                        sectionDivider()
+
+                        toggleFunctionalityRow(
+                            "New Version Check on Start-up ",
+                            true,
+                            null,
+                            isNewVersionCheckEnabled
+                        )
+
+                        sectionDivider()
                     }
-                }
-                commandSecurityMultiToggleButton(
-                    currentSelection = addSongCommandSecurityLevel.value,
-                    toggleStates = listOf(
-                        CustomCommandPermissions.BROADCASTER,
-                        CustomCommandPermissions.MODERATOR,
-                        CustomCommandPermissions.CUSTOM
-                    ),
-                    conditionClickable = isAddSongCommandEnabled,
-                    functionalityDisplayName = "Add Song Command",
-                    onToggleChange = {
-                        addSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
-                    }
-                )
 
-                dropDownStringPropertiesList(
-                    entries = customGroupUserNamesAddSongCommand,
-                    textFieldTitle = "Custom Group Add Song Command",
-                    scaffoldState = scaffoldState
-                )
 
-                sectionDivider()
+                    columnDivider()
 
-                toggleFunctionalityRow(
-                    "Skip Song Command ",
-                    true,
-                    null,
-                    isSkipSongCommandEnabled
-                )
 
-                Row(
-                    modifier = Modifier
-                        .padding(top = 3.dp)
-                        .fillMaxWidth()
-                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(start = 10.dp)
                     ) {
-                        Text(
-                            text = "Security Level of Skip Song Command: ",
-                            modifier = Modifier
-                                .align(Alignment.Start)
+
+                        toggleFunctionalityRow(
+                            "Add Song Command ",
+                            true,
+                            null,
+                            isAddSongCommandEnabled
                         )
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 3.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Security Level of Add Song Command: ",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+                        }
+                        commandSecurityMultiToggleButton(
+                            currentSelection = addSongCommandSecurityLevel.value,
+                            toggleStates = listOf(
+                                CustomCommandPermissions.BROADCASTER,
+                                CustomCommandPermissions.MODERATOR,
+                                CustomCommandPermissions.CUSTOM
+                            ),
+                            conditionClickable = isAddSongCommandEnabled,
+                            functionalityDisplayName = "Add Song Command",
+                            onToggleChange = {
+                                addSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
+                            }
+                        )
+
+                        dropDownStringPropertiesList(
+                            entries = customGroupUserNamesAddSongCommand,
+                            textFieldTitle = "Custom Group Add Song Command",
+                            scaffoldState = scaffoldState
+                        )
+
+                        sectionDivider()
+
+                        toggleFunctionalityRow(
+                            "Skip Song Command ",
+                            true,
+                            null,
+                            isSkipSongCommandEnabled
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 3.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Security Level of Skip Song Command: ",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+                        }
+
+                        commandSecurityMultiToggleButton(
+                            currentSelection = skipSongCommandSecurityLevel.value,
+                            toggleStates = listOf(
+                                CustomCommandPermissions.BROADCASTER,
+                                CustomCommandPermissions.MODERATOR,
+                                CustomCommandPermissions.CUSTOM
+                            ),
+                            conditionClickable = isSkipSongCommandEnabled,
+                            functionalityDisplayName = "Skip Song Command",
+                            onToggleChange = {
+                                skipSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
+                            }
+                        )
+
+                        dropDownStringPropertiesList(
+                            entries = customGroupUserNamesSkipSongCommand,
+                            textFieldTitle = "Custom Group Skip Song Command",
+                            scaffoldState = scaffoldState
+                        )
+
+                        sectionDivider()
+
+                        toggleFunctionalityRow(
+                            "Remove Song From Queue Command ",
+                            true,
+                            null,
+                            isRemoveSongFromQueueCommandEnabled
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 3.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Security Level of Remove Song From Queue Command: ",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+                        }
+
+                        commandSecurityMultiToggleButton(
+                            currentSelection = removeSongFromQueueCommandSecurityLevel.value,
+                            toggleStates = listOf(
+                                CustomCommandPermissions.BROADCASTER,
+                                CustomCommandPermissions.MODERATOR,
+                                CustomCommandPermissions.CUSTOM
+                            ),
+                            conditionClickable = isRemoveSongFromQueueCommandEnabled,
+                            functionalityDisplayName = "Remove Song From Queue Command",
+                            onToggleChange = {
+                                removeSongFromQueueCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
+                            }
+                        )
+
+                        dropDownStringPropertiesList(
+                            entries = customGroupUserNamesRemoveSongFromQueueCommand,
+                            textFieldTitle = "Custom Group Skip Song Command",
+                            scaffoldState = scaffoldState
+                        )
+
+                        sectionDivider()
+
+                        versionAndCreditsRow()
                     }
                 }
-
-                commandSecurityMultiToggleButton(
-                    currentSelection = skipSongCommandSecurityLevel.value,
-                    toggleStates = listOf(
-                        CustomCommandPermissions.BROADCASTER,
-                        CustomCommandPermissions.MODERATOR,
-                        CustomCommandPermissions.CUSTOM
-                    ),
-                    conditionClickable = isSkipSongCommandEnabled,
-                    functionalityDisplayName = "Skip Song Command",
-                    onToggleChange = {
-                        skipSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
-                    }
-                )
-
-                dropDownStringPropertiesList(
-                    entries = customGroupUserNamesSkipSongCommand,
-                    textFieldTitle = "Custom Group Skip Song Command",
-                    scaffoldState = scaffoldState
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "Remove Song From Queue Command ",
-                    true,
-                    null,
-                    isRemoveSongFromQueueCommandEnabled
-                )
-
-                Row(
-                    modifier = Modifier
-                        .padding(top = 3.dp)
-                        .fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Security Level of Remove Song From Queue Command: ",
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
-                }
-
-                commandSecurityMultiToggleButton(
-                    currentSelection = removeSongFromQueueCommandSecurityLevel.value,
-                    toggleStates = listOf(
-                        CustomCommandPermissions.BROADCASTER,
-                        CustomCommandPermissions.MODERATOR,
-                        CustomCommandPermissions.CUSTOM
-                    ),
-                    conditionClickable = isRemoveSongFromQueueCommandEnabled,
-                    functionalityDisplayName = "Remove Song From Queue Command",
-                    onToggleChange = {
-                        removeSongFromQueueCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
-                    }
-                )
-
-                dropDownStringPropertiesList(
-                    entries = customGroupUserNamesRemoveSongFromQueueCommand,
-                    textFieldTitle = "Custom Group Skip Song Command",
-                    scaffoldState = scaffoldState
-                )
-
-                sectionDivider()
-
-                dropDownStringPropertiesList(
-                    entries = blacklistedUsers,
-                    textFieldTitle = "Blacklisted Users",
-                    scaffoldState = scaffoldState
-                )
-
-                sectionDivider()
-
-                toggleFunctionalityRow(
-                    "New Version Check on Start-up ",
-                    true,
-                    null,
-                    isNewVersionCheckEnabled
-                )
-
-                sectionDivider()
-
-                versionAndCreditsRow()
             }
         }
     }

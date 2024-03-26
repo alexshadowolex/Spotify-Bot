@@ -15,20 +15,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
 import config.BuildInfo
-import joinToLowercasePropertiesString
-import joinToPropertiesString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logger
 import java.awt.Desktop
 import java.net.URI
-import java.util.Locale
 
 
 @Composable
@@ -39,6 +35,18 @@ fun sectionDivider() {
             .padding(top = 5.dp),
         color = MaterialTheme.colors.primary,
         thickness = 2.dp
+    )
+}
+
+
+@Composable
+fun columnDivider() {
+    Divider(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(top = 5.dp, bottom = 5.dp)
+            .width(2.dp),
+        color = MaterialTheme.colors.primary
     )
 }
 
