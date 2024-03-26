@@ -165,6 +165,25 @@ data\tokens\twitchtoken.txt: only the twitch token, nothing else
 data\tokens\spotifyClientSecret.txt: only the spotify client secret from the app, nothing else
 ````
 ````
+data\properties\botConfig.properties:
+    ->isSongRequestCommandEnabled=<true or false. If this is false, the redeem will be enabled on app start instead>
+    ->blacklistedUsers=<list of Twitch names/IDs of users that can't use the redeem/command, seperated by ",">
+    ->isSpotifySongNameGetterEnabled=<true or false. If this is true, the name getter functionality is enabled on start up>
+    ->isNewVersionCheckEnabled=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
+    ->isSongRequestEnabled=<true or false. If this is true, the song request functionality is enabled on start up>
+    ->isSongInfoCommandEnabled=<true or false. If this is true, the song info command is enabled on start up>
+    ->isEmptySongDisplayFilesOnPauseEnabled=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
+    ->isAddSongCommandEnabled=<true or false. If this is true, the add song command is enabled on start up>
+    ->addSongCommandSecurityLevel=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->isSkipSongCommandEnabled=<true or false. If this is true, the skip song command is enabled on start up>
+    ->isRemoveSongFromQueueCommandEnabled=<true or false. If this is true, the remove song from queue command is enabled on start up>
+    ->skipSongCommandSecurityLevel=<security level that decides, who can use the skip song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->customGroupUserNamesAddSongCommand=<custom group of users for the add song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->customGroupUserNamesSkipSongCommand=<custom group of users for the skip song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->removeSongFromQueueCommandSecurityLevel=<security level that decides, who can use the remove song from queue command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->customGroupUserNamesRemoveSongFromQueueCommand=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+````
+````
 data\properties\twitchBotConfig.properties:
     ->channel=<Twitch channel Name>
     ->commandPrefix=<prefix for command usage>
@@ -172,31 +191,15 @@ data\properties\twitchBotConfig.properties:
     ->defaultUserCoolDownSeconds=<cool down in seconds for users per command>
     ->songRequestRedeemId=<the ID of the song request redeem>
     ->songRequestEmotes=<Twitch emotes that will be used after confirmation of an added song, seperated by ",">
-    ->isSongRequestCommandEnabled=<true or false. If this is false, the redeem will be enabled on app start instead>
-    ->blacklistedUsers=<list of Twitch names/IDs of users that can't use the redeem/command, seperated by ",">
     ->blacklistMessage=<Message will be displayed after a blacklisted user tried using a command/redeem>
-    ->isSpotifySongNameGetterEnabled=<true or false. If this is true, the name getter functionality is enabled on start up>
-    ->isNewVersionCheckEnabled=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
-    ->isSongRequestEnabled=<true or false. If this is true, the song request functionality is enabled on start up>
-    ->isSongInfoCommandEnabled=<true or false. If this is true, the song info command is enabled on start up>
-    ->isEmptySongDisplayFilesOnPauseEnabled=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
-    ->isAddSongCommandEnabled=<true or false. If this is true, the add song command is enabled on start up>
-    ->isSkipSongCommandEnabled=<true or false. If this is true, the skip song command is enabled on start up>
-    ->isRemoveSongFromQueueCommandEnabled=<true or false. If this is true, the remove song from queue command is enabled on start up>
 ````
 ````
 data\properties\spotifyConfig.properties:
     ->spotifyClientId=<client ID from spotify app>
     ->playlistIdForAddSongCommand=<playlist ID for add song command. Check the command description for how to obtain the ID>
-    ->addSongCommandSecurityLevel=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
     ->maximumLengthSongRequestMinutes=<Maximum song length for songrequests. This value is interpreted as Minutes (you can also use decimal numbers). If you don't want a maximum lenght limit, just leave this property empty.>
     ->blockedSongLinks=<Spotify direct links of songs that are blocked and will not be added to the queue, seperated by ",">
     ->blockedSongArtists=<Names of artists that are blocked and their songs will not be added to the queue, seperated by ",">
-    ->skipSongCommandSecurityLevel=<security level that decides, who can use the skip song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
-    ->customGroupUserNamesAddSongCommand=<custom group of users for the add song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
-    ->customGroupUserNamesSkipSongCommand=<custom group of users for the skip song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
-    ->removeSongFromQueueCommandSecurityLevel=<security level that decides, who can use the remove song from queue command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
-    ->customGroupUserNamesRemoveSongFromQueueCommand=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
 ````
 <br>
 Following properties are not changeable in the UI:
