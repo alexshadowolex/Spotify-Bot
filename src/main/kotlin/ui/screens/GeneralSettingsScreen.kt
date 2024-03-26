@@ -105,7 +105,21 @@ private var isNewVersionCheckEnabled = mutableStateOf(false)
         field = value
         BotConfig.isNewVersionCheckEnabled = value.value
     }
-
+private var isBlockSongCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isBlockSongCommandEnabled = value.value
+    }
+private var blockSongCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.blockSongCommandSecurityLevel = value.value
+    }
+private var customGroupUserNamesBlockSongCommand = mutableStateListOf("")
+    set(value) {
+        field = value
+        BotConfig.customGroupUserNamesBlockSongCommand = value
+    }
 
 @Composable
 fun generalSettingsScreen() {
@@ -172,6 +186,51 @@ fun generalSettingsScreen() {
                             true,
                             null,
                             isNewVersionCheckEnabled
+                        )
+
+                        sectionDivider()
+
+                        toggleFunctionalityRow(
+                            "Block Song Command ",
+                            true,
+                            null,
+                            isBlockSongCommandEnabled
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 3.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Security Level of Block Song Command: ",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+                        }
+                        commandSecurityMultiToggleButton(
+                            currentSelection = blockSongCommandSecurityLevel.value,
+                            toggleStates = listOf(
+                                CustomCommandPermissions.BROADCASTER,
+                                CustomCommandPermissions.MODERATOR,
+                                CustomCommandPermissions.CUSTOM
+                            ),
+                            conditionClickable = isBlockSongCommandEnabled,
+                            functionalityDisplayName = "Block Song Command",
+                            onToggleChange = {
+                                blockSongCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
+                            }
+                        )
+
+                        dropDownStringPropertiesList(
+                            entries = customGroupUserNamesBlockSongCommand,
+                            textFieldTitle = "Custom Group Block Song Command",
+                            scaffoldState = scaffoldState
                         )
 
                         sectionDivider()
@@ -519,4 +578,7 @@ fun initializeGeneralFlagVariables() {
     customGroupUserNamesRemoveSongFromQueueCommand = remember { BotConfig.customGroupUserNamesRemoveSongFromQueueCommand.toMutableStateList() }
     blacklistedUsers = remember { BotConfig.blacklistedUsers.toMutableStateList() }
     isNewVersionCheckEnabled = remember { mutableStateOf(BotConfig.isNewVersionCheckEnabled) }
+    isBlockSongCommandEnabled = remember { mutableStateOf(BotConfig.isBlockSongCommandEnabled) }
+    blockSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.blockSongCommandSecurityLevel) }
+    customGroupUserNamesBlockSongCommand = remember { BotConfig.customGroupUserNamesBlockSongCommand.toMutableStateList() }
 }

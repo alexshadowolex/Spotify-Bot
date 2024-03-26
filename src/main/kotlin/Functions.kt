@@ -1021,6 +1021,24 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 
 
 /**
+ * Checks if the user is eligible for using the block song command. The eligibility is set
+ * in the parameter blockSongCommandSecurityLevel
+ * @param permissions {Set<CommandPermission>} permissions of current user
+ * @param userName {String} username of the user
+ * @return {Boolean} true, if the user is eligible, else false
+ */
+fun isUserEligibleForBlockSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
+    logger.info("called isUserEligibleForBlockSongCommand")
+    return isUserEligibleForCommand(
+        permissions,
+        userName,
+        BotConfig.blockSongCommandSecurityLevel,
+        BotConfig.customGroupUserNamesBlockSongCommand
+    )
+}
+
+
+/**
  * Helper function for the isUserEligibleForXYZCommand functions. Checks if the user is eligible with
  * the command's specific security level. If the value CUSTOM is selected, it checks whether the user
  * is the broadcaster or part of the custom group. If the other two values are selected, it checks

@@ -48,7 +48,11 @@ val propertiesFilesToProperties = listOf(
         Pair("customGroupUserNamesAddSongCommand", ""),
         Pair("customGroupUserNamesSkipSongCommand", ""),
         Pair("removeSongFromQueueCommandSecurityLevel", "BROADCASTER"),
-        Pair("customGroupUserNamesRemoveSongFromQueueCommand", "")
+        Pair("customGroupUserNamesRemoveSongFromQueueCommand", ""),
+        // Since Version: 2.0.1
+        Pair("isBlockSongCommandEnabled", "true"),
+        Pair("blockSongCommandSecurityLevel", "BROADCASTER"),
+        Pair("customGroupUserNamesBlockSongCommand", "")
     )
 )
 

@@ -29,7 +29,7 @@ private var blockedSongArtists = mutableStateListOf("")
         SpotifyConfig.blockedSongArtists = value
     }
 
-private var blockedSongLinks = mutableStateListOf("")
+var blockedSongLinks = mutableStateListOf("")
     set(value) {
         field = value
         SpotifyConfig.blockedSongLinks = value

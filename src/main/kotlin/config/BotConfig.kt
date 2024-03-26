@@ -215,6 +215,49 @@ object BotConfig {
             savePropertiesToFile()
         }
 
+    var isBlockSongCommandEnabled = getPropertyValue(
+        properties, "isBlockSongCommandEnabled", botConfigFile.path
+    ).toBoolean()
+        set(value) {
+            field = value
+            properties.setProperty("isBlockSongCommandEnabled", value.toString())
+            savePropertiesToFile()
+        }
+
+    var blockSongCommandSecurityLevel = try {
+        CustomCommandPermissions.valueOf(
+            getPropertyValue(
+                properties,
+                "blockSongCommandSecurityLevel",
+                botConfigFile.path
+            )
+        )
+    } catch (e: Exception) {
+        displayEnumParsingErrorWindow(
+            propertyName = "blockSongCommandSecurityLevel",
+            propertyFilePath = botConfigFile.path,
+            exception = e,
+            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
+        )
+        exitProcess(-1)
+    }
+        set(value) {
+            field = value
+            properties.setProperty("blockSongCommandSecurityLevel", value.toString())
+            savePropertiesToFile()
+        }
+
+    var customGroupUserNamesBlockSongCommand: List<String> = getPropertyValue(
+        properties, "customGroupUserNamesBlockSongCommand", botConfigFile.path
+    ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
+        set(value) {
+            field = value
+            properties.setProperty(
+                "customGroupUserNamesBlockSongCommand", value.joinToLowercasePropertiesString(",")
+            )
+            savePropertiesToFile()
+        }
+
     private fun savePropertiesToFile() {
         properties.store(FileOutputStream(botConfigFile.path), null)
     }
