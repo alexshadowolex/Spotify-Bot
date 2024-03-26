@@ -1,4 +1,5 @@
 package config
+import addQuotationMarks
 import getPropertyValue
 import joinToLowercasePropertiesString
 import joinToPropertiesString
@@ -23,7 +24,7 @@ object SpotifyConfig {
             )
             showErrorMessageWindow(
                 title = "Error while reading properties file",
-                message = "Property file \"${spotifyConfigFile.path}\" does not exist!"
+                message = "Property file ${spotifyConfigFile.path.addQuotationMarks()} does not exist!"
             )
 
             exitProcess(-1)

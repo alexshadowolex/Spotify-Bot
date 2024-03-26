@@ -1,5 +1,6 @@
 package commands
 
+import addQuotationMarks
 import config.BotConfig
 import config.TwitchBotConfig
 import handler.Command
@@ -36,7 +37,7 @@ val removeSongFromQueueCommand: Command = Command(
         val success = removeSongFromQueueHandler.addSongToSetMarkedForSkipping(inputString)
         val message = if(success) {
             addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
-            "Removed song ${inputString.substringBefore(" by")} from queue"
+            "Removed song ${inputString.substringBefore(" by").addQuotationMarks()} from queue"
         } else {
             addedUserCoolDown = 5.seconds
             "Something went wrong with removing that song from queue. Try again."

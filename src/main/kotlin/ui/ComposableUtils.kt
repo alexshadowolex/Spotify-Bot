@@ -1,5 +1,6 @@
 package ui
 
+import addQuotationMarks
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -154,7 +155,7 @@ fun dropDownStringPropertiesList(
     val defaultIndex = -1
     var editIndex by remember { mutableStateOf(defaultIndex) }
     var expanded by remember { mutableStateOf(false) }
-    val textFieldContent = remember { mutableStateOf(entries.toList().joinToString(",")) }
+    val textFieldContent = remember { mutableStateOf(entries.joinToString(",")) }
     var isEditModeEnabled by remember { mutableStateOf(false) }
     val borderColor = Color(46,46,46)
     val widthPercentage = 0.8F
@@ -383,7 +384,7 @@ fun dropDownStringPropertiesList(
                                     val entry = entries[index]
                                     backgroundCoroutineScope.launch {
                                         scaffoldState.snackbarHostState.showSnackbar(
-                                            message = "Removed entry \"$entry\""
+                                            message = "Removed entry ${entry.addQuotationMarks()}"
                                         )
                                     }
                                     entries.removeAt(index)

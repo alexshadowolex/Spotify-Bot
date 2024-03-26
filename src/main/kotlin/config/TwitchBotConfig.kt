@@ -1,5 +1,6 @@
 package config
 
+import addQuotationMarks
 import getPropertyValue
 import joinToPropertiesString
 import logger
@@ -23,7 +24,7 @@ object TwitchBotConfig {
             )
             showErrorMessageWindow(
                 title = "Error while reading properties file",
-                message = "Property file \"${twitchBotConfigFile.path}\" does not exist!"
+                message = "Property file ${twitchBotConfigFile.path.addQuotationMarks()} does not exist!"
             )
 
             exitProcess(-1)

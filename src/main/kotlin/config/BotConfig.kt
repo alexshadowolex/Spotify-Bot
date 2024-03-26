@@ -1,6 +1,7 @@
 package config
 
 import CustomCommandPermissions
+import addQuotationMarks
 import displayEnumParsingErrorWindow
 import getPropertyValue
 import joinToLowercasePropertiesString
@@ -21,7 +22,7 @@ object BotConfig {
             )
             showErrorMessageWindow(
                 title = "Error while reading properties file",
-                message = "Property file \"${botConfigFile.path}\" does not exist!"
+                message = "Property file ${botConfigFile.path.addQuotationMarks()} does not exist!"
             )
 
             exitProcess(-1)

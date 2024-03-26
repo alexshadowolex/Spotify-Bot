@@ -79,7 +79,7 @@ suspend fun setupTwitchBot(): TwitchClient {
         logger.error("An Error occurred with the channel name. Maybe the channel name is spelled wrong?")
         e.printStackTrace()
         throw ExceptionInInitializerError(
-            "Error with channel name. Check the value of \"channel_name\" in the twitchBotConfig.properties-file!"
+            "Error with channel name. Check the value of \"channel\" in the twitchBotConfig.properties-file!"
         )
     }
 
@@ -111,8 +111,8 @@ suspend fun setupTwitchBot(): TwitchClient {
         val chat = messageEvent.twitchChat
 
         logger.info(
-            "User '$userName' tried using command '${command.names.first()}' with arguments: " +
-            parts.drop(1).joinToString()
+            "User ${userName.addQuotationMarks()} tried using command ${command.names.first().addQuotationMarks()}" +
+            " with arguments: ${parts.drop(1).joinToString()}"
         )
 
         if(isUserBlacklisted(userName, userId)) {
@@ -245,7 +245,7 @@ fun setupLogging() {
 
     System.setOut(PrintStream(MultiOutputStream(System.out, FileOutputStream(logFile))))
 
-    logger.info("Log file '${logFile.name}' has been created.")
+    logger.info("Log file ${logFile.name.addQuotationMarks()} has been created.")
 }
 
 
@@ -301,9 +301,12 @@ fun displayEnumParsingErrorWindow(
     exception: Exception,
     enumClassValues: List<String>
 ) {
-    logger.error("Exception occurred while reading property \"$propertyName\" in file $propertyFilePath: ", exception)
+    logger.error(
+        "Exception occurred while reading property ${propertyName.addQuotationMarks()} in file " + "$propertyFilePath: ",
+        exception
+    )
     showErrorMessageWindow(
-        message = "Error while reading value of property \"$propertyName\" in file $propertyFilePath\n" +
+        message = "Error while reading value of property ${propertyName.addQuotationMarks()} in file $propertyFilePath\n" +
                 "Following values are allowed: " +
                 enumClassValues.joinToString(),
         title = "Invalid value of property"
@@ -451,11 +454,12 @@ private suspend fun updateQueue(query: String): SongRequestResult {
     val artistNames = result.artists.map { it.name }
 
     if(isSongBlocked(result.uri.id) || isSongArtistBlocked(artistNames)) {
-        val message = "Song \"${result.name}\" was blocked because of " + if(isSongArtistBlocked(artistNames)) {
-            "the artist \"${getFirstBlockedArtistName(artistNames)}\" being blocked."
-        } else {
-            "the song itself being blocked."
-        }
+        val message = "Song ${result.name.addQuotationMarks()} was blocked because of " +
+            if(isSongArtistBlocked(artistNames)) {
+                "the artist ${getFirstBlockedArtistName(artistNames).addQuotationMarks()} being blocked."
+            } else {
+                "the song itself being blocked."
+            }
         logger.info(message)
         return SongRequestResult(
             track = null,

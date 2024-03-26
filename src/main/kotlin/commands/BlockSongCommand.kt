@@ -49,7 +49,7 @@ val blockSongCommand: Command = Command(
         try {
             spotifyClient.player.skipForward()
         } catch (e: Exception) {
-            logger.error("Error while skipping song ${currentSong.name}: ", e)
+            logger.error("Error while skipping song ${currentSong.name.addQuotationMarks()}: ", e)
             sendMessageToTwitchChatAndLogIt(chat, errorTwitchChatMessage)
             return@Command
         }
