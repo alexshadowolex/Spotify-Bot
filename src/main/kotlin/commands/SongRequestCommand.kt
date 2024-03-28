@@ -9,6 +9,7 @@ import sendMessageToTwitchChatAndLogIt
 import kotlin.time.Duration.Companion.seconds
 
 val songRequestCommand = Command(
+    commandDisplayName = "Song Request",
     names = listOf("songrequest", "sr"),
     handler = {arguments ->
         val query = arguments.joinToString(" ").trim()

@@ -12,6 +12,7 @@ import spotifyClient
 import ui.screens.blockedSongLinks
 
 val blockSongCommand: Command = Command(
+    commandDisplayName = "Block Song",
     names = listOf("blocksong", "block", "bs"),
     handler = {
         if(!BotConfig.isBlockSongCommandEnabled) {

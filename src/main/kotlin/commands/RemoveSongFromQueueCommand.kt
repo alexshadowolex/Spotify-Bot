@@ -11,6 +11,7 @@ import sendMessageToTwitchChatAndLogIt
 import kotlin.time.Duration.Companion.seconds
 
 val removeSongFromQueueCommand: Command = Command(
+    commandDisplayName = "Remove Song From Queue",
     names = listOf("removesongfromqueue", "rsfq", "remove", "removesong", "rs"),
     handler = { input ->
         val inputString = input.joinToString(" ")

@@ -10,6 +10,7 @@ import logger
 import sendMessageToTwitchChatAndLogIt
 
 val addSongCommand: Command = Command(
+    commandDisplayName = "Add Song",
     names = listOf("addsong", "as", "add"),
     handler = {
         if(!BotConfig.isAddSongCommandEnabled) {

@@ -11,6 +11,7 @@ import sendMessageToTwitchChatAndLogIt
 import spotifyClient
 
 val skipSongCommand: Command = Command(
+    commandDisplayName = "Skip Song",
     names = listOf("skipsong", "skip", "next", "ss"),
     handler = {
         if(!BotConfig.isSkipSongCommandEnabled) {
