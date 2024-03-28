@@ -9,6 +9,7 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
+import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
 import config.BotConfig
 import config.SpotifyConfig
@@ -47,7 +48,7 @@ val httpClient = HttpClient(CIO) {
 }
 
 lateinit var spotifyClient: SpotifyClientApi
-var currentSongString = ""
+var currentSpotifySong: Track? = null
 var windowWidth = mutableStateOf(Screen.HomeScreen.width)
 var windowHeight = mutableStateOf(Screen.HomeScreen.height)
 

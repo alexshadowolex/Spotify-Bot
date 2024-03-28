@@ -684,7 +684,7 @@ fun startSpotifySongGetter() {
                     continue
                 }
 
-                currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+                currentSpotifySong = currentTrack
 
                 downloadAndSaveAlbumImage(currentTrack)
                 writeCurrentSongTextFiles(currentTrack)

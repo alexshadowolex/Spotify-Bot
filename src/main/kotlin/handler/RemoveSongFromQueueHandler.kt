@@ -1,20 +1,23 @@
 package handler
 
 import backgroundCoroutineScope
+import com.adamratzman.spotify.models.Track
 import createSongString
-import currentSongString
+import currentSpotifySong
 import getCurrentSpotifySong
 import isSpotifySongNameGetterEnabled
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import logger
+import me.xdrop.fuzzywuzzy.FuzzySearch
 import spotifyClient
+import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class RemoveSongFromQueueHandler {
-    private val songsMarkedForSkipping = mutableSetOf<String>()
+    private val songsMarkedForSkipping = mutableSetOf<Track>()
 
     init {
         startRemoveSongFromQueueChecker()
@@ -22,18 +25,19 @@ class RemoveSongFromQueueHandler {
 
 
     /**
-     * Adds a song string to the set of songs marked for skipping. The string is checked before for validity.
-     * See isInputStringValid-function for the criteria of a valid string.
-     * @param songDisplayString {String} display string of the song to be skipped
-     * @return {Boolean} true, if adding it was a success, else false
+     * Adds a song to the set of songs marked for skipping. The input is searched for in the current queue
+     * to find the closest match.
+     * @param songSearchQuery {String} query string of the song to be searched for and then skipped
+     * @return {Track?} the track-object of the song to be skipped, if a fitting song was found, else null
      */
-    fun addSongToSetMarkedForSkipping(songDisplayString: String): Boolean {
-        if(!isInputStringValid(songDisplayString)) {
-            return false
+    suspend fun addSongToSetMarkedForSkipping(songSearchQuery: String): Track? {
+        val track = findTrackInQueue(songSearchQuery)
+
+        if(track != null) {
+            songsMarkedForSkipping.add(track)
         }
 
-        songsMarkedForSkipping.add(songDisplayString.trim())
-        return true
+        return track
     }
 
 
@@ -52,13 +56,13 @@ class RemoveSongFromQueueHandler {
                         continue
                     }
 
-                    currentSongString = createSongString(currentTrack.name, currentTrack.artists)
+                    currentSpotifySong = currentTrack
                     delay = 2.seconds
                 } else {
                     delay = 0.1.seconds
                 }
 
-                if(songsMarkedForSkipping.contains(currentSongString)) {
+                if(songsMarkedForSkipping.contains(currentSpotifySong)) {
                     try {
                         spotifyClient.player.skipForward()
                     } catch (e: Exception) {
@@ -67,7 +71,7 @@ class RemoveSongFromQueueHandler {
                         continue
                     }
 
-                    songsMarkedForSkipping.remove(currentSongString)
+                    songsMarkedForSkipping.remove(currentSpotifySong)
                 }
 
                 delay(delay)
@@ -77,26 +81,53 @@ class RemoveSongFromQueueHandler {
 
 
     /**
-     * Checks if the input string for addSongToSetMarkedForSkipping is a valid string.
-     * Valid strings contain the following:
-     * (1) The connection part between name and artist(s): " by "
-     * (2) Two quotation marks
-     * (3) A song name with at least one character
-     * (4) A (list of) artists with at least one character
-     * @param input {String} input string to check for
-     * @return {Boolean} true, if the string is valid, else false
+     * Finds the closest matching track from the current queue for the input using fuzzy string matching.
+     * This function tokenizes the input and each display string of each song in the queue,
+     * and calculates the similarity between corresponding tokens. It then selects the track with the
+     * highest overall similarity as the closest match.
+     * @param input {String} The input to find a match for.
+     * @return {Track?} The closest matching track from the queue, or null if no match is found.
      */
-    private fun isInputStringValid(input: String): Boolean {
-        val minimumSizeOfStringWithQuotationMarks = 2
+    private suspend fun findTrackInQueue(input: String): Track? {
+        val queue = spotifyClient.player.getUserQueue().queue
 
-        val containsInputConnectionPart = input.contains(" by ")
-        val containsInputTwoQuotationMarks = input.indexOf("\"") != -1 && input.substringAfter("\"").indexOf("\"") != -1
-        val isSongNamePartAtLeastOneCharacter = input.substringBefore(" by ").length > minimumSizeOfStringWithQuotationMarks
-        val isArtistsPartAtLeastOneCharacter = input.substringAfter(" by ").isNotEmpty()
+        if(queue.isEmpty()) {
+            return null
+        }
 
-        return  containsInputConnectionPart &&
-                containsInputTwoQuotationMarks &&
-                isSongNamePartAtLeastOneCharacter &&
-                isArtistsPartAtLeastOneCharacter
+        val inputTokens = tokenize(input.lowercase(Locale.getDefault()))
+        var bestMatch: Track? = null
+        var bestSimilarity = 0
+
+        for (song in queue) {
+            val track = song.asTrack ?: continue
+            val lowerCaseSongString = createSongString(track.name, track.artists).lowercase(Locale.getDefault())
+
+            val songTokens = tokenize(lowerCaseSongString)
+            var totalSimilarity = 0
+
+            for (inputToken in inputTokens) {
+                val maxSimilarity = songTokens.maxOfOrNull { FuzzySearch.partialRatio(inputToken, it) } ?: 0
+                totalSimilarity += maxSimilarity
+            }
+
+            if (totalSimilarity > bestSimilarity) {
+                bestMatch = track
+                bestSimilarity = totalSimilarity
+            }
+        }
+
+        return bestMatch
+    }
+
+
+    /**
+     * Lowercase and tokenize the input for the findTrackInQueue-function by splitting on whitespaces
+     * and removing punctuation.
+     * @param input {String} input to be tokenized
+     * @return {List<String>} list of tokens
+     */
+    private fun tokenize(input: String): List<String> {
+        return input.lowercase(Locale.getDefault()).split(Regex("\\W+"))
     }
 }

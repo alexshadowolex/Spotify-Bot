@@ -49,7 +49,7 @@ tasks.withType<Jar> {
 }
 
 dependencies {
-    val ktorVersion = "2.3.7"
+    val ktorVersion = "2.3.9"
 
     implementation(compose.desktop.currentOs)
 
@@ -64,6 +64,8 @@ dependencies {
 
     implementation("com.github.twitch4j:twitch4j:1.18.0")
     implementation("com.adamratzman:spotify-api-kotlin-core:4.1.0")
+
+    implementation("me.xdrop:fuzzywuzzy:1.4.0")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")

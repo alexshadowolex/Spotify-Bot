@@ -3,6 +3,7 @@ package commands
 import addQuotationMarks
 import config.BotConfig
 import config.TwitchBotConfig
+import createSongString
 import handler.Command
 import isUserEligibleForRemoveSongFromQueueCommand
 import logger
@@ -34,10 +35,10 @@ val removeSongFromQueueCommand: Command = Command(
         }
 
 
-        val success = removeSongFromQueueHandler.addSongToSetMarkedForSkipping(inputString)
-        val message = if(success) {
+        val foundTrack = removeSongFromQueueHandler.addSongToSetMarkedForSkipping(inputString)
+        val message = if(foundTrack != null) {
             addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
-            "Removed song ${inputString.substringBefore(" by").addQuotationMarks()} from queue"
+            "Removed song ${createSongString(foundTrack.name, foundTrack.artists)} from queue"
         } else {
             addedUserCoolDown = 5.seconds
             "Something went wrong with removing that song from queue. Try again."
