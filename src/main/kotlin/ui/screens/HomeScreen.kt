@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import config.TwitchBotConfig
 import handler.commands
 import ui.versionAndCreditsRow
 
@@ -26,8 +27,8 @@ fun homeScreen() {
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
             ) {
                 Text(
-                    text =  "Hello beautiful person and valued user! Thank you for trusting in my app and using it to " +
-                            "enhance your stream's experience with Spotify!\n" +
+                    text =  "Hello ${TwitchBotConfig.channel} you beautiful person and valued user! " +
+                            "Thank you for trusting in my app and using it to enhance your stream's experience with Spotify!\n" +
                             "This Bot has gotten a new glow up so you can manage (almost) all settings in the user interface. " +
                             "I am still looking for ideas and improvements since planning and building an UI is not my " +
                             "strength.\n" +
