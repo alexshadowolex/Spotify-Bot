@@ -18,10 +18,10 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v2.0.0 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/Spotify.Bot-windows-x64-2.0.0.jar)
+* Spotify-Bot.jar: v2.0.1 [Download from Release v2.0.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.1/Spotify.Bot-windows-x64-2.0.1.jar)
 * SetupToken.jar: v4 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupToken_v4.jar)
 * SetupProject.jar: v2 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupProject_v2.jar)
-* UpdateProperties.jar: v2.0.0 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/UpdateProperties_2-0-0.jar)
+* UpdateProperties.jar: v2.0.1 [Download from Release v2.0.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.1/UpdateProperties_2-0-1.jar)
 
 ## How to set up
 
@@ -150,11 +150,18 @@ The file, that will always be included, is the new Bot version. Download it and 
 * Remove Song From Queue Command -> Can be toggled off (switch in UI under "General Settings").<br>
   Command names: "removesongfromqueue", "rsfq", "remove", "removesong", "rs"<br>
   Command to remove a song from the queue.<br>
-  To use this command, type (or rather copy and paste) the song name string that the bot responds with after a song request (or when you use the song info command) after the command. E.g. ""Ghost" by Confetti"<br>
+  To use this command, type the song name and artists and the bot searches for the most similar song in the queue. To achieve best results use the song name string that the bot responds with after a song request (or when you use the song info command), e.g. ""Ghost" by Confetti"<br>
   This functionality can be restricted to be used only by certain user groups:
   * BROADCASTER: Only the broadcaster
   * MODERATOR: Owner and Moderators
   * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames Remove Song From Queue Command under General Settings.<br>
+* Block Song Command -> Can be toggled off (switch in UI under "General Settings").<br>
+  Command names: "blocksong", "block", "bs"<br>
+  Command to block the current song and skip it.<br>
+  This functionality can be restricted to be used only by certain user groups:
+  * BROADCASTER: Only the broadcaster
+  * MODERATOR: Owner and Moderators
+  * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames For Block Song Command under General Settings.<br>
 
 ## Contents of data-files explained
 The files consist of following content:
@@ -168,20 +175,23 @@ data\tokens\spotifyClientSecret.txt: only the spotify client secret from the app
 data\properties\botConfig.properties:
     ->isSongRequestCommandEnabled=<true or false. If this is false, the redeem will be enabled on app start instead>
     ->blacklistedUsers=<list of Twitch names/IDs of users that can't use the redeem/command, seperated by ",">
-    ->isSpotifySongNameGetterEnabled=<true or false. If this is true, the name getter functionality is enabled on start up>
-    ->isNewVersionCheckEnabled=<true or false. If this is true, the bot checks on start up for a new version on GitHub and if there is one, it will open a window>
-    ->isSongRequestEnabled=<true or false. If this is true, the song request functionality is enabled on start up>
-    ->isSongInfoCommandEnabled=<true or false. If this is true, the song info command is enabled on start up>
-    ->isEmptySongDisplayFilesOnPauseEnabled=<true or false. If this is true, the song display files emptying on pause functionality is enabled on start up>
-    ->isAddSongCommandEnabled=<true or false. If this is true, the add song command is enabled on start up>
+    ->isSpotifySongNameGetterEnabled=<true or false. If this is true, the name getter functionality is enabled>
+    ->isNewVersionCheckEnabled=<true or false. If this is true, the bot checks for a new version on GitHub and if there is one, it will open a window>
+    ->isSongRequestEnabled=<true or false. If this is true, the song request functionality is enabled>
+    ->isSongInfoCommandEnabled=<true or false. If this is true, the song info command is enabled>
+    ->isEmptySongDisplayFilesOnPauseEnabled=<true or false. If this is true, the song display files emptying on pause functionality is enabled>
+    ->isAddSongCommandEnabled=<true or false. If this is true, the add song command is enabled>
     ->addSongCommandSecurityLevel=<security level that decides, who can use the add song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
-    ->isSkipSongCommandEnabled=<true or false. If this is true, the skip song command is enabled on start up>
-    ->isRemoveSongFromQueueCommandEnabled=<true or false. If this is true, the remove song from queue command is enabled on start up>
+    ->isSkipSongCommandEnabled=<true or false. If this is true, the skip song command is enabled>
+    ->isRemoveSongFromQueueCommandEnabled=<true or false. If this is true, the remove song from queue command is enabled>
     ->skipSongCommandSecurityLevel=<security level that decides, who can use the skip song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
     ->customGroupUserNamesAddSongCommand=<custom group of users for the add song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
     ->customGroupUserNamesSkipSongCommand=<custom group of users for the skip song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
     ->removeSongFromQueueCommandSecurityLevel=<security level that decides, who can use the remove song from queue command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
     ->customGroupUserNamesRemoveSongFromQueueCommand=<custom group of users for the remove song from queue command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->isBlockSongCommandEnabled=<true or false. If this is true, the block song command is enabled>
+    ->blockSongCommandSecurityLevel=<security level that decides, who can use the block song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->customGroupUserNamesBlockSongCommand=<custom group of users for the block song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
 ````
 ````
 data\properties\twitchBotConfig.properties:
