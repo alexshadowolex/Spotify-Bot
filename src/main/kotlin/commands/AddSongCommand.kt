@@ -1,10 +1,12 @@
 package commands
 
 import config.BotConfig
+import config.SpotifyConfig
 import config.TwitchBotConfig
 import getCurrentSpotifySong
 import handleAddSongCommandFunctionality
 import handler.Command
+import isPlaylistIdValid
 import isUserEligibleForAddSongCommand
 import logger
 import sendMessageToTwitchChatAndLogIt
@@ -24,6 +26,11 @@ val addSongCommand: Command = Command(
             )
 
             sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
+            return@Command
+        }
+
+        if(!isPlaylistIdValid(SpotifyConfig.playlistIdForAddSongCommand)) {
+            sendMessageToTwitchChatAndLogIt(chat, "Playlist ID seems invalid. Correct it or try again!")
             return@Command
         }
 

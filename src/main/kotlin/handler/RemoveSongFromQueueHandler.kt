@@ -89,7 +89,12 @@ class RemoveSongFromQueueHandler {
      * @return {Track?} The closest matching track from the queue, or null if no match is found.
      */
     private suspend fun findTrackInQueue(input: String): Track? {
-        val queue = spotifyClient.player.getUserQueue().queue
+        val queue = try {
+            spotifyClient.player.getUserQueue().queue
+        } catch (e: Exception) {
+            logger.error("Error while trying to get the user queue in findTrackInQueue: ", e)
+            return null
+        }
 
         if(queue.isEmpty()) {
             return null

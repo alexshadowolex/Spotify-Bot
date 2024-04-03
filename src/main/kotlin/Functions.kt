@@ -835,8 +835,13 @@ suspend fun isSpotifyPlaying(): Boolean? {
     val playbackEndpoint = "https://api.spotify.com/v1/me/player"
     val json = Json { ignoreUnknownKeys = true }
 
-    val response = httpClient.get(playbackEndpoint) {
-        header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+    val response = try {
+        httpClient.get(playbackEndpoint) {
+            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+        }
+    } catch (e: Exception) {
+        logger.error("An error occurred while sending request to player endpoint: ", e)
+        return null
     }
 
     val isPlaying = when (response.status) {
@@ -912,7 +917,28 @@ fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userNam
  * @return {String} the name on success, empty String on failure
  */
 suspend fun getPlaylistName(playlistId: String): String {
-    return spotifyClient.playlists.getPlaylist(playlistId)?.name ?: ""
+    return try {
+        spotifyClient.playlists.getPlaylist(playlistId)?.name ?: ""
+    } catch (e: Exception) {
+        logger.error("Caught error while getting name of playlist in getPlaylistName: ", e)
+        ""
+    }
+}
+
+
+/**
+ * Checks if the given playlist ID is valid.
+ * @param playlistId {String} playlist ID to check for
+ * @return {Boolean} true if the ID is valid, else and on error false
+ */
+suspend fun isPlaylistIdValid(playlistId: String): Boolean {
+    val result = try {
+        spotifyClient.playlists.getPlaylist(playlistId) ?: return false
+    } catch (e: Exception) {
+        logger.error("Caught error while checking if playlist ID is valid in isPlaylistIdValid: ", e)
+        return false
+    }
+    return result.id == playlistId
 }
 
 
@@ -920,10 +946,10 @@ suspend fun getPlaylistName(playlistId: String): String {
  * Checks if a song is in a given playlist by ID
  * @param songId {String} the song's ID to check for
  * @param playlistId {String} the playlist's ID
- * @return {Boolean} true, if the playlist contains the song, else false
+ * @return {Boolean?} true, if the playlist contains the song, else false, null on error
  */
-suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean {
-    val playlistSongIds = getPlaylistSongIds(playlistId)
+suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
+    val playlistSongIds = getPlaylistSongIds(playlistId) ?: return null
     return playlistSongIds.contains(songId)
 }
 
@@ -932,20 +958,26 @@ suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean {
  * Gets all the song IDs of the specified playlist's songs. It issues a GET-Request to spotify api for every 100
  * songs contained in that playlist.
  * @param playlistId {String} ID of the playlist to get the song IDs of
- * @return {List<String?>} IDs of the songs in that playlist, empty strings if issues occurred
+ * @return {List<String?>?} IDs of the songs in that playlist, empty strings if issues occurred, null if issues
+ * with the playlist in general occurred
  */
-suspend fun getPlaylistSongIds(playlistId: String): List<String?> {
+suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
     val playlistSongIds = mutableListOf<String?>()
     val limit = 100
     var currentOffset = 0
     var nextLink: String? = ""
 
     while(nextLink != null) {
-        val result = spotifyClient.playlists.getPlaylistTracks(
-            playlist = playlistId,
-            offset = currentOffset,
-            limit = limit
-        )
+        val result = try {
+            spotifyClient.playlists.getPlaylistTracks(
+                playlist = playlistId,
+                offset = currentOffset,
+                limit = limit
+            )
+        } catch (e: Exception) {
+            logger.error("Error while getting playlistTracks in getPlaylistSongIds with playlistId $playlistId: ", e)
+            null
+        } ?: return null
 
         nextLink = result.next
         currentOffset += limit
@@ -965,12 +997,24 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?> {
  * @return {String} message to display in twitch chat afterward
  */
 suspend fun handleAddSongCommandFunctionality(song: Track): String {
-    return if(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
-        "Song ${song.name.addQuotationMarks()} is already in playlist "
-    } else {
-        addSongToPlaylist(song, SpotifyConfig.playlistIdForAddSongCommand)
-        "Successfully added song ${song.name.addQuotationMarks()} to the playlist "
-    } + getAddSongPlaylistNameString()
+    return when(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
+        true -> {
+            "Song ${song.name.addQuotationMarks()} is already in playlist ${getAddSongPlaylistNameString()}"
+        }
+
+        false -> {
+            val success = addSongToPlaylist(song, SpotifyConfig.playlistIdForAddSongCommand)
+            if(success) {
+                "Successfully added song ${song.name.addQuotationMarks()} to the playlist ${getAddSongPlaylistNameString()}"
+            } else {
+                "Error while adding song to the playlist!"
+            }
+        }
+
+        null -> {
+            "Error while adding song to the playlist. Check the playlist ID"
+        }
+    }
 }
 
 
