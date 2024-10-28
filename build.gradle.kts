@@ -4,10 +4,10 @@ import java.io.FileOutputStream
 import java.util.*
 
 plugins {
-    kotlin("jvm") version "1.8.20"
-    kotlin("plugin.serialization") version "1.8.20"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
 
-    id("org.jetbrains.compose") version "1.4.1"
+    id("org.jetbrains.compose") version "1.5.12"
 }
 
 group = "alex.spotify.bot"
@@ -49,21 +49,22 @@ tasks.withType<Jar> {
 }
 
 dependencies {
-    val ktorVersion = "2.3.9"
+    val ktorVersion = "2.3.12"
 
     implementation(compose.desktop.currentOs)
 
-    implementation("org.slf4j:slf4j-simple:2.0.5")
+    implementation("org.slf4j:slf4j-simple:2.0.16")
 
-    implementation("org.jsoup:jsoup:1.15.3")
+    implementation("org.jsoup:jsoup:1.18.1")
 
-    implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.2")
+    implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.3")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0")
 
-    implementation("com.github.twitch4j:twitch4j:1.18.0")
-    implementation("com.adamratzman:spotify-api-kotlin-core:4.1.0")
+    implementation("com.github.twitch4j:twitch4j:1.22.0")
+    implementation("com.adamratzman:spotify-api-kotlin-core:4.1.3")
 
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
 

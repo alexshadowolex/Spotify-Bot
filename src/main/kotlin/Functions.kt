@@ -50,7 +50,7 @@ import kotlin.time.Duration.Companion.seconds
  * Sets up the connection to twitch
  * @return {TwitchClient} the TwitchClient-class
  */
-suspend fun setupTwitchBot(): TwitchClient {
+fun setupTwitchBot(): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
 
     val twitchClient = TwitchClientBuilder.builder()
@@ -219,7 +219,7 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
     )
 
     backgroundCoroutineScope.launch {
-        redeem.handler(redeemHandlerScope, redeemEvent.redemption.userInput)
+        redeem.handler(redeemHandlerScope, redeemEvent.redemption.userInput ?: "")
     }
 }
 
@@ -738,7 +738,7 @@ private fun writeCurrentSongTextFiles(currentTrack: Track) {
 private fun downloadAndSaveAlbumImage(currentTrack: Track) {
     try {
         val images = currentTrack.album.images
-        if (images.isNotEmpty()) {
+        if (!images.isNullOrEmpty()) {
             val imageUrl = images.first().url
             val url = URL(imageUrl)
             val bufferedImageData = ImageIO.read(url)
