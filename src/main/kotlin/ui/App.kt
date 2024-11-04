@@ -130,8 +130,8 @@ enum class Screen(
     HomeScreen(
         label = "Home",
         icon = Icons.Filled.Home,
-        height = 450.dp,
-        width = 500.dp
+        height = 550.dp,
+        width = 600.dp
     ),
     GeneralSettingsScreen(
         label = "General Settings",

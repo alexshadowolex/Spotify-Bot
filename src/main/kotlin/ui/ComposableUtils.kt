@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backgroundCoroutineScope
@@ -120,27 +121,41 @@ fun versionAndCreditsRow() {
                     fontSize = 12.sp
                 )
 
-                Text(
-                    style = MaterialTheme.typography.body1,
-                    text = "alexshadowolex",
-                    modifier = Modifier
-                        .clickable {
-                            logger.info("Clicked on alexshadowolex Link")
-                            backgroundCoroutineScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    Desktop.getDesktop()
-                                        .browse(URI.create("https://www.twitch.tv/alexshadowolex"))
-                                }
-                            }
-                        }
-                        .pointerHoverIcon(PointerIcon.Hand),
-                    textDecoration = TextDecoration.Underline,
-                    color = MaterialTheme.colors.primary,
+                hyperlink(
+                    hyperlinkText = "alexshadowolex",
+                    hyperlinkAddress = "https://www.twitch.tv/alexshadowolex",
                     fontSize = 12.sp
                 )
             }
         }
     }
+}
+
+@Composable
+fun hyperlink(
+    hyperlinkText: String,
+    hyperlinkAddress: String,
+    fontSize: TextUnit = TextUnit.Unspecified
+) {
+    Text(
+        style = MaterialTheme.typography.body1,
+        text = hyperlinkText,
+        modifier = Modifier
+            .clickable {
+                logger.info("Clicked on $hyperlinkText link")
+                backgroundCoroutineScope.launch {
+                    withContext(Dispatchers.IO) {
+                        Desktop.getDesktop().browse(
+                            URI.create(hyperlinkAddress)
+                        )
+                    }
+                }
+            }
+            .pointerHoverIcon(PointerIcon.Hand),
+        textDecoration = TextDecoration.Underline,
+        color = MaterialTheme.colors.primary,
+        fontSize = fontSize
+    )
 }
 
 

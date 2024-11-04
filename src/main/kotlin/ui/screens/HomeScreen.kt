@@ -3,6 +3,8 @@ package ui.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -10,12 +12,15 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import config.TwitchBotConfig
 import handler.commands
+import ui.hyperlink
 import ui.versionAndCreditsRow
 
 @Composable
@@ -26,15 +31,43 @@ fun homeScreen() {
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
             ) {
+                val issuesHyperlinkText = "Spotify Bot Issues"
+                // I don't know what the specific length value is referring to. The divider "2.1" is a hardcoded and
+                // guessed number which I don't understand. Since this will only be temporarily visible, I will
+                // leave it like this for now and remove it later.
+                val issuesHyperlinkWidth = (issuesHyperlinkText.length / 2.1).em
+                val issuesHyperlinkHeight = 1.2.em
+                val issuesHyperLinkId = "issuesHyperLinkId"
+
+                val inlineContentMap = mapOf(
+                    issuesHyperLinkId to InlineTextContent(
+                        Placeholder(issuesHyperlinkWidth, issuesHyperlinkHeight, PlaceholderVerticalAlign.Center)) {
+                            hyperlink(
+                                hyperlinkText = issuesHyperlinkText,
+                                hyperlinkAddress = "https://github.com/alexshadowolex/Spotify-Bot/issues"
+                            )
+                    }
+                )
+
                 Text(
-                    text =  "Hello ${TwitchBotConfig.channel} you beautiful person and valued user! " +
-                            "Thank you for trusting in my app and using it to enhance your stream's experience with Spotify!\n" +
-                            "This Bot has gotten a new glow up so you can manage (almost) all settings in the user interface. " +
-                            "I am still looking for ideas and improvements since planning and building an UI is not my " +
-                            "strength.\n" +
-                            "This text and the home screen in general are only temporary, what information would you like " +
-                            "to see here? Let me know!\n\n" +
-                            "With that said - have fun and enjoy :)",
+                    text = buildAnnotatedString {
+                        append(
+                            "Hello ${TwitchBotConfig.channel} you beautiful person and valued user! " +
+                            "Thank you for trusting in my app and using it to enhance your stream's experience with Spotify!\n\n" +
+                            "There is a small update on how to communicate bugs/features: Since this project's binaries are hosted " +
+                            "and distributed over Github, why not also use more of this site's features? On Github, you can " +
+                            "create issues and label them as an \"enhancement\" or a \"bug\". It is available under this link: "
+                        )
+
+                        appendInlineContent(issuesHyperLinkId)
+
+                        append(
+                            ". Please use it to tell me new feature ideas and bugs. You only need a (free) Github account :)\n" +
+                            "Of course you can still message me and then I will do that. But it would be nice to see that feature get used.\n\n" +
+                            "With that said - have fun and enjoy :)"
+                        )
+                    },
+                    inlineContent = inlineContentMap,
                     modifier = Modifier
                         .padding(top = 10.dp)
                 )
