@@ -437,6 +437,12 @@ private suspend fun updateQueue(query: String): SongRequestResult {
         getSongIdFromSpotifyDirectLink(query)?.let {
             getSpotifyTrackById(it)
         } ?: run {
+            if(isUrlSpotifyDirectLink(Url(query))) {
+                return SongRequestResult(
+                    track = null,
+                    songRequestResultExplanation = "Spotify link is not a link to a song."
+                )
+            }
             getSpotifyTrackByQuery(query)
         } ?: return SongRequestResult(
             track = null,
@@ -556,11 +562,21 @@ private fun isSongArtistBlocked(artists: List<String?>): Boolean {
 
 /**
  * Checks if the given URL is a spotify direct link to a track.
- * @param query {Url} the given link
- * @return {Boolean} true, if it is a direct link to a spotify track, else false
+ * @param url {Url} the given URL
+ * @return {Boolean} true, if it is a spotify direct link to a track, else false
  */
-private fun isUrlSpotifyTrackDirectLink(query: Url): Boolean {
-    return query.host == "open.spotify.com" && query.encodedPath.contains("/track/")
+private fun isUrlSpotifyTrackDirectLink(url: Url): Boolean {
+    return isUrlSpotifyDirectLink(url) && url.encodedPath.contains("/track/")
+}
+
+
+/**
+ * Checks if the given URL is a spotify direct link to anything.
+ * @param url {Url} the given URL
+ * @return {Boolean} true, if it is a spotify direct link to anything, else false
+ */
+private fun isUrlSpotifyDirectLink(url: Url): Boolean {
+    return url.host == "open.spotify.com"
 }
 
 
@@ -584,12 +600,18 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
 
 
 /**
- * Gets the track from the Spotify APIs search endpoint.
+ * Gets the track from the Spotify APIs search endpoint. If the query is a spotify direct link to something
+ * but not to a track, it will not search for a track to reduce random results.
  * @param query {String} the search query
  * @return {Track?} a track on success, null on error
  */
 private suspend fun getSpotifyTrackByQuery(query: String): Track? {
     logger.info("called getSpotifyTrackByQuery with query: $query")
+    if(isUrlSpotifyDirectLink(Url(query))) {
+        logger.info("Query is a spotify direct link to something but not to a track. Aborting the search")
+        return null
+    }
+
     return try {
         spotifyClient.search.search(
             query = query,
