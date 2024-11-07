@@ -19,7 +19,9 @@ val propertiesFilesToProperties = listOf(
         Pair("defaultUserCoolDownSeconds", "30"),
         Pair("songRequestRedeemId", "UseTheNameIfYouDontHaveTheId"),
         Pair("blacklistMessage", "Imagine not being a blacklisted user. Couldn't be you FeelsOkayMan"),
-        Pair("songRequestEmotes", "carJAM,catJAM,Jammies,blobDance")
+        Pair("songRequestEmotes", "carJAM,catJAM,Jammies,blobDance"),
+        // Since Version: 2.0.3
+        Pair("minimumFollowingDurationMinutes", "0")
     ),
     File("data\\properties\\spotifyConfig.properties") to
     mapOf(
@@ -52,7 +54,9 @@ val propertiesFilesToProperties = listOf(
         // Since Version: 2.0.1
         Pair("isBlockSongCommandEnabled", "true"),
         Pair("blockSongCommandSecurityLevel", "BROADCASTER"),
-        Pair("customGroupUserNamesBlockSongCommand", "")
+        Pair("customGroupUserNamesBlockSongCommand", ""),
+        // Since Version: 2.0.3
+        Pair("isFollowerOnlyModeEnabled", "false")
     )
 )
 
