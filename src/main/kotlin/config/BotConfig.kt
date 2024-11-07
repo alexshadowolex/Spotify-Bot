@@ -259,7 +259,6 @@ object BotConfig {
             savePropertiesToFile()
         }
 
-
     var isFollowerOnlyModeEnabled = getPropertyValue(
         properties, "isFollowerOnlyModeEnabled", botConfigFile.path
     ).toBoolean()
@@ -268,6 +267,7 @@ object BotConfig {
             properties.setProperty("isFollowerOnlyModeEnabled", value.toString())
             savePropertiesToFile()
         }
+
 
     private fun savePropertiesToFile() {
         properties.store(FileOutputStream(botConfigFile.path), null)

@@ -20,17 +20,16 @@ val removeSongFromQueueCommand: Command = Command(
         if(!handleCommandSanityChecksWithSecurityLevel(
                 commandName = "removeSongFromQueueCommand",
                 isCommandEnabledFlag= BotConfig.isRemoveSongFromQueueCommandEnabled,
-                permissions = messageEvent.permissions,
-                userName = messageEvent.user.name,
+                messageEvent = messageEvent,
+                twitchClient = twitchClient,
                 securityCheckFunction = ::isUserEligibleForRemoveSongFromQueueCommand,
                 securityLevel = BotConfig.removeSongFromQueueCommandSecurityLevel,
-                chat = chat
             )) {
             return@Command
         }
 
         if (inputString.isEmpty()) {
-            sendMessageToTwitchChatAndLogIt(chat, "No input provided.")
+            sendMessageToTwitchChatAndLogIt(twitchClient.chat, "No input provided.")
             addedUserCoolDown = 5.seconds
             return@Command
         }
@@ -45,6 +44,6 @@ val removeSongFromQueueCommand: Command = Command(
             "Something went wrong with removing that song from queue. Try again."
         }
 
-        sendMessageToTwitchChatAndLogIt(chat, message)
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, message)
     }
 )

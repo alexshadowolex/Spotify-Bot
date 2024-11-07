@@ -1,5 +1,6 @@
 package handler
 
+import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import commands.*
@@ -12,7 +13,7 @@ data class Command(
 )
 
 data class CommandHandlerScope(
-    val chat: TwitchChat,
+    val twitchClient: TwitchClient,
     val messageEvent: ChannelMessageEvent,
     val removeSongFromQueueHandler: RemoveSongFromQueueHandler,
     var addedUserCoolDown: Duration = Duration.ZERO,

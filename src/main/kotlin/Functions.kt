@@ -11,6 +11,7 @@ import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
+import com.github.twitch4j.common.events.domain.EventUser
 import com.github.twitch4j.helix.domain.InboundFollow
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.BotConfig
@@ -173,7 +174,7 @@ fun setupTwitchBot(): TwitchClient {
         val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
 
         val commandHandlerScope = CommandHandlerScope(
-            chat = chat,
+            twitchClient = twitchClient,
             messageEvent = messageEvent,
             removeSongFromQueueHandler = removeSongFromQueueHandler
         )
@@ -393,16 +394,33 @@ fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<Str
 
 
 /**
- * Function that does all general sanity checks for commands without security level checks and handles the logging.
+ * Function that does all general sanity checks for commands without security level checks and handles the logging and
+ * result communication via chat.
  * Following sanity checks are done:
  *      - Is the command enabled
  * @param commandName name of the command which is used for the logging
  * @param isCommandEnabledFlag the flag of the specific command
+ * @param user User to check
+ * @param twitchClient TwitchClient-Object
  * @return true, if all sanity checks succeeded, else false
  */
-fun handleCommandSanityChecksWithoutSecurityLevel(commandName: String, isCommandEnabledFlag: Boolean): Boolean {
+fun handleCommandSanityChecksWithoutSecurityLevel(
+    commandName: String,
+    isCommandEnabledFlag: Boolean,
+    user: EventUser,
+    twitchClient: TwitchClient
+): Boolean {
     if(!isCommandEnabledFlag) {
         logger.info("$commandName disabled. Aborting execution")
+        return false
+    }
+
+    val isUserFollowingLongEnoughOrBroadcaster =
+        isUserFollowingLongEnough(user.id, twitchClient) ?: true ||
+        isUserBroadcaster(user.name)
+
+    if(!isUserFollowingLongEnoughOrBroadcaster && BotConfig.isFollowerOnlyModeEnabled) {
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, "You are not following long enough to use commands.")
         return false
     }
 
@@ -411,40 +429,44 @@ fun handleCommandSanityChecksWithoutSecurityLevel(commandName: String, isCommand
 
 
 /**
- * Function that does all general sanity checks for commands including security level checks and handles the logging.
+ * Function that does all general sanity checks for commands including security level checks and handles the logging and
+ * result communication via chat.
  * Following sanity checks are done:
  *      - sanity checks of handleCommandSanityChecksWithoutSecurityLevel
  *      - security level checks
  * @param commandName name of the command which is used for the logging
  * @param isCommandEnabledFlag the flag of the specific command
- * @param permissions permissions that the user has
- * @param userName name of the user
+ * @param messageEvent ChannelMessageEvent-Object
+ * @param twitchClient TwitchClient-Object
  * @param securityCheckFunction security check function of the specific command
  * @param securityLevel current security setting of the command
- * @param chat TwitchChat-Object
  * @return true, if all sanity checks succeeded, else false
  */
 fun handleCommandSanityChecksWithSecurityLevel(
     commandName: String,
     isCommandEnabledFlag: Boolean,
-    permissions: MutableSet<CommandPermission>,
-    userName: String,
+    messageEvent: ChannelMessageEvent,
+    twitchClient: TwitchClient,
     securityCheckFunction: (permission: Set<CommandPermission>, userName: String) -> Boolean,
-    securityLevel: CustomCommandPermissions,
-    chat: TwitchChat
+    securityLevel: CustomCommandPermissions
 ): Boolean {
 
-    if(!handleCommandSanityChecksWithoutSecurityLevel(commandName, isCommandEnabledFlag)) {
+    if(!handleCommandSanityChecksWithoutSecurityLevel(
+        commandName,
+        isCommandEnabledFlag,
+        messageEvent.user,
+        twitchClient
+    )) {
         return false
     }
 
-    if(!securityCheckFunction(permissions, userName)) {
+    if(!securityCheckFunction(messageEvent.permissions, messageEvent.user.name)) {
         logger.info(
-            "User $userName tried using $commandName but was not eligible. " +
+            "User ${messageEvent.user.name} tried using $commandName but was not eligible. " +
             "Current security setting: $securityLevel"
         )
 
-        sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, "You are not eligible to use that command!")
         return false
     }
 

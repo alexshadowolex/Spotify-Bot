@@ -2,6 +2,8 @@ package commands
 
 import config.BotConfig
 import config.TwitchBotConfig
+import handleCommandSanityChecksWithSecurityLevel
+import handleCommandSanityChecksWithoutSecurityLevel
 import handleSongRequestQuery
 import handler.Command
 import logger
@@ -20,13 +22,13 @@ val songRequestCommand = Command(
         }
 
         if (query.isBlank()) {
-            sendMessageToTwitchChatAndLogIt(chat, "No song given.")
+            sendMessageToTwitchChatAndLogIt(twitchClient.chat, "No song given.")
             return@Command
         }
 
         logger.info("query: $query")
 
-        val success = handleSongRequestQuery(chat, query)
+        val success = handleSongRequestQuery(twitchClient.chat, query)
         if (success) {
             addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
             addedUserCoolDown = TwitchBotConfig.defaultUserCoolDownSeconds

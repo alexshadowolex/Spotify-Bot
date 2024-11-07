@@ -13,7 +13,13 @@ val songInfoCommand: Command = Command(
     commandDisplayName = "Song Info",
     names = listOf("songinfo", "si"),
     handler = {
-        if(!handleCommandSanityChecksWithoutSecurityLevel("songInfoCommand", BotConfig.isSongInfoCommandEnabled)) {
+
+        if(!handleCommandSanityChecksWithoutSecurityLevel(
+                commandName = "songInfoCommand",
+                isCommandEnabledFlag = BotConfig.isSongInfoCommandEnabled,
+                user = messageEvent.user,
+                twitchClient = twitchClient
+        )) {
             return@Command
         }
 
@@ -24,7 +30,7 @@ val songInfoCommand: Command = Command(
             createSongString(currentSong.name, currentSong.artists) + " --> ${currentSong.externalUrls.spotify}"
         }
 
-        sendMessageToTwitchChatAndLogIt(chat, message)
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, message)
 
         addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }

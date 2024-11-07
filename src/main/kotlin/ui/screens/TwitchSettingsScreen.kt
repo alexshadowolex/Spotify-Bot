@@ -148,7 +148,12 @@ fun twitchSettingsScreen() {
                     textFieldTitle = "Minimum Following Duration in Minutes For Follower Only Mode",
                     textFieldContent = minimumFollowingDurationMinutes,
                     onValueChange = {
-                        minimumFollowingDurationMinutes.value = it
+                        minimumFollowingDurationMinutes.value = try {
+                            it.toDouble()
+                            it
+                        } catch (e: NumberFormatException) {
+                            "0"
+                        }
                     }
                 )
 

@@ -20,17 +20,16 @@ val addSongCommand: Command = Command(
         if(!handleCommandSanityChecksWithSecurityLevel(
                 commandName = "addSongCommand",
                 isCommandEnabledFlag= BotConfig.isAddSongCommandEnabled,
-                permissions = messageEvent.permissions,
-                userName = messageEvent.user.name,
+                messageEvent = messageEvent,
+                twitchClient = twitchClient,
                 securityCheckFunction = ::isUserEligibleForAddSongCommand,
-                securityLevel = BotConfig.addSongCommandSecurityLevel,
-                chat = chat
+                securityLevel = BotConfig.addSongCommandSecurityLevel
             )) {
             return@Command
         }
 
         if(!isPlaylistIdValid(SpotifyConfig.playlistIdForAddSongCommand)) {
-            sendMessageToTwitchChatAndLogIt(chat, "Playlist ID seems invalid. Correct it or try again!")
+            sendMessageToTwitchChatAndLogIt(twitchClient.chat, "Playlist ID seems invalid. Correct it or try again!")
             return@Command
         }
 
@@ -41,7 +40,7 @@ val addSongCommand: Command = Command(
             handleAddSongCommandFunctionality(currentSong)
         }
 
-        sendMessageToTwitchChatAndLogIt(chat, message)
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, message)
 
         addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }

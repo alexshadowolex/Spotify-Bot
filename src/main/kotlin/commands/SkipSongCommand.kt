@@ -18,12 +18,11 @@ val skipSongCommand: Command = Command(
 
         if(!handleCommandSanityChecksWithSecurityLevel(
             commandName = "skipSongCommand",
-            isCommandEnabledFlag= BotConfig.isSkipSongCommandEnabled,
-            permissions = messageEvent.permissions,
-            userName = messageEvent.user.name,
+            isCommandEnabledFlag = BotConfig.isSkipSongCommandEnabled,
+            messageEvent = messageEvent,
+            twitchClient = twitchClient,
             securityCheckFunction = ::isUserEligibleForSkipSongCommand,
-            securityLevel = BotConfig.skipSongCommandSecurityLevel,
-            chat = chat
+            securityLevel = BotConfig.skipSongCommandSecurityLevel
         )) {
             return@Command
         }
@@ -33,7 +32,7 @@ val skipSongCommand: Command = Command(
 
         if(currentSong == null) {
             logger.error("Error while getting current song")
-            sendMessageToTwitchChatAndLogIt(chat, errorTwitchChatMessage)
+            sendMessageToTwitchChatAndLogIt(twitchClient.chat, errorTwitchChatMessage)
             return@Command
         }
 
@@ -41,11 +40,11 @@ val skipSongCommand: Command = Command(
             spotifyClient.player.skipForward()
         } catch (e: Exception) {
             logger.error("Error while skipping song ${currentSong.name.addQuotationMarks()}: ", e)
-            sendMessageToTwitchChatAndLogIt(chat, errorTwitchChatMessage)
+            sendMessageToTwitchChatAndLogIt(twitchClient.chat, errorTwitchChatMessage)
             return@Command
         }
 
-        sendMessageToTwitchChatAndLogIt(chat, "Skipped song ${currentSong.name.addQuotationMarks()}")
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, "Skipped song ${currentSong.name.addQuotationMarks()}")
 
         addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
     }
