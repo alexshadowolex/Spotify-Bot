@@ -1,16 +1,16 @@
-package scripts
+package scripts.archeived
 
 import java.io.File
 
 // Compile with: kotlinc Migrate_to_2-0-0.kt -include-runtime -d Migrate_to_2-0-0.jar
 
-const val newLine = "& echo."
+private const val newLine = "& echo."
 
-val filesToCreate = listOf(
+private val filesToCreate = listOf(
     File("data\\properties\\botConfig.properties")
 )
 
-val propertiesToMove = mapOf(
+private val propertiesToMove = mapOf(
     listOf(
         "is_song_request_command_enabled_by_default",
         "blacklisted_users",

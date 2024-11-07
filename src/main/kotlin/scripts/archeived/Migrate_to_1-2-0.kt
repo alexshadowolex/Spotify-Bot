@@ -4,7 +4,7 @@ import java.io.File
 
 // Compile with: kotlinc Migrate_to_1-2-0.kt -include-runtime -d Migrate_to_1-2-0.jar
 
-const val newLine = "& echo."
+private const val newLine = "& echo."
 val renameFiles = mapOf(
     "twitchBotconfig.properties" to "twitchBotConfig.properties",
     "twitchtoken.txt" to "twitchToken.txt"
@@ -22,12 +22,12 @@ val filesToMoveToNewFolder = mapOf(
     )
 )
 
-val filesToCreate = listOf(
+private val filesToCreate = listOf(
     File("data\\properties\\spotifyConfig.properties"),
     File("data\\tokens\\spotifyClientSecret.txt")
 )
 
-val propertiesToMove = mapOf(
+private val propertiesToMove = mapOf(
     "spotify_client_id" to
     listOf(
         File("data\\properties\\twitchBotConfig.properties"),
