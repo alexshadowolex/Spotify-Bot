@@ -4,6 +4,7 @@ import addQuotationMarks
 import config.BotConfig
 import config.TwitchBotConfig
 import getCurrentSpotifySong
+import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import isUserEligibleForBlockSongCommand
 import logger
@@ -15,18 +16,16 @@ val blockSongCommand: Command = Command(
     commandDisplayName = "Block Song",
     names = listOf("blocksong", "block", "bs"),
     handler = {
-        if(!BotConfig.isBlockSongCommandEnabled) {
-            logger.info("blockSongCommand disabled. Aborting execution")
-            return@Command
-        }
 
-
-        if(!isUserEligibleForBlockSongCommand(messageEvent.permissions, messageEvent.user.name)) {
-            logger.info("User ${messageEvent.user.name} tried using blockSongCommand but was not eligible. " +
-                    "Current security setting: ${BotConfig.blockSongCommandSecurityLevel}"
-            )
-
-            sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
+        if(!handleCommandSanityChecksWithSecurityLevel(
+                commandName = "blockSongCommand",
+                isCommandEnabledFlag= BotConfig.isBlockSongCommandEnabled,
+                permissions = messageEvent.permissions,
+                userName = messageEvent.user.name,
+                securityCheckFunction = ::isUserEligibleForBlockSongCommand,
+                securityLevel = BotConfig.blockSongCommandSecurityLevel,
+                chat = chat
+            )) {
             return@Command
         }
 

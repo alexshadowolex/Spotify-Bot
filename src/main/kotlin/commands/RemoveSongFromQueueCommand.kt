@@ -4,6 +4,7 @@ import addQuotationMarks
 import config.BotConfig
 import config.TwitchBotConfig
 import createSongString
+import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import isUserEligibleForRemoveSongFromQueueCommand
 import logger
@@ -15,17 +16,16 @@ val removeSongFromQueueCommand: Command = Command(
     names = listOf("removesongfromqueue", "rsfq", "remove", "removesong", "rs"),
     handler = { input ->
         val inputString = input.joinToString(" ")
-        if(!BotConfig.isRemoveSongFromQueueCommandEnabled) {
-            logger.info("removeSongFromQueueCommand disabled. Aborting execution")
-            return@Command
-        }
 
-        if(!isUserEligibleForRemoveSongFromQueueCommand(messageEvent.permissions, messageEvent.user.name)) {
-            logger.info("User ${messageEvent.user.name} tried using removeSongFromQueueCommand but was not eligible. " +
-                    "Current security setting: ${BotConfig.removeSongFromQueueCommandSecurityLevel}"
-            )
-
-            sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
+        if(!handleCommandSanityChecksWithSecurityLevel(
+                commandName = "removeSongFromQueueCommand",
+                isCommandEnabledFlag= BotConfig.isRemoveSongFromQueueCommandEnabled,
+                permissions = messageEvent.permissions,
+                userName = messageEvent.user.name,
+                securityCheckFunction = ::isUserEligibleForRemoveSongFromQueueCommand,
+                securityLevel = BotConfig.removeSongFromQueueCommandSecurityLevel,
+                chat = chat
+            )) {
             return@Command
         }
 

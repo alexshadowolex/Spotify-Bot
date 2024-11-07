@@ -58,7 +58,7 @@ fun String.addQuotationMarks() =
 
 /**
  * Joins all non-empty elements of a list to a string
- * @param delimiter {String} delimiter between the list elements to join
+ * @param delimiter delimiter between the list elements to join
  */
 fun List<String>.joinToPropertiesString(delimiter: String) =
     this.filter { it.isNotEmpty() }.joinToString(delimiter)
@@ -66,7 +66,7 @@ fun List<String>.joinToPropertiesString(delimiter: String) =
 
 /**
  * Joins all non-empty elements of a list to a string and formats them to lowercase
- * @param delimiter {String} delimiter between the list elements to join
+ * @param delimiter delimiter between the list elements to join
  */
 fun List<String>.joinToLowercasePropertiesString(delimiter: String) =
     this.joinToPropertiesString(delimiter).lowercase(Locale.getDefault())
@@ -74,7 +74,7 @@ fun List<String>.joinToLowercasePropertiesString(delimiter: String) =
 
 /**
  * Creates a String out of a duration based on an int value and given duration unit.
- * @param durationUnit {DurationUnit} the desired duration unit
+ * @param durationUnit the desired duration unit
  */
 fun Duration.toIntPropertiesString(durationUnit: DurationUnit) =
     this.toInt(durationUnit).toString()
@@ -82,7 +82,7 @@ fun Duration.toIntPropertiesString(durationUnit: DurationUnit) =
 
 /**
  * Creates a String out of a duration based on a double value and given duration unit.
- * @param durationUnit {DurationUnit} the desired duration unit
+ * @param durationUnit the desired duration unit
  */
 fun Duration.toDoublePropertiesString(durationUnit: DurationUnit) =
     this.toDouble(durationUnit).toString()

@@ -51,7 +51,7 @@ import kotlin.time.Duration.Companion.seconds
 // Setup Twitch Bot
 /**
  * Sets up the connection to twitch
- * @return {TwitchClient} the TwitchClient-class
+ * @return the TwitchClient-object
  */
 fun setupTwitchBot(): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
@@ -195,8 +195,8 @@ fun setupTwitchBot(): TwitchClient {
 
 /**
  * Initiates the callback for the reward redeems
- * @param redeemEvent {RewardRedeemedEvent} the redeem event
- * @param twitchClient {TwitchClient} the twitchClient
+ * @param redeemEvent the redeem event
+ * @param twitchClient the twitchClient
  */
 fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: TwitchClient) {
     val redeemId = redeemEvent.redemption.reward.id
@@ -231,7 +231,7 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
 // Logging
 private const val LOG_DIRECTORY = "logs"
 /**
- * Sets up the logging process with {MultiOutputStream} to both console and log file
+ * Sets up the logging process with multiple output stream to both console and log file
  */
 fun setupLogging() {
     Files.createDirectories(Paths.get(LOG_DIRECTORY))
@@ -258,10 +258,10 @@ fun setupLogging() {
 /**
  * Gets the value of the specified property out of the given properties-file. When an error occurres, the
  * function will display a descriptive error message windows and end the app.
- * @param properties {Properties} already initialized properties-class
- * @param propertyName {String} name of the property
- * @param propertiesFileRelativePath {String} the relative path of the properties file
- * @return {String} on success, the raw value of the property
+ * @param properties already initialized properties-class
+ * @param propertyName name of the property
+ * @param propertiesFileRelativePath the relative path of the properties file
+ * @return on success, the raw value of the property
  */
 fun getPropertyValue(properties: Properties, propertyName: String, propertiesFileRelativePath: String): String {
     return try {
@@ -280,8 +280,8 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
 
 /**
  * Displays an error message window as JOptionPane.
- * @param message {String} the message to display
- * @param title {String} the title to display
+ * @param message the message to display
+ * @param title the title to display
  */
 fun showErrorMessageWindow(message: String, title: String) {
     JOptionPane.showMessageDialog(
@@ -295,10 +295,10 @@ fun showErrorMessageWindow(message: String, title: String) {
 
 /**
  * Displays an error message window for invalid enum class values.
- * @param propertyName {String} name of the property
- * @param propertyFilePath {String} path to the property file
- * @param exception {Exception} occurred exception while parsing the value
- * @param enumClassValues {List<String>} possible string-values of the enum property
+ * @param propertyName name of the property
+ * @param propertyFilePath path to the property file
+ * @param exception occurred exception while parsing the value
+ * @param enumClassValues possible string-values of the enum property
  */
 fun displayEnumParsingErrorWindow(
     propertyName: String,
@@ -321,7 +321,7 @@ fun displayEnumParsingErrorWindow(
 
 /**
  * Checks if the OS is windows and is in dark mode.
- * @return {Boolean} true, if OS is windows and in dark mode, else false
+ * @return true, if OS is windows and in dark mode, else false
  */
 fun isWindowsInDarkMode(): Boolean {
     val windowsRegistryPath = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
@@ -341,8 +341,8 @@ fun isWindowsInDarkMode(): Boolean {
 
 /**
  * Checks if a user is the broadcaster, specified in TwitchBotConfig.properties channel property.
- * @param userName {String} name of the user to check
- * @return {Boolean} true, if the user is the broadcaster, else false.
+ * @param userName name of the user to check
+ * @return true, if the user is the broadcaster, else false.
  */
 fun isUserBroadcaster(userName: String): Boolean {
     return userName == TwitchBotConfig.channel
@@ -352,9 +352,9 @@ fun isUserBroadcaster(userName: String): Boolean {
 // Twitch Bot functions
 /**
  * Checks if a user is blacklisted
- * @param userName {String} user's Name
- * @param userId {String} user's ID
- * @return {Boolean} true, if the user is blacklisted, else false
+ * @param userName user's Name
+ * @param userId user's ID
+ * @return true, if the user is blacklisted, else false
  */
 fun isUserBlacklisted(userName: String, userId: String): Boolean {
     if(userName in BotConfig.blacklistedUsers || userId in BotConfig.blacklistedUsers) {
@@ -372,8 +372,8 @@ fun isUserBlacklisted(userName: String, userId: String): Boolean {
 
 /**
  * Helper function that sends a message to twitch chat and logs it
- * @param chat {TitchChat} the twitch chat
- * @param message {String} content of the message
+ * @param chat the twitch chat
+ * @param message content of the message
  */
 fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
     chat.sendMessage(TwitchBotConfig.channel, message)
@@ -383,9 +383,9 @@ fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
 
 /**
  * Checks if a user is part of a custom group or the broadcaster.
- * @param userName {String} user name
- * @param customGroup {List<String>} custom group to check
- * @return {Boolean} true, if the user is part of the custom group or the broadcaster, else false
+ * @param userName user name
+ * @param customGroup custom group to check
+ * @return true, if the user is part of the custom group or the broadcaster, else false
  */
 fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<String>): Boolean {
     return userName == TwitchBotConfig.channel || customGroup.contains(userName.lowercase(Locale.getDefault()))
@@ -393,10 +393,70 @@ fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<Str
 
 
 /**
+ * Function that does all general sanity checks for commands without security level checks and handles the logging.
+ * Following sanity checks are done:
+ *      - Is the command enabled
+ * @param commandName name of the command which is used for the logging
+ * @param isCommandEnabledFlag the flag of the specific command
+ * @return true, if all sanity checks succeeded, else false
+ */
+fun handleCommandSanityChecksWithoutSecurityLevel(commandName: String, isCommandEnabledFlag: Boolean): Boolean {
+    if(!isCommandEnabledFlag) {
+        logger.info("$commandName disabled. Aborting execution")
+        return false
+    }
+
+    return true
+}
+
+
+/**
+ * Function that does all general sanity checks for commands including security level checks and handles the logging.
+ * Following sanity checks are done:
+ *      - sanity checks of handleCommandSanityChecksWithoutSecurityLevel
+ *      - security level checks
+ * @param commandName name of the command which is used for the logging
+ * @param isCommandEnabledFlag the flag of the specific command
+ * @param permissions permissions that the user has
+ * @param userName name of the user
+ * @param securityCheckFunction security check function of the specific command
+ * @param securityLevel current security setting of the command
+ * @param chat TwitchChat-Object
+ * @return true, if all sanity checks succeeded, else false
+ */
+fun handleCommandSanityChecksWithSecurityLevel(
+    commandName: String,
+    isCommandEnabledFlag: Boolean,
+    permissions: MutableSet<CommandPermission>,
+    userName: String,
+    securityCheckFunction: (permission: Set<CommandPermission>, userName: String) -> Boolean,
+    securityLevel: CustomCommandPermissions,
+    chat: TwitchChat
+): Boolean {
+
+    if(!handleCommandSanityChecksWithoutSecurityLevel(commandName, isCommandEnabledFlag)) {
+        return false
+    }
+
+    if(!securityCheckFunction(permissions, userName)) {
+        logger.info(
+            "User $userName tried using $commandName but was not eligible. " +
+            "Current security setting: $securityLevel"
+        )
+
+        sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
+        return false
+    }
+
+    return true
+}
+
+
+/**
  * Checks if the given user ID is following the broadcaster.
- * @param userID {String} ID of the user to check if they are following
- * @param twitchClient {TwitchClient} client to execute the request
- * @return {Boolean?} null on error, true if the user following, else false
+ * @param userID ID of the user to check if they are following
+ * @param twitchClient client to execute the request
+ * @return null on error, true if the user following, else false
  */
 fun isUserFollowingChannel(userID: String, twitchClient: TwitchClient): Boolean? {
     val followingUserInformation = getUserFollowingInformation(userID, twitchClient)
@@ -411,9 +471,9 @@ fun isUserFollowingChannel(userID: String, twitchClient: TwitchClient): Boolean?
 
 /**
  * Helper function to get the follow-information of the given user for the broadcaster's channel
- * @param userID {String} ID of the user to get the information from
- * @param twitchClient {TwitchClient} client to execute the request
- * @return {List<InboundFollow>?} List of InboundFollow-Object. It contents no or exactly one element
+ * @param userID ID of the user to get the information from
+ * @param twitchClient client to execute the request
+ * @return List of InboundFollow-Object. It contents no or exactly one element
  */
 fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): List<InboundFollow>? {
     val followingUser = twitchClient.helix.getChannelFollowers(
@@ -435,9 +495,9 @@ fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): Lis
 
 /**
  * Gets the duration a user is following since. If the user is not following, it will return the duration -1
- * @param userID {String} ID of the user to get the following duration for
- * @param twitchClient {TwitchClient} client to execute the request
- * @return {Duration?} null on error, Duration -1 if the user is not following, else the
+ * @param userID ID of the user to get the following duration for
+ * @param twitchClient client to execute the request
+ * @return null on error, Duration -1 if the user is not following, else the
  * Duration the user is following since
  */
 fun getUserFollowDuration(userID: String, twitchClient: TwitchClient): Duration? {
@@ -458,9 +518,9 @@ fun getUserFollowDuration(userID: String, twitchClient: TwitchClient): Duration?
 /**
  * Checks if a user is following long enough. The following Duration is compared to the property
  * TwitchBotConfig.minimumFollowingDurationMinutes
- * @param userID {String} ID of the user to check if they are following long enough
- * @param twitchClient {TwitchClient} client to execute the request
- * @return {Boolean?} null on error, true if the following duration is longer than the value in
+ * @param userID ID of the user to check if they are following long enough
+ * @param twitchClient client to execute the request
+ * @return null on error, true if the following duration is longer than the value in
  * TwitchBotConfig.minimumFollowingDurationMinutes, else false
  */
 fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boolean? {
@@ -478,9 +538,9 @@ fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boole
 // Spotify Functions
 /**
  * Helper function to be called both by redeem and command. Calls the update queue and issues a message to twitch chat.
- * @param chat {TwitchChat} the twitch chat
- * @param query {String} query or link
- * @return {Boolean} true on success, else false
+ * @param chat the twitch chat
+ * @param query query or link
+ * @return true on success, else false
  */
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
@@ -515,9 +575,8 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
 
 /**
  * Updates the spotify queue adding a song to it
- * @param query {String} either a spotify link or a query that will be searched for
- * @return {SongRequestResult} {Track-Item?} and {String}, on success: track and explanation message,
- * on failure: null and explanation message
+ * @param query either a spotify link or a query that will be searched for
+ * @return on success: track and explanation message, on failure: null and explanation message
  */
 private suspend fun updateQueue(query: String): SongRequestResult {
     logger.info("called updateQueue with query $query")
@@ -599,8 +658,8 @@ private suspend fun updateQueue(query: String): SongRequestResult {
 
 /**
  * Extracts the song ID from a spotify direct link.
- * @param directLink {String} of the spotify direct link
- * @return {String?} the ID on success, null on failure
+ * @param directLink the spotify direct link as a String
+ * @return the ID on success, null on failure
  */
 fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
     return Url(directLink).takeIf { isUrlSpotifyTrackDirectLink(it) }
@@ -610,8 +669,8 @@ fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
 
 /**
  * Gets the first (if there are more than one included) blocked artist from the given spotify config property.
- * @param artists {List<String?>} artist names
- * @return {String} the name of the (first) blocked artist or an empty string, if no artist is blocked
+ * @param artists artist names
+ * @return the name of the (first) blocked artist or an empty string, if no artist is blocked
  */
 private fun getFirstBlockedArtistName(artists: List<String?>): String {
     for(artist in artists.map { it?.lowercase(Locale.getDefault()) ?: "" }) {
@@ -625,8 +684,8 @@ private fun getFirstBlockedArtistName(artists: List<String?>): String {
 
 /**
  * Checks if a song is blocked.
- * @param songId {String} ID of the song to check
- * @return {Boolean} true, if the song is blocked, else false
+ * @param songId ID of the song to check
+ * @return true, if the song is blocked, else false
  */
 private fun isSongBlocked(songId: String): Boolean {
     return SpotifyConfig.blockedSongLinks.map { getSongIdFromSpotifyDirectLink(it) ?: "" }.contains(songId)
@@ -635,8 +694,8 @@ private fun isSongBlocked(songId: String): Boolean {
 
 /**
  * Checks if one or more artists are blocked. The function is not case-sensitive.
- * @param artists {List<String?>} artist names
- * @return {Boolean} true, if at least one artist ist blocked, else false
+ * @param artists artist names
+ * @return true, if at least one artist ist blocked, else false
  */
 private fun isSongArtistBlocked(artists: List<String?>): Boolean {
     for(artist in artists.map { it?.lowercase(Locale.getDefault()) ?: "" }) {
@@ -650,8 +709,8 @@ private fun isSongArtistBlocked(artists: List<String?>): Boolean {
 
 /**
  * Checks if the given URL is a spotify direct link to a track.
- * @param url {Url} the given URL
- * @return {Boolean} true, if it is a spotify direct link to a track, else false
+ * @param url the given URL
+ * @return true, if it is a spotify direct link to a track, else false
  */
 private fun isUrlSpotifyTrackDirectLink(url: Url): Boolean {
     return isUrlSpotifyDirectLink(url) && url.encodedPath.contains("/track/")
@@ -660,8 +719,8 @@ private fun isUrlSpotifyTrackDirectLink(url: Url): Boolean {
 
 /**
  * Checks if the given URL is a spotify direct link to anything.
- * @param url {Url} the given URL
- * @return {Boolean} true, if it is a spotify direct link to anything, else false
+ * @param url the given URL
+ * @return true, if it is a spotify direct link to anything, else false
  */
 private fun isUrlSpotifyDirectLink(url: Url): Boolean {
     return url.host == "open.spotify.com"
@@ -670,8 +729,8 @@ private fun isUrlSpotifyDirectLink(url: Url): Boolean {
 
 /**
  * Gets the track from the Spotify APIs track endpoint.
- * @param songId {String} the link's songId
- * @return {Track?} a track on success, null on error
+ * @param songId the link's songId
+ * @return a track on success, null on error
  */
 private suspend fun getSpotifyTrackById(songId: String): Track? {
     logger.info("called getSpotifyTrackById with ID: $songId")
@@ -690,8 +749,8 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
 /**
  * Gets the track from the Spotify APIs search endpoint. If the query is a spotify direct link to something
  * but not to a track, it will not search for a track to reduce random results.
- * @param query {String} the search query
- * @return {Track?} a track on success, null on error
+ * @param query the search query
+ * @return a track on success, null on error
  */
 private suspend fun getSpotifyTrackByQuery(query: String): Track? {
     logger.info("called getSpotifyTrackByQuery with query: $query")
@@ -720,7 +779,7 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
 /**
  * Issues a GET-Request to get the currently playing spotify song. If the player is not active,
  * the request will run until a TimeoutException occurred.
- * @return {Track?} track, if successful, else null
+ * @return track, if successful, else null
  */
 suspend fun getCurrentSpotifySong(): Track? {
     return try {
@@ -733,9 +792,9 @@ suspend fun getCurrentSpotifySong(): Track? {
 
 /**
  * Creates a string from the given song with Title and Artists
- * @param name {String} name of the given song
- * @param artists {List<SimpleArtist>} artists of the given song
- * @return {String} song name and artists
+ * @param name name of the given song
+ * @param artists artists of the given song
+ * @return song name and artists
  */
 fun createSongString(name: String, artists: List<SimpleArtist>): String {
     return "${name.addQuotationMarks()} by ${getArtistsString(artists)}"
@@ -744,8 +803,8 @@ fun createSongString(name: String, artists: List<SimpleArtist>): String {
 
 /**
  * Creates the concatenation of a list of artists with "," and the last 2 with "and"
- * @param artists {List<SimpleArtist>} artists
- * @return {String} concatenation of the artists
+ * @param artists artists
+ * @return concatenation of the artists
  */
 fun getArtistsString(artists: List<SimpleArtist>): String {
     return artists.map { it.name }.let { artist ->
@@ -810,7 +869,7 @@ fun startSpotifySongGetter() {
 
 /**
  * Helper function to outsource the try-catch block of accessing the variable isSpotifySongNameGetterEnabled
- * @return {Boolean} true, if the functionality is enabled. False, if not or an error occurred.
+ * @return true, if the functionality is enabled. False, if not or an error occurred.
  */
 fun isSpotifySongNameGetterEnabled(): Boolean {
     return try {
@@ -823,7 +882,7 @@ fun isSpotifySongNameGetterEnabled(): Boolean {
 
 /**
  * Writes current song into the separate text files
- * @param currentTrack {Track} current Track
+ * @param currentTrack current Track
  */
 private fun writeCurrentSongTextFiles(currentTrack: Track) {
     try {
@@ -843,7 +902,7 @@ private fun writeCurrentSongTextFiles(currentTrack: Track) {
 /**
  * Downloads the current song's album image. If the image is not the default size 640x640 pixels, it gets scaled
  * to be the default size.
- * @param currentTrack {Track} current Track
+ * @param currentTrack current Track
  */
 private fun downloadAndSaveAlbumImage(currentTrack: Track) {
     try {
@@ -928,7 +987,7 @@ fun emptyAllSongDisplayFiles() {
 
 /**
  * Checks if song request redeem is enabled. This is the case when song request command is not enabled.
- * @return {Boolean} true, if song request redeem is enabled, else false
+ * @return true, if song request redeem is enabled, else false
  */
 fun isSongRequestEnabledAsRedeem(): Boolean {
     return !BotConfig.isSongRequestCommandEnabled
@@ -939,7 +998,7 @@ fun isSongRequestEnabledAsRedeem(): Boolean {
  * Checks spotify api if the player is playing.
  * For reference of what the return codes mean, check here:
  * https://developer.spotify.com/documentation/web-api/reference/get-information-about-the-users-current-playback
- * @return {Boolean?} true, if the player is playing. False, if the player is not playing or not active. Null on error.
+ * @return true, if the player is playing. False, if the player is not playing or not active. Null on error.
  */
 suspend fun isSpotifyPlaying(): Boolean? {
     val playbackEndpoint = "https://api.spotify.com/v1/me/player"
@@ -982,9 +1041,9 @@ suspend fun isSpotifyPlaying(): Boolean? {
 
 /**
  * Adds a song to the playlist with the given playlist ID
- * @param song {Track} the song to add
- * @param playlistId {String} playlist's ID
- * @return {Boolean} true on success, else false
+ * @param song the song to add
+ * @param playlistId playlist's ID
+ * @return true on success, else false
  */
 suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
     logger.info("called addSongToPlaylist")
@@ -1006,9 +1065,9 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
 /**
  * Checks if the user is eligible for using the add song command. The eligibility is set
  * in the parameter addSongCommandSecurityLevel
- * @param permissions {Set<CommandPermission>} permissions of current user
- * @param userName {String} username of the user
- * @return {Boolean} true, if the user is eligible, else false
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @return true, if the user is eligible, else false
  */
 fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForAddSongCommand")
@@ -1023,8 +1082,8 @@ fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userNam
 
 /**
  * Issues a GET-Request to spotify API to get the playlist's name of the given playlist ID
- * @param playlistId {String} playlist's ID to get the name of
- * @return {String} the name on success, empty String on failure
+ * @param playlistId playlist's ID to get the name of
+ * @return the name on success, empty String on failure
  */
 suspend fun getPlaylistName(playlistId: String): String {
     return try {
@@ -1038,8 +1097,8 @@ suspend fun getPlaylistName(playlistId: String): String {
 
 /**
  * Checks if the given playlist ID is valid.
- * @param playlistId {String} playlist ID to check for
- * @return {Boolean} true if the ID is valid, else and on error false
+ * @param playlistId playlist ID to check for
+ * @return true if the ID is valid, else and on error false
  */
 suspend fun isPlaylistIdValid(playlistId: String): Boolean {
     val result = try {
@@ -1054,9 +1113,9 @@ suspend fun isPlaylistIdValid(playlistId: String): Boolean {
 
 /**
  * Checks if a song is in a given playlist by ID
- * @param songId {String} the song's ID to check for
- * @param playlistId {String} the playlist's ID
- * @return {Boolean?} true, if the playlist contains the song, else false, null on error
+ * @param songId the song's ID to check for
+ * @param playlistId the playlist's ID
+ * @return true, if the playlist contains the song, else false, null on error
  */
 suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
     val playlistSongIds = getPlaylistSongIds(playlistId) ?: return null
@@ -1067,8 +1126,8 @@ suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
 /**
  * Gets all the song IDs of the specified playlist's songs. It issues a GET-Request to spotify api for every 100
  * songs contained in that playlist.
- * @param playlistId {String} ID of the playlist to get the song IDs of
- * @return {List<String?>?} IDs of the songs in that playlist, empty strings if issues occurred, null if issues
+ * @param playlistId ID of the playlist to get the song IDs of
+ * @return IDs of the songs in that playlist, empty strings if issues occurred, null if issues
  * with the playlist in general occurred
  */
 suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
@@ -1103,8 +1162,8 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
  * Handles the functionality of the add song command after all sanity checks succeeded.
  * Checks if the song is already in the give playlist. If so, it will not be added. If not, it adds the song
  * to the playlist specified per ID in SpotifyConfig.playlistIdForAddSongCommand.
- * @param song {Track} song to add
- * @return {String} message to display in twitch chat afterward
+ * @param song song to add
+ * @return message to display in twitch chat afterward
  */
 suspend fun handleAddSongCommandFunctionality(song: Track): String {
     return when(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
@@ -1131,7 +1190,7 @@ suspend fun handleAddSongCommandFunctionality(song: Track): String {
 /**
  * Gets the playlist's name from the add Song Command. Since the property might still be empty, this needs to get
  * checked and if so, try and fill the property with the correct name.
- * @return {String} the playlist's name. If the property is not empty, it will be surrounded by quotation marks
+ * @return the playlist's name. If the property is not empty, it will be surrounded by quotation marks
  */
 suspend fun getAddSongPlaylistNameString(): String {
     if(SpotifyConfig.playlistNameForAddSongCommand.isEmpty()) {
@@ -1145,9 +1204,9 @@ suspend fun getAddSongPlaylistNameString(): String {
 /**
  * Checks if the user is eligible for using the skip song command. The eligibility is set
  * in the parameter skipSongCommandSecurityLevel
- * @param permissions {Set<CommandPermission>} permissions of current user
- * @param userName {String} username of the user
- * @return {Boolean} true, if the user is eligible, else false
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @return true, if the user is eligible, else false
  */
 fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForSkipSongCommand")
@@ -1163,9 +1222,9 @@ fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userNa
 /**
  * Checks if the user is eligible for using the remove song from queue command. The eligibility is set
  * in the parameter removeSongFromQueueCommandSecurityLevel
- * @param permissions {Set<CommandPermission>} permissions of current user
- * @param userName {String} username of the user
- * @return {Boolean} true, if the user is eligible, else false
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @return true, if the user is eligible, else false
  */
 fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForRemoveSongFromQueueCommand")
@@ -1181,9 +1240,9 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 /**
  * Checks if the user is eligible for using the block song command. The eligibility is set
  * in the parameter blockSongCommandSecurityLevel
- * @param permissions {Set<CommandPermission>} permissions of current user
- * @param userName {String} username of the user
- * @return {Boolean} true, if the user is eligible, else false
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @return true, if the user is eligible, else false
  */
 fun isUserEligibleForBlockSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForBlockSongCommand")
@@ -1201,12 +1260,11 @@ fun isUserEligibleForBlockSongCommand(permissions: Set<CommandPermission>, userN
  * the command's specific security level. If the value CUSTOM is selected, it checks whether the user
  * is the broadcaster or part of the custom group. If the other two values are selected, it checks
  * the user's permissions instead.
- * @param permissions {Set<CommandPermission>} permissions of current user
- * @param userName {String} username of the user
- * @param commandSecurityLevel {MutableState<CustomCommandPermissions>} variable that holds the command's
- * current security level
- * @param customGroup {List<String>} list of the command's custom usernames
- * @return {Boolean} true, if the user is eligible, else false
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @param commandSecurityLevel variable that holds the command's current security level
+ * @param customGroup list of the command's custom usernames
+ * @return true, if the user is eligible, else false
  */
 fun isUserEligibleForCommand(
     permissions: Set<CommandPermission>,
@@ -1226,7 +1284,7 @@ fun isUserEligibleForCommand(
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
 /**
  * Checks GitHub to see if a new version of this app is available
- * @return {Boolean} true, if there is a new version, else false
+ * @return true, if there is a new version, else false
  */
 fun isNewAppReleaseAvailable(): Boolean {
     logger.info("called isNewAppReleaseAvailable")

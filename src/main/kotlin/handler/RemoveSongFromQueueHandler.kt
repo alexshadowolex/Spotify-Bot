@@ -27,8 +27,8 @@ class RemoveSongFromQueueHandler {
     /**
      * Adds a song to the set of songs marked for skipping. The input is searched for in the current queue
      * to find the closest match.
-     * @param songSearchQuery {String} query string of the song to be searched for and then skipped
-     * @return {Track?} the track-object of the song to be skipped, if a fitting song was found, else null
+     * @param songSearchQuery query string of the song to be searched for and then skipped
+     * @return the track-object of the song to be skipped, if a fitting song was found, else null
      */
     suspend fun addSongToSetMarkedForSkipping(songSearchQuery: String): Track? {
         val track = findTrackInQueue(songSearchQuery)
@@ -85,8 +85,8 @@ class RemoveSongFromQueueHandler {
      * This function tokenizes the input and each display string of each song in the queue,
      * and calculates the similarity between corresponding tokens. It then selects the track with the
      * highest overall similarity as the closest match.
-     * @param input {String} The input to find a match for.
-     * @return {Track?} The closest matching track from the queue, or null if no match is found.
+     * @param input The input to find a match for.
+     * @return The closest matching track from the queue, or null if no match is found.
      */
     private suspend fun findTrackInQueue(input: String): Track? {
         val queue = try {
@@ -129,8 +129,8 @@ class RemoveSongFromQueueHandler {
     /**
      * Lowercase and tokenize the input for the findTrackInQueue-function by splitting on whitespaces
      * and removing punctuation.
-     * @param input {String} input to be tokenized
-     * @return {List<String>} list of tokens
+     * @param input input to be tokenized
+     * @return list of tokens
      */
     private fun tokenize(input: String): List<String> {
         return input.lowercase(Locale.getDefault()).split(Regex("\\W+"))

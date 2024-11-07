@@ -4,6 +4,7 @@ import addQuotationMarks
 import config.BotConfig
 import config.TwitchBotConfig
 import getCurrentSpotifySong
+import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import isUserEligibleForSkipSongCommand
 import logger
@@ -14,18 +15,16 @@ val skipSongCommand: Command = Command(
     commandDisplayName = "Skip Song",
     names = listOf("skipsong", "skip", "next", "ss"),
     handler = {
-        if(!BotConfig.isSkipSongCommandEnabled) {
-            logger.info("skipSongCommand disabled. Aborting execution")
-            return@Command
-        }
 
-
-        if(!isUserEligibleForSkipSongCommand(messageEvent.permissions, messageEvent.user.name)) {
-            logger.info("User ${messageEvent.user.name} tried using skipSongCommand but was not eligible. " +
-                    "Current security setting: ${BotConfig.skipSongCommandSecurityLevel}"
-            )
-
-            sendMessageToTwitchChatAndLogIt(chat, "You are not eligible to use that command!")
+        if(!handleCommandSanityChecksWithSecurityLevel(
+            commandName = "skipSongCommand",
+            isCommandEnabledFlag= BotConfig.isSkipSongCommandEnabled,
+            permissions = messageEvent.permissions,
+            userName = messageEvent.user.name,
+            securityCheckFunction = ::isUserEligibleForSkipSongCommand,
+            securityLevel = BotConfig.skipSongCommandSecurityLevel,
+            chat = chat
+        )) {
             return@Command
         }
 
