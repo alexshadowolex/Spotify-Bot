@@ -82,7 +82,7 @@ fun homeScreen() {
                 val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
                 Column (
                     modifier = Modifier
-                        .height(80.dp)
+                        .height(100.dp)
                         .fillMaxWidth()
                         .padding(top = 5.dp)
                         .border(1.dp, Color(30, 30, 30), RoundedCornerShape(4.dp))

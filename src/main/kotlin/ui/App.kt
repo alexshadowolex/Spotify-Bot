@@ -130,13 +130,13 @@ enum class Screen(
     HomeScreen(
         label = "Home",
         icon = Icons.Filled.Home,
-        height = 550.dp,
-        width = 600.dp
+        height = 600.dp,
+        width = 500.dp
     ),
     GeneralSettingsScreen(
         label = "General Settings",
         icon = Icons.Filled.Settings,
-        height = 700.dp,
+        height = 850.dp,
         width = 900.dp
     ),
     SpotifySettingsScreen(
@@ -148,7 +148,7 @@ enum class Screen(
     TwitchSettingsScreen(
         label = "Twitch Settings",
         icon = Icons.Filled.Edit,
-        height = 570.dp,
+        height = 640.dp,
         width = 500.dp
     )
 }

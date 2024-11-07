@@ -120,6 +120,11 @@ private var customGroupUserNamesBlockSongCommand = mutableStateListOf("")
         field = value
         BotConfig.customGroupUserNamesBlockSongCommand = value
     }
+private var isFollowerOnlyModeEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isFollowerOnlyModeEnabled = value.value
+    }
 
 @Composable
 fun generalSettingsScreen() {
@@ -190,6 +195,27 @@ fun generalSettingsScreen() {
 
                         sectionDivider()
 
+
+                        toggleFunctionalityRow(
+                            "Follower Only Mode ",
+                            true,
+                            null,
+                            isFollowerOnlyModeEnabled
+                        )
+
+                        sectionDivider()
+                    }
+
+
+                    columnDivider()
+
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp)
+                    ) {
+
                         toggleFunctionalityRow(
                             "Block Song Command ",
                             true,
@@ -234,17 +260,6 @@ fun generalSettingsScreen() {
                         )
 
                         sectionDivider()
-                    }
-
-
-                    columnDivider()
-
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 10.dp)
-                    ) {
 
                         toggleFunctionalityRow(
                             "Add Song Command ",
@@ -581,4 +596,5 @@ fun initializeGeneralFlagVariables() {
     isBlockSongCommandEnabled = remember { mutableStateOf(BotConfig.isBlockSongCommandEnabled) }
     blockSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.blockSongCommandSecurityLevel) }
     customGroupUserNamesBlockSongCommand = remember { BotConfig.customGroupUserNamesBlockSongCommand.toMutableStateList() }
+    isFollowerOnlyModeEnabled = remember { mutableStateOf(BotConfig.isFollowerOnlyModeEnabled) }
 }

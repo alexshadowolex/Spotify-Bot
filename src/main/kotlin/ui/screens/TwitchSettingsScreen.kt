@@ -8,12 +8,15 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import config.SpotifyConfig
 import config.TwitchBotConfig
+import toDoublePropertiesString
 import toIntPropertiesString
 import ui.dropDownStringPropertiesList
 import ui.propertiesTextField
 import ui.sectionDivider
 import ui.versionAndCreditsRow
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
@@ -52,6 +55,12 @@ private var songRequestRedeemId = mutableStateOf("")
     set(value) {
         field = value
         TwitchBotConfig.songRequestRedeemId = value.value
+    }
+
+private var minimumFollowingDurationMinutes = mutableStateOf("0")
+    set(value) {
+        field = value
+        TwitchBotConfig.minimumFollowingDurationMinutes = value.value.toDouble().minutes
     }
 
 
@@ -135,6 +144,16 @@ fun twitchSettingsScreen() {
 
                 sectionDivider()
 
+                propertiesTextField(
+                    textFieldTitle = "Minimum Following Duration in Minutes For Follower Only Mode",
+                    textFieldContent = minimumFollowingDurationMinutes,
+                    onValueChange = {
+                        minimumFollowingDurationMinutes.value = it
+                    }
+                )
+
+                sectionDivider()
+
                 versionAndCreditsRow()
             }
         }
@@ -154,4 +173,7 @@ fun initializeTwitchFlagVariables() {
     ) }
     blacklistMessage = remember { mutableStateOf(TwitchBotConfig.blacklistMessage) }
     songRequestRedeemId = remember { mutableStateOf(TwitchBotConfig.songRequestRedeemId) }
+    minimumFollowingDurationMinutes = remember { mutableStateOf(
+        TwitchBotConfig.minimumFollowingDurationMinutes.toDoublePropertiesString(DurationUnit.MINUTES)
+    ) }
 }
