@@ -53,7 +53,7 @@ var windowWidth = mutableStateOf(Screen.HomeScreen.width)
 var windowHeight = mutableStateOf(Screen.HomeScreen.height)
 
 
-suspend fun main() = try {
+fun main() = try {
     setupLogging()
     val twitchClient = setupTwitchBot()
     val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())

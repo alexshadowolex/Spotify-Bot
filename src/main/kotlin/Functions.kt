@@ -11,6 +11,7 @@ import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
+import com.github.twitch4j.helix.domain.InboundFollow
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.BotConfig
 import config.BuildInfo
@@ -24,6 +25,7 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
 import java.awt.Color
@@ -42,6 +44,7 @@ import javax.imageio.ImageIO
 import javax.swing.JOptionPane
 import kotlin.collections.set
 import kotlin.system.exitProcess
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -69,7 +72,7 @@ fun setupTwitchBot(): TwitchClient {
     val nextAllowedCommandUsageInstantPerUser = mutableMapOf<Pair<Command, /* user: */ String>, Instant>()
     val nextAllowedCommandUsageInstantPerCommand = mutableMapOf<Command, Instant>()
 
-    val channelId = try {
+    val channelID = try {
         twitchClient.helix.getUsers(
             TwitchBotConfig.chatAccountToken,
             null,
@@ -83,12 +86,14 @@ fun setupTwitchBot(): TwitchClient {
         )
     }
 
+    TwitchBotConfig.chatAccountID = channelID
+
     twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
         oAuth2Credential,
-        channelId
+        channelID
     )
 
-    twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelId)
+    twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelID)
 
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
@@ -384,6 +389,89 @@ fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
  */
 fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<String>): Boolean {
     return userName == TwitchBotConfig.channel || customGroup.contains(userName.lowercase(Locale.getDefault()))
+}
+
+
+/**
+ * Checks if the given user ID is following the broadcaster.
+ * @param userID {String} ID of the user to check if they are following
+ * @param twitchClient {TwitchClient} client to execute the request
+ * @return {Boolean?} null on error, true if the user following, else false
+ */
+fun isUserFollowingChannel(userID: String, twitchClient: TwitchClient): Boolean? {
+    val followingUserInformation = getUserFollowingInformation(userID, twitchClient)
+    if(followingUserInformation == null) {
+        logger.error("Couldn't check is user $userID is following in isUserFollowingChannel.")
+        return null
+    }
+
+    return followingUserInformation.isNotEmpty()
+}
+
+
+/**
+ * Helper function to get the follow-information of the given user for the broadcaster's channel
+ * @param userID {String} ID of the user to get the information from
+ * @param twitchClient {TwitchClient} client to execute the request
+ * @return {List<InboundFollow>?} List of InboundFollow-Object. It contents no or exactly one element
+ */
+fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): List<InboundFollow>? {
+    val followingUser = twitchClient.helix.getChannelFollowers(
+        TwitchBotConfig.chatAccountToken,
+        TwitchBotConfig.chatAccountID,
+        userID,
+        null,
+        null
+    ).execute()
+
+    if(followingUser.follows == null) {
+        logger.error("Something went wrong when getting follow information of user $userID.")
+        return null
+    }
+
+    return followingUser.follows
+}
+
+
+/**
+ * Gets the duration a user is following since. If the user is not following, it will return the duration -1
+ * @param userID {String} ID of the user to get the following duration for
+ * @param twitchClient {TwitchClient} client to execute the request
+ * @return {Duration?} null on error, Duration -1 if the user is not following, else the
+ * Duration the user is following since
+ */
+fun getUserFollowDuration(userID: String, twitchClient: TwitchClient): Duration? {
+    val followingUserInformation = getUserFollowingInformation(userID, twitchClient)
+    if(followingUserInformation == null) {
+        logger.error("Couldn't get user's $userID following duration in getUserFollowDuration.")
+        return null
+    }
+
+    if(isUserFollowingChannel(userID, twitchClient) != true) {
+        return (-1).seconds
+    }
+
+    return Clock.System.now() - followingUserInformation.first().followedAt.toKotlinInstant()
+}
+
+
+/**
+ * Checks if a user is following long enough. The following Duration is compared to the property
+ * TwitchBotConfig.minimumFollowingDurationMinutes
+ * @param userID {String} ID of the user to check if they are following long enough
+ * @param twitchClient {TwitchClient} client to execute the request
+ * @return {Boolean?} null on error, true if the following duration is longer than the value in
+ * TwitchBotConfig.minimumFollowingDurationMinutes, else false
+ */
+fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boolean? {
+    val followingDuration = getUserFollowDuration(userID, twitchClient)
+
+    if(followingDuration == null) {
+        logger.error("Couldn't check if user $userID is following long enough in isUserFollowingLongEnough.")
+        return null
+    }
+
+    return followingDuration >= TwitchBotConfig.minimumFollowingDurationMinutes
 }
 
 

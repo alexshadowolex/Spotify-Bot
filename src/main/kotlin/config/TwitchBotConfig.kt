@@ -6,11 +6,14 @@ import joinToPropertiesString
 import logger
 import redeems.songRequestRedeem
 import showErrorMessageWindow
+import toDoublePropertiesString
 import toIntPropertiesString
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
 import kotlin.system.exitProcess
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
@@ -33,6 +36,8 @@ object TwitchBotConfig {
     }
 
     val chatAccountToken = File("data\\tokens\\twitchToken.txt").readText()
+    // Will be filled with the ID in function setupTwitchBot
+    var chatAccountID = ""
 
     val channel: String = getPropertyValue(properties, "channel", twitchBotConfigFile.path)
 
@@ -100,6 +105,25 @@ object TwitchBotConfig {
         set(value) {
             field = value
             properties.setProperty("blacklistMessage", value)
+            savePropertiesToFile()
+        }
+
+
+    var minimumFollowingDurationMinutes: Duration = try {
+        getPropertyValue(properties, "minimumFollowingDurationMinutes", twitchBotConfigFile.path)
+            .toDouble().minutes
+    } catch (e: NumberFormatException) {
+        val defaultValue = 0.minutes
+        logger.warn(
+            "Invalid number found while parsing property minimumFollowingDurationMinutes, setting to $defaultValue"
+        )
+        defaultValue
+    }
+        set(value) {
+            field = value
+            properties.setProperty(
+                "minimumFollowingDurationMinutes", value.toDoublePropertiesString(DurationUnit.MINUTES)
+            )
             savePropertiesToFile()
         }
 
