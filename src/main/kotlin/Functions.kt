@@ -220,7 +220,7 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
     }
 
     val redeemHandlerScope = RedeemHandlerScope(
-        chat = twitchClient.chat,
+        twitchClient = twitchClient,
         redeemEvent = redeemEvent
     )
 
@@ -407,7 +407,8 @@ fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<Str
 fun handleCommandSanityChecksWithoutSecurityLevel(
     commandName: String,
     isCommandEnabledFlag: Boolean,
-    user: EventUser,
+    userName: String,
+    userID: String,
     twitchClient: TwitchClient
 ): Boolean {
     if(!isCommandEnabledFlag) {
@@ -416,8 +417,8 @@ fun handleCommandSanityChecksWithoutSecurityLevel(
     }
 
     val isUserFollowingLongEnoughOrBroadcaster =
-        isUserFollowingLongEnough(user.id, twitchClient) ?: true ||
-        isUserBroadcaster(user.name)
+        isUserFollowingLongEnough(userID, twitchClient) ?: true ||
+        isUserBroadcaster(userName)
 
     if(!isUserFollowingLongEnoughOrBroadcaster && BotConfig.isFollowerOnlyModeEnabled) {
         sendMessageToTwitchChatAndLogIt(twitchClient.chat, "You are not following long enough to use commands.")
@@ -454,7 +455,8 @@ fun handleCommandSanityChecksWithSecurityLevel(
     if(!handleCommandSanityChecksWithoutSecurityLevel(
         commandName,
         isCommandEnabledFlag,
-        messageEvent.user,
+        messageEvent.user.name,
+        messageEvent.user.id,
         twitchClient
     )) {
         return false
@@ -1013,6 +1015,26 @@ fun emptyAllSongDisplayFiles() {
  */
 fun isSongRequestEnabledAsRedeem(): Boolean {
     return !BotConfig.isSongRequestCommandEnabled
+}
+
+
+/**
+ * Helper function to check if the song request command is active. This is the case when both song requests
+ * generally are enabled and the song requests are used as commands.
+ * @return true, if both flags are true, else false
+ */
+fun isSongRequestCommandActive(): Boolean {
+    return BotConfig.isSongRequestCommandEnabled && BotConfig.isSongRequestEnabled
+}
+
+
+/**
+ * Helper function to check if the song request redeem is active. This is the case when both song requests
+ * generally are enabled and the song requests are used as redeems.
+ * @return true, if both flags are true, else false
+ */
+fun isSongRequestRedeemActive(): Boolean {
+    return isSongRequestEnabledAsRedeem() && BotConfig.isSongRequestEnabled
 }
 
 

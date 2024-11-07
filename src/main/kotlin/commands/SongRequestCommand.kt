@@ -2,10 +2,10 @@ package commands
 
 import config.BotConfig
 import config.TwitchBotConfig
-import handleCommandSanityChecksWithSecurityLevel
 import handleCommandSanityChecksWithoutSecurityLevel
 import handleSongRequestQuery
 import handler.Command
+import isSongRequestCommandActive
 import logger
 import sendMessageToTwitchChatAndLogIt
 import kotlin.time.Duration.Companion.seconds
@@ -13,11 +13,16 @@ import kotlin.time.Duration.Companion.seconds
 val songRequestCommand = Command(
     commandDisplayName = "Song Request",
     names = listOf("songrequest", "sr"),
-    handler = {arguments ->
+    handler = { arguments ->
         val query = arguments.joinToString(" ").trim()
 
-        if(!BotConfig.isSongRequestCommandEnabled || !BotConfig.isSongRequestEnabled) {
-            logger.info("SongRequestCommand disabled. Aborting execution")
+        if(!handleCommandSanityChecksWithoutSecurityLevel(
+                commandName = "songRequestCommand",
+                isCommandEnabledFlag = isSongRequestCommandActive(),
+                userName = messageEvent.user.name,
+                userID = messageEvent.user.id,
+                twitchClient = twitchClient
+            )) {
             return@Command
         }
 

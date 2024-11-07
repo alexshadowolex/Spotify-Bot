@@ -2,21 +2,29 @@ package redeems
 
 import config.BotConfig
 import config.TwitchBotConfig
+import handleCommandSanityChecksWithoutSecurityLevel
 import handleSongRequestQuery
 import handler.Redeem
 import isSongRequestEnabledAsRedeem
+import isSongRequestRedeemActive
 import logger
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,
     handler = { query ->
-        if(!isSongRequestEnabledAsRedeem() || !BotConfig.isSongRequestEnabled) {
-            logger.info("SongRequestRedeem disabled. Aborting execution")
+
+        if(!handleCommandSanityChecksWithoutSecurityLevel(
+                commandName = "songRequestRedeem",
+                isCommandEnabledFlag = isSongRequestRedeemActive(),
+                userName = redeemEvent.redemption.user.displayName,
+                userID = redeemEvent.redemption.user.id,
+                twitchClient = twitchClient
+            )) {
             return@Redeem
         }
 
         logger.info("query: $query")
 
-        handleSongRequestQuery(chat, query)
+        handleSongRequestQuery(twitchClient.chat, query)
     }
 )

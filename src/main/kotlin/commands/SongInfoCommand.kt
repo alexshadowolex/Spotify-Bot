@@ -17,7 +17,8 @@ val songInfoCommand: Command = Command(
         if(!handleCommandSanityChecksWithoutSecurityLevel(
                 commandName = "songInfoCommand",
                 isCommandEnabledFlag = BotConfig.isSongInfoCommandEnabled,
-                user = messageEvent.user,
+                userName = messageEvent.user.name,
+                userID = messageEvent.user.id,
                 twitchClient = twitchClient
         )) {
             return@Command
