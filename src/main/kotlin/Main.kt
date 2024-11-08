@@ -26,6 +26,7 @@ import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import ui.Screen
 import ui.app
+import ui.initializeFlagVariables
 import ui.screens.newVersionScreen
 import java.io.File
 import java.io.PrintWriter
@@ -49,8 +50,7 @@ val httpClient = HttpClient(CIO) {
 
 lateinit var spotifyClient: SpotifyClientApi
 var currentSpotifySong: Track? = null
-var windowWidth = mutableStateOf(Screen.HomeScreen.width)
-var windowHeight = mutableStateOf(Screen.HomeScreen.height)
+var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen.width, Screen.HomeScreen.height)))
 
 
 fun main() = try {
@@ -60,6 +60,7 @@ fun main() = try {
     var alreadyCheckedNewVersion = false
 
     application {
+        initializeFlagVariables()
         DisposableEffect(Unit) {
             spotifyClient = runBlocking {
                 spotifyClientApi(
@@ -98,7 +99,7 @@ fun main() = try {
         }
 
         Window(
-            state = WindowState(size = DpSize(windowWidth.value, windowHeight.value)),
+            state = mainWindowState.value,
             resizable = false,
             title = "Spotify Bot",
             onCloseRequest = ::exitApplication,

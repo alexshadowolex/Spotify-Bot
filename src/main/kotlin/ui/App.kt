@@ -14,15 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowState
 import isWindowsInDarkMode
 import kotlinx.coroutines.delay
+import mainWindowState
 import rememberNavController
 import ui.navigation.NavigationHost
 import ui.navigation.composable
 import ui.screens.*
-import windowHeight
-import windowWidth
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -57,10 +58,7 @@ fun app() {
         }
     }
 
-    // TODO calling it here will call it on each recomposition again. Should not matter, but is not nice either
-    initializeFlagVariables()
-
-    val screens = Screen.values().toList()
+    val screens = Screen.entries
     val navController by rememberNavController(Screen.HomeScreen.name)
     val currentScreen by remember { navController.currentScreen }
 
@@ -98,8 +96,11 @@ fun app() {
                                         alwaysShowLabel = true,
                                         onClick = {
                                             navController.navigate(it.name)
-                                            windowHeight.value = it.height
-                                            windowWidth.value = it.width
+
+                                            mainWindowState.value = WindowState(
+                                                size = DpSize(it.width, it.height),
+                                                position = mainWindowState.value.position
+                                            )
                                         }
                                     )
                                 }
