@@ -130,7 +130,7 @@ object BotConfig {
             propertyName = "addSongCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
-            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
+            enumClassValues = CustomCommandPermissions.entries.map { it.toString() }
         )
         exitProcess(-1)
     }
@@ -150,7 +150,7 @@ object BotConfig {
             propertyName = "skipSongCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
-            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
+            enumClassValues = CustomCommandPermissions.entries.map { it.toString() }
         )
         exitProcess(-1)
     }
@@ -195,7 +195,7 @@ object BotConfig {
             propertyName = "removeSongFromQueueCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
-            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
+            enumClassValues = CustomCommandPermissions.entries.map { it.toString() }
         )
         exitProcess(-1)
     }
@@ -238,7 +238,7 @@ object BotConfig {
             propertyName = "blockSongCommandSecurityLevel",
             propertyFilePath = botConfigFile.path,
             exception = e,
-            enumClassValues = CustomCommandPermissions.values().map { it.toString() }
+            enumClassValues = CustomCommandPermissions.entries.map { it.toString() }
         )
         exitProcess(-1)
     }
@@ -270,6 +270,11 @@ object BotConfig {
 
 
     private fun savePropertiesToFile() {
-        properties.store(FileOutputStream(botConfigFile.path), null)
+        try {
+            properties.store(FileOutputStream(botConfigFile.path), null)
+        } catch (e: Exception) {
+            logger.error("Error while saving properties to file in BotConfig.")
+            logger.error(e.stackTraceToString())
+        }
     }
 }

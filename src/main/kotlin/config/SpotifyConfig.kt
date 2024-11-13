@@ -84,6 +84,11 @@ object SpotifyConfig {
         }
 
     private fun savePropertiesToFile() {
-        properties.store(FileOutputStream(spotifyConfigFile.path), null)
+        try {
+            properties.store(FileOutputStream(spotifyConfigFile.path), null)
+        } catch (e: Exception) {
+            logger.error("Error while saving properties to file in SpotifyConfig.")
+            logger.error(e.stackTraceToString())
+        }
     }
 }

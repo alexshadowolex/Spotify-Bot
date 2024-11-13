@@ -9,7 +9,6 @@ import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import isPlaylistIdValid
 import isUserEligibleForAddSongCommand
-import logger
 import sendMessageToTwitchChatAndLogIt
 
 val addSongCommand: Command = Command(

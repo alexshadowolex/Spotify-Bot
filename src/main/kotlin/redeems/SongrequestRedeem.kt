@@ -1,11 +1,9 @@
 package redeems
 
-import config.BotConfig
 import config.TwitchBotConfig
 import handleCommandSanityChecksWithoutSecurityLevel
 import handleSongRequestQuery
 import handler.Redeem
-import isSongRequestEnabledAsRedeem
 import isSongRequestRedeemActive
 import logger
 

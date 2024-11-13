@@ -74,7 +74,12 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                 logger.info("Clicked on Go To GitHub Link")
                                 backgroundCoroutineScope.launch {
                                     withContext(Dispatchers.IO) {
-                                        Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
+                                        try {
+                                            Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
+                                        } catch (e: java.io.IOException) {
+                                            logger.error("Couldn't open GitHub-link in browser.")
+                                            logger.error(e.stackTraceToString())
+                                        }
                                     }
                                 }
                             }
@@ -124,7 +129,12 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                 Button(
                                     onClick = {
                                         logger.info("Clicked on Go To GitHub Button")
-                                        Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
+                                        try {
+                                            Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
+                                        } catch (e: java.io.IOException) {
+                                            logger.error("Couldn't open GitHub-link with button in browser.")
+                                            logger.error(e.stackTraceToString())
+                                        }
                                     },
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)

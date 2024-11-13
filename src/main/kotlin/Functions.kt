@@ -11,7 +11,6 @@ import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
-import com.github.twitch4j.common.events.domain.EventUser
 import com.github.twitch4j.helix.domain.InboundFollow
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.BotConfig
@@ -35,6 +34,7 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
@@ -81,10 +81,12 @@ fun setupTwitchBot(): TwitchClient {
         ).execute().users.first().id
     } catch (e: NoSuchElementException) {
         logger.error("An Error occurred with the channel name. Maybe the channel name is spelled wrong?")
-        e.printStackTrace()
-        throw ExceptionInInitializerError(
-            "Error with channel name. Check the value of \"channel\" in the twitchBotConfig.properties-file!"
+        logger.error(e.stackTraceToString())
+        showErrorMessageWindow(
+            message = "Error with channel name. Check the value of \"channel\" in the twitchBotConfig.properties-file!",
+            title = "Error with channel name"
         )
+        exitProcess(-1)
     }
 
     TwitchBotConfig.chatAccountID = channelID
@@ -235,23 +237,31 @@ private const val LOG_DIRECTORY = "logs"
  * Sets up the logging process with multiple output stream to both console and log file
  */
 fun setupLogging() {
-    Files.createDirectories(Paths.get(LOG_DIRECTORY))
+    try {
+        Files.createDirectories(Paths.get(LOG_DIRECTORY))
 
-    val logFileName = DateTimeFormatterBuilder()
-        .appendInstant(0)
-        .toFormatter()
-        .format(Clock.System.now().toJavaInstant())
-        .replace(':', '-')
+        val logFileName = DateTimeFormatterBuilder()
+            .appendInstant(0)
+            .toFormatter()
+            .format(Clock.System.now().toJavaInstant())
+            .replace(':', '-')
 
-    val logFile = Paths.get(LOG_DIRECTORY, "${logFileName}.log").toFile().also {
-        if (!it.exists()) {
-            it.createNewFile()
+        val logFile = Paths.get(LOG_DIRECTORY, "${logFileName}.log").toFile().also {
+            if (!it.exists()) {
+                it.createNewFile()
+            }
         }
+
+        System.setOut(PrintStream(MultiOutputStream(System.out, FileOutputStream(logFile))))
+
+        logger.info("Log file ${logFile.name.addQuotationMarks()} has been created.")
+    } catch (e: Exception) {
+        showErrorMessageWindow(
+            message = "Error while setting up logging in setupLogging.",
+            title = "Error while setting up logging."
+        )
+        exitProcess(-1)
     }
-
-    System.setOut(PrintStream(MultiOutputStream(System.out, FileOutputStream(logFile))))
-
-    logger.info("Log file ${logFile.name.addQuotationMarks()} has been created.")
 }
 
 
@@ -400,7 +410,8 @@ fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<Str
  *      - Is the command enabled
  * @param commandName name of the command which is used for the logging
  * @param isCommandEnabledFlag the flag of the specific command
- * @param user User to check
+ * @param userName Name of the user to check
+ * @param userID ID of the user to check
  * @param twitchClient TwitchClient-Object
  * @return true, if all sanity checks succeeded, else false
  */
@@ -981,8 +992,12 @@ private fun createSongDisplayFolderAndFiles() {
         ).forEach { currentFile ->
             if (!currentFile.exists()) {
                 withContext(Dispatchers.IO) {
-                    currentFile.createNewFile()
-                    logger.info("Created current song display file ${currentFile.name}")
+                    try {
+                        currentFile.createNewFile()
+                        logger.info("Created current song display file ${currentFile.name}")
+                    } catch (e: Exception) {
+                        logger.error("Error while creating song display file ${currentFile.name} in createSongDisplayFolderAndFiles")
+                    }
                 }
             }
         }
@@ -1004,7 +1019,12 @@ fun emptyAllSongDisplayFiles() {
     }
 
     File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(
-        object {}.javaClass.getResourceAsStream("Blank.jpg")!!.readAllBytes()
+        try {
+            object {}.javaClass.getResourceAsStream("Blank.jpg")!!.readAllBytes()
+        } catch (e: Exception) {
+            logger.error("Error while reading \"Blank.jpg\" data in emptyAllSongDisplayFiles")
+            byteArrayOf()
+        }
     )
 }
 
@@ -1338,10 +1358,16 @@ fun isNewAppReleaseAvailable(): Boolean {
     val textBeforeVersionNumber = "Release v"
     val delimiterAfterVersionNumber = " "
 
-    val latestVersion = Jsoup.connect(GITHUB_LATEST_VERSION_LINK).get()
-        .select(titleTagName).first()?.text()
-        ?.substringAfter(textBeforeVersionNumber)
-        ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
+    val latestVersion = try {
+        Jsoup.connect(GITHUB_LATEST_VERSION_LINK).get()
+            .select(titleTagName).first()?.text()
+            ?.substringAfter(textBeforeVersionNumber)
+            ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
+    } catch (e: IOException) {
+        logger.error("Error while getting latest version from github.")
+        logger.error(e.stackTraceToString())
+        BuildInfo.version
+    }
 
     if(BuildInfo.version != latestVersion) {
         logger.info("Found new Build version $latestVersion")

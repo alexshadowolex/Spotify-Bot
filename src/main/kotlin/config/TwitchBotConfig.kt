@@ -129,6 +129,11 @@ object TwitchBotConfig {
 
 
     private fun savePropertiesToFile() {
-        properties.store(FileOutputStream(twitchBotConfigFile.path), null)
+        try {
+            properties.store(FileOutputStream(twitchBotConfigFile.path), null)
+        } catch (e: Exception) {
+            logger.error("Error while saving properties to file in BotConfig.")
+            logger.error(e.stackTraceToString())
+        }
     }
 }

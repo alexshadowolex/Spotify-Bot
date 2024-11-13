@@ -145,9 +145,14 @@ fun hyperlink(
                 logger.info("Clicked on $hyperlinkText link")
                 backgroundCoroutineScope.launch {
                     withContext(Dispatchers.IO) {
-                        Desktop.getDesktop().browse(
-                            URI.create(hyperlinkAddress)
-                        )
+                        try {
+                            Desktop.getDesktop().browse(
+                                URI.create(hyperlinkAddress)
+                            )
+                        } catch (e: java.io.IOException) {
+                            logger.error("Couldn't open $hyperlinkText with address $hyperlinkAddress")
+                            logger.error(e.stackTraceToString())
+                        }
                     }
                 }
             }

@@ -1,13 +1,11 @@
 package commands
 
-import addQuotationMarks
 import config.BotConfig
 import config.TwitchBotConfig
 import createSongString
 import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import isUserEligibleForRemoveSongFromQueueCommand
-import logger
 import sendMessageToTwitchChatAndLogIt
 import kotlin.time.Duration.Companion.seconds
 

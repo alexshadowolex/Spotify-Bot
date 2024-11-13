@@ -8,7 +8,6 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import config.SpotifyConfig
 import config.TwitchBotConfig
 import toDoublePropertiesString
 import toIntPropertiesString

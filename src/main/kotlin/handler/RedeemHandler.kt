@@ -1,7 +1,6 @@
 package handler
 
 import com.github.twitch4j.TwitchClient
-import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import redeems.songRequestRedeem
 
