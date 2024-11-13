@@ -18,10 +18,10 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v2.0.2 [Download from Release v2.0.2](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.2/Spotify.Bot-windows-x64-2.0.2.jar)
+* Spotify-Bot.jar: v2.0.3 [Download from Release v2.0.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.3/Spotify.Bot-windows-x64-2.0.3.jar)
 * SetupToken.jar: v4 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupToken_v4.jar)
 * SetupProject.jar: v2 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupProject_v2.jar)
-* UpdateProperties.jar: v2.0.1 [Download from Release v2.0.1](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.1/UpdateProperties_2-0-1.jar)
+* UpdateProperties.jar: v2.0.3 [Download from Release v2.0.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.3/UpdateProperties_2-0-3.jar)
 
 ## How to set up
 
@@ -110,6 +110,8 @@ If the release includes new versions of the other script files (SetupProject, Se
 The file, that will always be included, is the new Bot version. Download it and swap out the old version with the new one.
 
 ## Current functionalities
+* Follower only mode -> Can be toggled off (switch in UI under "General Settings").
+  You can set the minimum following time in minutes needed to use commands in a field in the UI under Twitch Settings.
 * Song Request -> Can be toggled off (switch in UI under "General Settings"). Either with redeem or chat command.<br>
   Command names: "songrequest", "sr"<br>
   Takes a spotify-link or a text and then adds the result to the queue.<br><br>
@@ -192,6 +194,7 @@ data\properties\botConfig.properties:
     ->isBlockSongCommandEnabled=<true or false. If this is true, the block song command is enabled>
     ->blockSongCommandSecurityLevel=<security level that decides, who can use the block song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
     ->customGroupUserNamesBlockSongCommand=<custom group of users for the block song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->isFollowerOnlyModeEnabled=<true or false. If this is true, the follower only mode is enabled>
 ````
 ````
 data\properties\twitchBotConfig.properties:
@@ -202,6 +205,7 @@ data\properties\twitchBotConfig.properties:
     ->songRequestRedeemId=<the ID of the song request redeem>
     ->songRequestEmotes=<Twitch emotes that will be used after confirmation of an added song, seperated by ",">
     ->blacklistMessage=<Message will be displayed after a blacklisted user tried using a command/redeem>
+    ->minimumFollowingDurationMinutes=<Minimum following duration for follower only mode. This value is interpreted as Minutes (you can also use decimal numbers). If you don't want a minimum following duration, you can sett it to 0.>
 ````
 ````
 data\properties\spotifyConfig.properties:
