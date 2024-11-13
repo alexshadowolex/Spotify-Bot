@@ -61,7 +61,7 @@ fun spotifySettingsScreen() {
                     onValueChange = {
                         maximumLengthSongRequestMinutes.value = try {
                             it.toDouble()
-                            it
+                            it.replace("-", "")
                         } catch (e: NumberFormatException) {
                             "0"
                         }

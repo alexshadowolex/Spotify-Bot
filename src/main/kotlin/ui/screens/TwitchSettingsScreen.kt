@@ -91,7 +91,7 @@ fun twitchSettingsScreen() {
                     onValueChange = {
                         defaultCommandCoolDownSeconds.value = try {
                             it.toInt()
-                            it
+                            it.replace("-", "")
                         } catch (e: NumberFormatException) {
                             "0"
                         }
@@ -106,7 +106,7 @@ fun twitchSettingsScreen() {
                     onValueChange = {
                         defaultUserCoolDownSeconds.value = try {
                             it.toInt()
-                            it
+                            it.replace("-", "")
                         } catch (e: NumberFormatException) {
                             "0"
                         }
@@ -149,7 +149,7 @@ fun twitchSettingsScreen() {
                     onValueChange = {
                         minimumFollowingDurationMinutes.value = try {
                             it.toDouble()
-                            it
+                            it.replace("-", "")
                         } catch (e: NumberFormatException) {
                             "0"
                         }
