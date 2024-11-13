@@ -2,9 +2,9 @@ package scripts
 
 import java.io.File
 
-// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-0-1.jar
+// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-0-3.jar
 
-const val latestVersion = "2.0.1"
+const val latestVersion = "2.0.3"
 
 // In Version 2.0.0 almost all properties got renamed to camel case spelling. That's why all of them are noted down as
 // "Since Version: 2.0.0" though their functionality exists for much longer already.
