@@ -120,7 +120,7 @@ private var customGroupUserNamesBlockSongCommand = mutableStateListOf("")
         field = value
         BotConfig.customGroupUserNamesBlockSongCommand = value
     }
-private var isFollowerOnlyModeEnabled = mutableStateOf(false)
+var isFollowerOnlyModeEnabled = mutableStateOf(false)
     set(value) {
         field = value
         BotConfig.isFollowerOnlyModeEnabled = value.value

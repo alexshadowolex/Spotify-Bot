@@ -28,14 +28,11 @@ import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
+import ui.screens.isFollowerOnlyModeEnabled
 import java.awt.Color
 import java.awt.Image
 import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.PrintStream
+import java.io.*
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -508,16 +505,44 @@ fun isUserFollowingChannel(userID: String, twitchClient: TwitchClient): Boolean?
  * Helper function to get the follow-information of the given user for the broadcaster's channel
  * @param userID ID of the user to get the information from
  * @param twitchClient client to execute the request
- * @return List of InboundFollow-Object. It contents no or exactly one element
+ * @return List of InboundFollow-Object. It contents no or exactly one element. Null on error
  */
 fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): List<InboundFollow>? {
-    val followingUser = twitchClient.helix.getChannelFollowers(
-        TwitchBotConfig.chatAccountToken,
-        TwitchBotConfig.chatAccountID,
-        userID,
-        null,
-        null
-    ).execute()
+    val followingUser = try {
+        twitchClient.helix.getChannelFollowers(
+            TwitchBotConfig.chatAccountToken,
+            TwitchBotConfig.chatAccountID,
+            userID,
+            null,
+            null
+        ).execute()
+    } catch (e: Exception) {
+        logger.error("Couldn't get channel followers. Maybe the token needs more access rights?")
+        logger.error(e.stackTraceToString())
+        isFollowerOnlyModeEnabled.value = false
+        backgroundCoroutineScope.launch {
+            showErrorMessageWindow(
+                title = "Follower only mode not working!",
+                message =
+                    "Follower only mode is not working right now and got disabled. You need to get " +
+                    "a new token with more access rights.\n" +
+                    "To get the new token, do following steps:\n" +
+                    "\t1) Open your browser and log into the twitch account that the bot is using.\n" +
+                    "\t2) Open a new tab and go to twitchtokengenerator.com.\n" +
+                    "\t3) Click on \"Custom Scope Token\".\n" +
+                    "\t4) Go all the way down beyond the long list of scopes and click on \"Select All\".\n" +
+                    "\t5) Click on the green button \"Generate Token!\".\n" +
+                    "\t6) After the new site loaded, click on \"Authorize\".\n" +
+                    "\t7) Scroll up to the section \"Generated Tokens\" and copy the access token.\n" +
+                    "\t8) Open the file \"twitchToken.txt\" in the bot's folder \"data\\tokens\" and replace the whole " +
+                            "content (old token) with the new token.\n" +
+                    "\t9) Restart the bot manually (close and open again).\n\n" +
+                    "Note: The new token has a lot more access rights (all of them) just so we don't need to do " +
+                            "that again in the future."
+            )
+        }
+        return null
+    }
 
     if(followingUser.follows == null) {
         logger.error("Something went wrong when getting follow information of user $userID.")
