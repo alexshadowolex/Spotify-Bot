@@ -18,10 +18,10 @@ Table of Contents:
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v2.0.3 [Download from Release v2.0.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.3/Spotify.Bot-windows-x64-2.0.3.jar)
+* Spotify-Bot.jar: v2.0.4 [Download from Release v2.0.4](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.4/Spotify.Bot-windows-x64-2.0.4.jar)
 * SetupToken.jar: v4 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupToken_v4.jar)
 * SetupProject.jar: v2 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupProject_v2.jar)
-* UpdateProperties.jar: v2.0.3 [Download from Release v2.0.3](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.3/UpdateProperties_2-0-3.jar)
+* UpdateProperties.jar: v2.0.3 [Download from Release v2.0.4](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.4/UpdateProperties_2-0-3.jar)
 
 ## How to set up
 
@@ -50,17 +50,27 @@ You will see this window:
 <br>
 ![setupProject.png](images/setupProject.png)
 <br>
-To get the Twitch Token, login into the twitch account and go in another tab to [Token Generator](https://twitchtokengenerator.com/) and click on "bot chat token", then copy the "access token" into the field.
+To get the Twitch Token, do following steps:
+1) Open your browser and log into the twitch account that the bot is supposed to use.
+2) Open a new tab and go to [Token Generator](https://twitchtokengenerator.com/).
+3) Click on "Custom Scope Token".
+4) Go all the way down beyond the long list of scopes and click on "Select All".
+5) Click on the green button "Generate Token!".
+6) After the new site loaded, click on "Authorize".
+7) Scroll up to the section "Generated Tokens" and copy the access token.
+8) Paste the access token into the field "Twitch Token" in the Setup Project window.
+
 <br><br>
 Into the field "Twitch Channel", type the twitch channel's name the bot is supposed to be used on. Note that the bot should moderator on that channel.
 <br><br>
 Both the Spotify ID and Spotify Secret need to get copied from the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard). Login with your spotify credentials and do following steps to get them:<br>
-1.) Click on "Create App"<br>
-2.) Give your app a name<br>
-3.) Write into the field "Redirect URI" the address "https://www.example.com". If you chose a different URI, the setup will not work.<br>
-4.) Select "Web API". You can also select more, if you want to.<br>
-5.) Agree to the TOS and click on "Save"<br>
-6.) Go to "Settings". There you see the client ID. After clicking on "View Client Secret", you also see the secret. Copy both of them into the given field.<br>
+1) Click on "Create App"<br>
+2) Give your app a name<br>
+3) Write into the field "Redirect URI" the address "https://www.example.com". If you chose a different URI, the setup will not work.<br>
+4) Select "Web API". You can also select more, if you want to.<br>
+5) Agree to the TOS and click on "Save"<br>
+6) Go to "Settings". There you see the client ID. After clicking on "View Client Secret", you also see the secret. Copy both of them into the given field.<br>
+
 <br>
 Now Click in SetupProject on "Setup Project". After a success message, you can close this window.
 
