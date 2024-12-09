@@ -170,7 +170,8 @@ fun hyperlink(
 fun dropDownStringPropertiesList(
     entries: SnapshotStateList<String>,
     textFieldTitle: String,
-    scaffoldState: ScaffoldState
+    scaffoldState: ScaffoldState,
+    lowercaseInput: Boolean
 ) {
     val defaultIndex = -1
     var editIndex by remember { mutableStateOf(defaultIndex) }
@@ -247,12 +248,17 @@ fun dropDownStringPropertiesList(
                         IconButton(
                             onClick = {
                                 // save changes
+                                val newContent = if(lowercaseInput) {
+                                    textFieldContent.value.lowercase()
+                                } else {
+                                    textFieldContent.value
+                                }
                                 val message = if (isEntryGettingAdded) {
-                                    entries.add(textFieldContent.value)
+                                    entries.add(newContent)
                                     "Successfully added entry"
                                 } else {
                                     entries.removeAt(editIndex)
-                                    entries.add(editIndex, textFieldContent.value)
+                                    entries.add(editIndex, newContent)
                                     "Successfully saved changes"
                                 }
                                 logger.info("$message ${entries[editIndex]} to $textFieldTitle")

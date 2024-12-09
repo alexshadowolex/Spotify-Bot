@@ -73,7 +73,8 @@ fun spotifySettingsScreen() {
                 dropDownStringPropertiesList(
                     entries = blockedSongArtists,
                     textFieldTitle = "Blocked Song Artists",
-                    scaffoldState = scaffoldState
+                    scaffoldState = scaffoldState,
+                    lowercaseInput = false
                 )
 
                 sectionDivider()
@@ -81,7 +82,8 @@ fun spotifySettingsScreen() {
                 dropDownStringPropertiesList(
                     entries = blockedSongLinks,
                     textFieldTitle = "Blocked Song Links",
-                    scaffoldState = scaffoldState
+                    scaffoldState = scaffoldState,
+                    lowercaseInput = false
                 )
 
                 sectionDivider()

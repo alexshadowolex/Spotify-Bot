@@ -181,7 +181,8 @@ fun generalSettingsScreen() {
                         dropDownStringPropertiesList(
                             entries = blacklistedUsers,
                             textFieldTitle = "Blacklisted Users",
-                            scaffoldState = scaffoldState
+                            scaffoldState = scaffoldState,
+                            lowercaseInput = true
                         )
 
                         sectionDivider()
@@ -256,7 +257,8 @@ fun generalSettingsScreen() {
                         dropDownStringPropertiesList(
                             entries = customGroupUserNamesBlockSongCommand,
                             textFieldTitle = "Custom Group Block Song Command",
-                            scaffoldState = scaffoldState
+                            scaffoldState = scaffoldState,
+                            lowercaseInput = true
                         )
 
                         sectionDivider()
@@ -301,7 +303,8 @@ fun generalSettingsScreen() {
                         dropDownStringPropertiesList(
                             entries = customGroupUserNamesAddSongCommand,
                             textFieldTitle = "Custom Group Add Song Command",
-                            scaffoldState = scaffoldState
+                            scaffoldState = scaffoldState,
+                            lowercaseInput = true
                         )
 
                         sectionDivider()
@@ -347,7 +350,8 @@ fun generalSettingsScreen() {
                         dropDownStringPropertiesList(
                             entries = customGroupUserNamesSkipSongCommand,
                             textFieldTitle = "Custom Group Skip Song Command",
-                            scaffoldState = scaffoldState
+                            scaffoldState = scaffoldState,
+                            lowercaseInput = true
                         )
 
                         sectionDivider()
@@ -393,7 +397,8 @@ fun generalSettingsScreen() {
                         dropDownStringPropertiesList(
                             entries = customGroupUserNamesRemoveSongFromQueueCommand,
                             textFieldTitle = "Custom Group Skip Song Command",
-                            scaffoldState = scaffoldState
+                            scaffoldState = scaffoldState,
+                            lowercaseInput = true
                         )
 
                         sectionDivider()

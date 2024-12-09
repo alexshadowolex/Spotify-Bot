@@ -118,7 +118,8 @@ fun twitchSettingsScreen() {
                 dropDownStringPropertiesList(
                     entries = songRequestEmotes,
                     textFieldTitle = "Song Request Emotes",
-                    scaffoldState = scaffoldState
+                    scaffoldState = scaffoldState,
+                    lowercaseInput = false
                 )
 
                 sectionDivider()
