@@ -39,7 +39,7 @@ object TwitchBotConfig {
     // Will be filled with the ID in function setupTwitchBot
     var chatAccountID = ""
 
-    val channel: String = getPropertyValue(properties, "channel", twitchBotConfigFile.path)
+    val channel: String = getPropertyValue(properties, "channel", twitchBotConfigFile.path).lowercase()
 
     var commandPrefix: String = getPropertyValue(properties, "commandPrefix", twitchBotConfigFile.path)
         set(value) {
