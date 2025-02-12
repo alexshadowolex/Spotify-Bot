@@ -93,8 +93,6 @@ fun setupTwitchBot(): TwitchClient {
         channelID
     )
 
-    twitchClient.pubSub.listenForChannelPointsRedemptionEvents(oAuth2Credential, channelID)
-
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
     }
@@ -252,6 +250,7 @@ fun setupLogging() {
         System.setOut(PrintStream(MultiOutputStream(System.out, FileOutputStream(logFile))))
 
         logger.info("Log file ${logFile.name.addQuotationMarks()} has been created.")
+        logger.info("Bot version: v${BuildInfo.version}")
     } catch (e: Exception) {
         showErrorMessageWindow(
             message = "Error while setting up logging in setupLogging.",
@@ -424,13 +423,15 @@ fun handleCommandSanityChecksWithoutSecurityLevel(
         return false
     }
 
-    val isUserFollowingLongEnoughOrBroadcaster =
-        isUserFollowingLongEnough(userID, twitchClient) ?: true ||
-        isUserBroadcaster(userName)
+    if(BotConfig.isFollowerOnlyModeEnabled) {
+        val isUserFollowingLongEnoughOrBroadcaster =
+            isUserFollowingLongEnough(userID, twitchClient) ?: true ||
+            isUserBroadcaster(userName)
 
-    if(!isUserFollowingLongEnoughOrBroadcaster && BotConfig.isFollowerOnlyModeEnabled) {
-        sendMessageToTwitchChatAndLogIt(twitchClient.chat, "You are not following long enough to use commands.")
-        return false
+        if(!isUserFollowingLongEnoughOrBroadcaster) {
+            sendMessageToTwitchChatAndLogIt(twitchClient.chat, "You are not following long enough to use commands.")
+            return false
+        }
     }
 
     return true
