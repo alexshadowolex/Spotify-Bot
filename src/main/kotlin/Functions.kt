@@ -46,6 +46,9 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+var wasAlexAlreadyPraised = false
+val ALEX_TWITCH_USER_NAME = "alexshadowolex"
+
 // Setup Twitch Bot
 /**
  * Sets up the connection to twitch
@@ -101,6 +104,11 @@ fun setupTwitchBot(): TwitchClient {
 
     twitchClient.eventManager.onEvent(ChannelMessageEvent::class.java) { messageEvent ->
         val message = messageEvent.message
+
+        if(messageEvent.user.name == ALEX_TWITCH_USER_NAME && !wasAlexAlreadyPraised) {
+            praiseAlex(twitchClient.chat)
+        }
+
         if (!message.startsWith(TwitchBotConfig.commandPrefix)) {
             return@onEvent
         }
@@ -589,6 +597,23 @@ fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boole
     }
 
     return followingDuration >= TwitchBotConfig.minimumFollowingDurationMinutes
+}
+
+
+/**
+ * This function gets called when the user-name of the creator "alexshadowolex", specified in
+ * ALEX_TWITCH_USER_NAME, types the first message in chat and then praises him with a random message.
+ * @param chat TwitchChat-object
+ */
+fun praiseAlex(chat: TwitchChat) {
+    wasAlexAlreadyPraised = true
+    logger.info("Praising alex")
+    listOf(
+        "It is him! The creator, the all knowing, the myth, the legend $ALEX_TWITCH_USER_NAME !",
+        "Beware, chat. The powerful god $ALEX_TWITCH_USER_NAME has arrived \uD83D\uDE0E",
+        "$ALEX_TWITCH_USER_NAME ? More like the coolest programmer on earth (scientifically proven)",
+        "OMG is that the guy that built me?! YEAH IT'S HIM, $ALEX_TWITCH_USER_NAME !!"
+    ).random().run { sendMessageToTwitchChatAndLogIt(chat, this) }
 }
 
 
