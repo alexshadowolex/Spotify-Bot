@@ -7,17 +7,15 @@ import spotifyClient
 class RequestedByQueueHandler {
     private val requestedByQueue = mutableListOf<RequestedByEntry>()
 
-    suspend fun updateRequestedByQueue(queueBefore: List<Playable>) {
+    fun updateRequestedByQueue() {
         if(requestedByQueue.isEmpty()) {
             return
         }
 
-        val positionAndTrack = getAddedTrack(queueBefore)
-
         // TODO more
     }
-
-    private suspend fun getAddedTrack(queueBefore: List<Playable>): PositionAndTrack? {
+    
+    private suspend fun getAddedTrack(queueBefore: List<Playable>): IndexInQueueAndTrack? {
         val queueAfter = spotifyClient.player.getUserQueue().queue
 
         for(index in 0..queueBefore.size) {
@@ -27,7 +25,7 @@ class RequestedByQueueHandler {
                 val currentTrackAfterParsed = currentTrackAfter.asTrack
 
                 if (currentTrackAfterParsed != null) {
-                    return PositionAndTrack(index, currentTrackAfterParsed)
+                    return IndexInQueueAndTrack(index, currentTrackAfterParsed)
                 }
             }
         }
@@ -35,18 +33,32 @@ class RequestedByQueueHandler {
         return null
     }
 
-    fun addEntryToRequestedByQueue(track: Track, userName: String) {
+    suspend fun addEntryToRequestedByQueue(queueBefore: List<Playable>, userName: String) {
+        val positionAndTrack = getAddedTrack(queueBefore)
 
+        if(positionAndTrack != null) {
+            val sameTracksInQueueBefore = getSameTracksInQueueBefore(positionAndTrack, queueBefore)
+        }
+    }
+
+    private fun getSameTracksInQueueBefore(
+        currentTrack: IndexInQueueAndTrack,
+        queue: List<Playable>
+    ): MutableList<IndexInQueueAndTrack> {
+        return queue.subList(0, currentTrack.indexInQueue)
+            .withIndex()
+            .filter { it.value.asTrack == currentTrack.track }
+            .map { IndexInQueueAndTrack(it.index, it.value.asTrack!!) }.toMutableList()
     }
 }
 
-data class PositionAndTrack (
-    var positionInQueue: Int,
+data class IndexInQueueAndTrack (
+    var indexInQueue: Int,
     val track: Track
 )
 
 data class RequestedByEntry (
-    val positionAndTrack: PositionAndTrack,
+    val indexInQueueAndTrack: IndexInQueueAndTrack,
     val userName: String,
-    val sameTrackInQueueBefore: MutableSet<PositionAndTrack>
+    val sameTrackInQueueBefore: MutableList<IndexInQueueAndTrack>
 )

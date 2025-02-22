@@ -39,7 +39,7 @@ val songRequestCommand = Command(
             addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
             addedUserCoolDown = TwitchBotConfig.defaultUserCoolDownSeconds
 
-            requestedByQueueHandler.updateRequestedByQueue(queueBefore)
+            requestedByQueueHandler.addEntryToRequestedByQueue(queueBefore, messageEvent.user.name)
         } else {
             addedCommandCoolDown = 5.seconds
             addedUserCoolDown = 5.seconds
