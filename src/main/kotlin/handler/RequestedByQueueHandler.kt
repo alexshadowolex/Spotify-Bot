@@ -14,7 +14,13 @@ class RequestedByQueueHandler {
 
         // TODO more
     }
-    
+
+
+    /**
+     * Compares two lists and finds the song that has been added to the second list and its index in the queue.
+     * @param queueBefore the spotify queue before the song has been added via song-request
+     * @return The Track and its index on success, null on error
+     */
     private suspend fun getAddedTrack(queueBefore: List<Playable>): IndexInQueueAndTrack? {
         val queueAfter = spotifyClient.player.getUserQueue().queue
 
@@ -37,18 +43,26 @@ class RequestedByQueueHandler {
         val positionAndTrack = getAddedTrack(queueBefore)
 
         if(positionAndTrack != null) {
-            val sameTracksInQueueBefore = getSameTracksInQueueBefore(positionAndTrack, queueBefore)
+            val sameTracksInQueueBefore = getIndexesOfSameTrackInQueue(positionAndTrack, queueBefore)
         }
     }
 
-    private fun getSameTracksInQueueBefore(
+
+    /**
+     * Finds all identical tracks and its indexes in the queue before the given track.
+     * @param currentTrack the reference-track and its index
+     * @param queue the whole queue (before or after the song got added)
+     * @return a list containing all indexes inside the queue of occurrences of the
+     * given track before the reference-index
+     */
+    private fun getIndexesOfSameTrackInQueue(
         currentTrack: IndexInQueueAndTrack,
         queue: List<Playable>
-    ): MutableList<IndexInQueueAndTrack> {
+    ): MutableList<Int> {
         return queue.subList(0, currentTrack.indexInQueue)
             .withIndex()
             .filter { it.value.asTrack == currentTrack.track }
-            .map { IndexInQueueAndTrack(it.index, it.value.asTrack!!) }.toMutableList()
+            .map { it.index }.toMutableList()
     }
 }
 
@@ -60,5 +74,5 @@ data class IndexInQueueAndTrack (
 data class RequestedByEntry (
     val indexInQueueAndTrack: IndexInQueueAndTrack,
     val userName: String,
-    val sameTrackInQueueBefore: MutableList<IndexInQueueAndTrack>
+    val sameTrackInQueueBefore: MutableList<Int>
 )
