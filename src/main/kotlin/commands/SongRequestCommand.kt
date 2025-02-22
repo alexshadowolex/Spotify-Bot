@@ -7,6 +7,7 @@ import handler.Command
 import isSongRequestCommandActive
 import logger
 import sendMessageToTwitchChatAndLogIt
+import spotifyClient
 import kotlin.time.Duration.Companion.seconds
 
 val songRequestCommand = Command(
@@ -32,10 +33,13 @@ val songRequestCommand = Command(
 
         logger.info("query: $query")
 
+        val queueBefore = spotifyClient.player.getUserQueue().queue
         val success = handleSongRequestQuery(twitchClient.chat, query)
         if (success) {
             addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
             addedUserCoolDown = TwitchBotConfig.defaultUserCoolDownSeconds
+
+            requestedByQueueHandler.updateRequestedByQueue(queueBefore)
         } else {
             addedCommandCoolDown = 5.seconds
             addedUserCoolDown = 5.seconds

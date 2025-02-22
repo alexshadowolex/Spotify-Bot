@@ -93,6 +93,8 @@ fun setupTwitchBot(): TwitchClient {
         channelID
     )
 
+    val requestedByQueueHandler = RequestedByQueueHandler()
+
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
     }
@@ -173,7 +175,8 @@ fun setupTwitchBot(): TwitchClient {
         val commandHandlerScope = CommandHandlerScope(
             twitchClient = twitchClient,
             messageEvent = messageEvent,
-            removeSongFromQueueHandler = removeSongFromQueueHandler
+            removeSongFromQueueHandler = removeSongFromQueueHandler,
+            requestedByQueueHandler = requestedByQueueHandler
         )
 
         backgroundCoroutineScope.launch {

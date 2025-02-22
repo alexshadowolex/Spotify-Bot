@@ -15,6 +15,7 @@ data class CommandHandlerScope(
     val twitchClient: TwitchClient,
     val messageEvent: ChannelMessageEvent,
     val removeSongFromQueueHandler: RemoveSongFromQueueHandler,
+    val requestedByQueueHandler: RequestedByQueueHandler,
     var addedUserCoolDown: Duration = Duration.ZERO,
     var addedCommandCoolDown: Duration = Duration.ZERO
 )
