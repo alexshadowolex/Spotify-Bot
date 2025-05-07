@@ -2,36 +2,86 @@ package handler
 
 import com.adamratzman.spotify.models.Playable
 import com.adamratzman.spotify.models.Track
+import currentSpotifySong
 import spotifyClient
 
 class RequestedByQueueHandler {
     private val requestedByQueue = mutableListOf<RequestedByEntry>()
+    var currentRequestedByUsername: String? = null
 
-    fun updateRequestedByQueue() {
+    fun updateRequestedByQueue(trackBeforeChange: Track?) {
+        currentRequestedByUsername = null
         if(requestedByQueue.isEmpty()) {
             return
         }
 
-        // TODO more
+        removeOverdueTracks()
+
+        updateIndexesOfQueue()
+
+        val foundUserName = getAndRemoveFoundUserName()
+
+        if(foundUserName != null) {
+            currentRequestedByUsername = foundUserName
+        } else {
+            updateAmountOfSameTrackInQueueBefore(trackBeforeChange)
+        }
     }
 
+    private fun getAndRemoveFoundUserName(): String? {
+        val userName = requestedByQueue.find { isCurrentSongRequestedByUser(it) }?.userName
+        if(userName != null) {
+            requestedByQueue.removeIf { isCurrentSongRequestedByUser(it) }
+        }
+
+        return userName
+    }
+
+    private fun isCurrentSongRequestedByUser(entry: RequestedByEntry): Boolean {
+        return  entry.indexInQueueAndTrack.track == currentSpotifySong &&
+                entry.amountOfSameTrackInQueueBefore == 0
+    }
+
+    private fun updateAmountOfSameTrackInQueueBefore(trackBeforeChange: Track?) {
+        requestedByQueue.filter {
+            it.indexInQueueAndTrack.track == trackBeforeChange
+        }.forEach {
+            it.amountOfSameTrackInQueueBefore--
+        }
+    }
+
+    private fun removeOverdueTracks() {
+        // To have a little buffer in case of untrackable changes, the index for
+        // when overdue tracks are going to get removed is not less than 0 but less than -2
+        val overdueIndex = -2
+        requestedByQueue.removeIf {
+            it.indexInQueueAndTrack.indexInQueue < overdueIndex
+        }
+    }
+
+    private fun updateIndexesOfQueue() {
+        requestedByQueue.forEach { entry ->
+            entry.indexInQueueAndTrack.indexInQueue--
+        }
+    }
 
     /**
      * Compares two lists and finds the song that has been added to the second list and its index in the queue.
      * @param queueBefore the spotify queue before the song has been added via song-request
      * @return The Track and its index on success, null on error
      */
-    private suspend fun getAddedTrack(queueBefore: List<Playable>): IndexInQueueAndTrack? {
+    private suspend fun getAddedTrackWithIndex(queueBefore: List<Playable>): IndexInQueueAndTrack? {
         val queueAfter = spotifyClient.player.getUserQueue().queue
 
         for(index in 0..queueBefore.size) {
             val currentTrackBefore = queueBefore.getOrNull(index) ?: break
             val currentTrackAfter = queueAfter.getOrNull(index) ?: break
             if (currentTrackBefore != currentTrackAfter) {
-                val currentTrackAfterParsed = currentTrackAfter.asTrack
+                val currentTrackAfterParsing = currentTrackAfter.asTrack
 
-                if (currentTrackAfterParsed != null) {
-                    return IndexInQueueAndTrack(index, currentTrackAfterParsed)
+                if (currentTrackAfterParsing != null) {
+                    // Since the queue does not include the currently playing (= index 0), it needs to be added manually
+                    return IndexInQueueAndTrack(index + 1, currentTrackAfterParsing)
                 }
             }
         }
@@ -40,29 +90,32 @@ class RequestedByQueueHandler {
     }
 
     suspend fun addEntryToRequestedByQueue(queueBefore: List<Playable>, userName: String) {
-        val positionAndTrack = getAddedTrack(queueBefore)
+        val indexInQueueAndTrack = getAddedTrackWithIndex(queueBefore)
 
-        if(positionAndTrack != null) {
-            val sameTracksInQueueBefore = getIndexesOfSameTrackInQueue(positionAndTrack, queueBefore)
+        if(indexInQueueAndTrack != null) {
+            val amountOfSameTrackBefore = getAmountOfSameTrackInQueue(indexInQueueAndTrack, queueBefore)
+
+            requestedByQueue += RequestedByEntry(indexInQueueAndTrack, userName, amountOfSameTrackBefore)
         }
     }
 
 
     /**
-     * Finds all identical tracks and its indexes in the queue before the given track.
+     * Finds the amount of identical tracks in the queue before the given track.
      * @param currentTrack the reference-track and its index
      * @param queue the whole queue (before or after the song got added)
-     * @return a list containing all indexes inside the queue of occurrences of the
-     * given track before the reference-index
+     * @return the amount of the given track before the reference-index
      */
-    private fun getIndexesOfSameTrackInQueue(
+    private fun getAmountOfSameTrackInQueue(
         currentTrack: IndexInQueueAndTrack,
         queue: List<Playable>
-    ): MutableList<Int> {
-        return queue.subList(0, currentTrack.indexInQueue)
-            .withIndex()
-            .filter { it.value.asTrack == currentTrack.track }
-            .map { it.index }.toMutableList()
+    ): Int {
+        // Since the currentlyPlaying (= index 0) is not considered in the queue, the +1 is manually added in
+        // getAddedTrackWithIndex and needs to be removed here again for the sub queue
+        val subQueue = queue.subList(0, currentTrack.indexInQueue - 1).toMutableList()
+        subQueue.add(0, currentSpotifySong as Playable)
+
+        return subQueue.count { it.asTrack == currentTrack.track }
     }
 }
 
@@ -74,5 +127,5 @@ data class IndexInQueueAndTrack (
 data class RequestedByEntry (
     val indexInQueueAndTrack: IndexInQueueAndTrack,
     val userName: String,
-    val sameTrackInQueueBefore: MutableList<Int>
+    var amountOfSameTrackInQueueBefore: Int
 )

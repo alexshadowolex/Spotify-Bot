@@ -49,9 +49,10 @@ import kotlin.time.Duration.Companion.seconds
 // Setup Twitch Bot
 /**
  * Sets up the connection to twitch
+ * @param requestedByQueueHandler RequestedByQueueHandler-instance
  * @return the TwitchClient-object
  */
-fun setupTwitchBot(): TwitchClient {
+fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
 
     val twitchClient = TwitchClientBuilder.builder()
@@ -93,10 +94,8 @@ fun setupTwitchBot(): TwitchClient {
         channelID
     )
 
-    val requestedByQueueHandler = RequestedByQueueHandler()
-
     twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
-        rewardRedeemEventHandler(rewardRedeemEvent, twitchClient)
+        rewardRedeemEventHandler(rewardRedeemEvent, twitchClient, requestedByQueueHandler)
     }
 
     twitchClient.eventManager.onEvent(ChannelMessageEvent::class.java) { messageEvent ->
@@ -198,8 +197,13 @@ fun setupTwitchBot(): TwitchClient {
  * Initiates the callback for the reward redeems
  * @param redeemEvent the redeem event
  * @param twitchClient the twitchClient
+ * @param requestedByQueueHandler requestedByQueueHandler
  */
-fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: TwitchClient) {
+fun rewardRedeemEventHandler(
+    redeemEvent: RewardRedeemedEvent,
+    twitchClient: TwitchClient,
+    requestedByQueueHandler: RequestedByQueueHandler
+) {
     val redeemId = redeemEvent.redemption.reward.id
     val redeemTitle = redeemEvent.redemption.reward.title
 
@@ -221,7 +225,8 @@ fun rewardRedeemEventHandler(redeemEvent: RewardRedeemedEvent, twitchClient: Twi
 
     val redeemHandlerScope = RedeemHandlerScope(
         twitchClient = twitchClient,
-        redeemEvent = redeemEvent
+        redeemEvent = redeemEvent,
+        requestedByQueueHandler = requestedByQueueHandler
     )
 
     backgroundCoroutineScope.launch {
@@ -266,7 +271,7 @@ fun setupLogging() {
 
 // General functions
 /**
- * Gets the value of the specified property out of the given properties-file. When an error occurres, the
+ * Gets the value of the specified property out of the given properties-file. When an error occurred, the
  * function will display a descriptive error message windows and end the app.
  * @param properties already initialized properties-class
  * @param propertyName name of the property
@@ -884,15 +889,17 @@ private const val CURRENT_SONG_FILE_NAME = "currentSong.txt"
 private const val CURRENT_SONG_NAME_FILE_NAME = "currentSongName.txt"
 private const val CURRENT_SONG_ARTISTS_FILE_NAME = "currentSongArtists.txt"
 private const val CURRENT_SONG_ALBUM_IMAGE_FILE_NAME = "currentAlbumImage.jpg"
+private const val CURRENT_REQUESTED_BY_FILE_NAME = "currentRequestedByText.txt"
 private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 /**
  * Function that handles the coroutine to get the current spotify song.
  * On Start up it creates the dir and files, if needed.
  * If isSpotifySongNameGetterEnabled is true, it constantly does a GET-Request to get the currently playing
- * song name and writes it into a file
+ * song name and writes it into a file.
  * Delay for next pull is 2 seconds
+ * @param requestedByQueueHandler RequestedByQueueHandler-instance
  */
-fun startSpotifySongGetter() {
+fun startSpotifySongGetter(requestedByQueueHandler: RequestedByQueueHandler) {
     logger.info("called startSpotifySongGetter")
     backgroundCoroutineScope.launch {
         createSongDisplayFolderAndFiles()
@@ -917,10 +924,18 @@ fun startSpotifySongGetter() {
                     continue
                 }
 
+                val currentSpotifySongBefore = currentSpotifySong
                 currentSpotifySong = currentTrack
 
+                if(currentTrack != currentSpotifySongBefore) {
+                    // Has to be called after the currentSpotifySong got updated to correctly update the values
+                    requestedByQueueHandler.updateRequestedByQueue(currentSpotifySongBefore)
+                }
+                // Has to be assigned after the update of the requested by queue
+                val currentRequestedByUsername = requestedByQueueHandler.currentRequestedByUsername
+
                 downloadAndSaveAlbumImage(currentTrack)
-                writeCurrentSongTextFiles(currentTrack)
+                writeCurrentSongTextFiles(currentTrack, currentRequestedByUsername)
             } else {
                 emptyAllSongDisplayFiles()
             }
@@ -945,18 +960,29 @@ fun isSpotifySongNameGetterEnabled(): Boolean {
 
 
 /**
- * Writes current song into the separate text files
+ * Writes current song into the separate text files. If the song is requested by a user, which is indicated
+ * the variable currentRequestedByUsername not being null, an extra file will be filled with the content
+ * "requested by <username>"
  * @param currentTrack current Track
+ * @param currentRequestedByUsername the current requested by username
  */
-private fun writeCurrentSongTextFiles(currentTrack: Track) {
+private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUsername: String?) {
     try {
         val currentSongInputString = createSongString(currentTrack.name, currentTrack.artists)
+        val currentRequestedByString = if(currentRequestedByUsername != null) {
+            "requested by $currentRequestedByUsername"
+        } else {
+            ""
+        }
+
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME")
             .writeText(currentSongInputString + " ".repeat(10))
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME")
             .writeText(currentTrack.name)
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
             .writeText(getArtistsString(currentTrack.artists))
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_REQUESTED_BY_FILE_NAME")
+            .writeText(currentRequestedByString)
     } catch (e: Exception) {
         logger.error("Exception occurred while trying to save the song in files in writeCurrentSongTextFiles ", e)
     }
@@ -1017,7 +1043,8 @@ private fun createSongDisplayFolderAndFiles() {
             File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME"),
             File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME"),
             File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME"),
-            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME")
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME"),
+            File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_REQUESTED_BY_FILE_NAME")
         ).forEach { currentFile ->
             if (!currentFile.exists()) {
                 withContext(Dispatchers.IO) {
@@ -1042,7 +1069,8 @@ fun emptyAllSongDisplayFiles() {
     listOf(
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_FILE_NAME"),
         File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_NAME_FILE_NAME"),
-        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME")
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ARTISTS_FILE_NAME"),
+        File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_REQUESTED_BY_FILE_NAME")
     ).forEach{ currentFile ->
         currentFile.writeText("")
     }

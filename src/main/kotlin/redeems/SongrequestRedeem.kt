@@ -6,6 +6,8 @@ import handleSongRequestQuery
 import handler.Redeem
 import isSongRequestRedeemActive
 import logger
+import spotifyClient
+import kotlin.time.Duration.Companion.seconds
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,
@@ -23,6 +25,13 @@ val songRequestRedeem: Redeem = Redeem(
 
         logger.info("query: $query")
 
-        handleSongRequestQuery(twitchClient.chat, query)
+        val queueBefore = spotifyClient.player.getUserQueue().queue
+        val success = handleSongRequestQuery(twitchClient.chat, query)
+        if (success) {
+            requestedByQueueHandler.addEntryToRequestedByQueue(
+                queueBefore,
+                redeemEvent.redemption.user.displayName
+            )
+        }
     }
 )
