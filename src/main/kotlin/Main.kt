@@ -13,6 +13,7 @@ import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
 import config.BotConfig
 import config.SpotifyConfig
+import handler.RequestedByQueueHandler
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -55,7 +56,8 @@ var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen
 
 fun main() = try {
     setupLogging()
-    val twitchClient = setupTwitchBot()
+    val requestedByQueueHandler = RequestedByQueueHandler()
+    val twitchClient = setupTwitchBot(requestedByQueueHandler)
     val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())
     var alreadyCheckedNewVersion = false
 
@@ -87,7 +89,7 @@ fun main() = try {
 
             logger.info("Spotify client built successfully.")
 
-            startSpotifySongGetter()
+            startSpotifySongGetter(requestedByQueueHandler)
 
             onDispose {
                 sendMessageToTwitchChatAndLogIt(twitchClient.chat, "Bot shutting down peepoLeave")

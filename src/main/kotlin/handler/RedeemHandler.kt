@@ -11,7 +11,8 @@ data class Redeem(
 
 data class RedeemHandlerScope(
     val twitchClient: TwitchClient,
-    val redeemEvent: RewardRedeemedEvent
+    val redeemEvent: RewardRedeemedEvent,
+    val requestedByQueueHandler: RequestedByQueueHandler
 )
 
 val redeems = listOf(
