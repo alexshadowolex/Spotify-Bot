@@ -3,6 +3,7 @@ package handler
 import com.adamratzman.spotify.models.Playable
 import com.adamratzman.spotify.models.Track
 import currentSpotifySong
+import logger
 import spotifyClient
 
 class RequestedByQueueHandler {
@@ -15,8 +16,6 @@ class RequestedByQueueHandler {
             return
         }
 
-        removeOverdueTracks()
-
         updateIndexesOfQueue()
 
         val foundUserName = getAndRemoveFoundUserName()
@@ -26,6 +25,8 @@ class RequestedByQueueHandler {
         } else {
             updateAmountOfSameTrackInQueueBefore(trackBeforeChange)
         }
+
+        removeOverdueTracks()
     }
 
     private fun getAndRemoveFoundUserName(): String? {
@@ -53,7 +54,7 @@ class RequestedByQueueHandler {
     private fun removeOverdueTracks() {
         // To have a little buffer in case of untrackable changes, the index for
         // when overdue tracks are going to get removed is not less than 0 but less than -2
-        val overdueIndex = -2
+        val overdueIndex = -3
         requestedByQueue.removeIf {
             it.indexInQueueAndTrack.indexInQueue < overdueIndex
         }
@@ -71,17 +72,18 @@ class RequestedByQueueHandler {
      * @return The Track and its index on success, null on error
      */
     private suspend fun getAddedTrackWithIndex(queueBefore: List<Playable>): IndexInQueueAndTrack? {
-        val queueAfter = spotifyClient.player.getUserQueue().queue
+        val queueAfter = mutableListOf(currentSpotifySong as Playable)
+        queueAfter.addAll(spotifyClient.player.getUserQueue().queue)
 
         for(index in 0..queueBefore.size) {
             val currentTrackBefore = queueBefore.getOrNull(index) ?: break
             val currentTrackAfter = queueAfter.getOrNull(index) ?: break
+
             if (currentTrackBefore != currentTrackAfter) {
                 val currentTrackAfterParsing = currentTrackAfter.asTrack
 
                 if (currentTrackAfterParsing != null) {
-                    // Since the queue does not include the currently playing (= index 0), it needs to be added manually
-                    return IndexInQueueAndTrack(index + 1, currentTrackAfterParsing)
+                    return IndexInQueueAndTrack(index, currentTrackAfterParsing)
                 }
             }
         }
@@ -89,7 +91,10 @@ class RequestedByQueueHandler {
         return null
     }
 
-    suspend fun addEntryToRequestedByQueue(queueBefore: List<Playable>, userName: String) {
+    suspend fun addEntryToRequestedByQueue(queueBeforeWithoutCurrentlyPlaying: List<Playable>, userName: String) {
+        val queueBefore = mutableListOf(currentSpotifySong as Playable)
+        queueBefore.addAll(queueBeforeWithoutCurrentlyPlaying)
+
         val indexInQueueAndTrack = getAddedTrackWithIndex(queueBefore)
 
         if(indexInQueueAndTrack != null) {
@@ -110,12 +115,7 @@ class RequestedByQueueHandler {
         currentTrack: IndexInQueueAndTrack,
         queue: List<Playable>
     ): Int {
-        // Since the currentlyPlaying (= index 0) is not considered in the queue, the +1 is manually added in
-        // getAddedTrackWithIndex and needs to be removed here again for the sub queue
-        val subQueue = queue.subList(0, currentTrack.indexInQueue - 1).toMutableList()
-        subQueue.add(0, currentSpotifySong as Playable)
-
-        return subQueue.count { it.asTrack == currentTrack.track }
+        return queue.subList(0, currentTrack.indexInQueue).count { it.asTrack == currentTrack.track }
     }
 }
 
