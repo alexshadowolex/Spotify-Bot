@@ -1,6 +1,5 @@
 package ui.navigation
 
-import NavController
 import androidx.compose.runtime.Composable
 
 class NavigationHost(

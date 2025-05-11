@@ -7,7 +7,6 @@ import handler.Redeem
 import isSongRequestRedeemActive
 import logger
 import spotifyClient
-import kotlin.time.Duration.Companion.seconds
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,

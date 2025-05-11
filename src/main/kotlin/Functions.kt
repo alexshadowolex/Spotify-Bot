@@ -47,6 +47,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 var wasAlexAlreadyPraised = false
+const val ALEX_TWITCH_USER_NAME = "alexshadowolex"
 
 // Setup Twitch Bot
 /**
@@ -262,7 +263,7 @@ fun setupLogging() {
 
         logger.info("Log file ${logFile.name.addQuotationMarks()} has been created.")
         logger.info("Bot version: v${BuildInfo.version}")
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         showErrorMessageWindow(
             message = "Error while setting up logging in setupLogging.",
             title = "Error while setting up logging."
@@ -614,26 +615,25 @@ fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boole
  */
 fun praiseAlex(chat: TwitchChat) {
     wasAlexAlreadyPraised = true
-    val alexTwitchUserName = "alexshadowolex"
     logger.info("Praising alex")
     listOf(
-        "It is him! The creator, the all knowing, the myth, the legend $alexTwitchUserName !",
-        "$alexTwitchUserName ? More like the coolest programmer on earth (scientifically proven)",
-        "OMG is that the guy that built me?! YEAH IT'S HIM, $alexTwitchUserName !!",
-        "All rise! $alexTwitchUserName has entered the building \uD83E\uDEE1",
-        "Sound the alarms! The mastermind $alexTwitchUserName is here!",
-        "Everyone be cool. $alexTwitchUserName is watching \uD83D\uDC40",
-        "From code to glory—$alexTwitchUserName just showed up \uD83D\uDCBB\uD83D\uDC51",
-        "He didn’t just walk in… he deployed himself. Welcome, $alexTwitchUserName!",
-        "Legend says $alexTwitchUserName coded this chat while skydiving \u2601\uFE0F\uD83D\uDCBB",
-        "Hear ye, hear ye! The noble $alexTwitchUserName, architect of code and chaos, hath arrived!",
-        "It’s a bird! It’s a plane! No—it’s $alexTwitchUserName!",
-        "Brace yourselves. The wizard of ones and zeroes—$alexTwitchUserName—is here!",
-        "You hear that? That’s the sound of greatness logging in: $alexTwitchUserName \uD83C\uDFA7",
-        "Bleep bloop. Creator identified: $alexTwitchUserName. Initiating admiration protocol.",
-        "$alexTwitchUserName joined the chat. FPS just went up 20% from pure charisma.",
-        "OH MY GOD CHAT!! IT’S HIM!! IT’S REALLY HIM!! $alexTwitchUserName IS HERE AAAAA \uD83D\uDE31",
-        "The dev, the myth, the chillest coder alive: $alexTwitchUserName \uD83D\uDE4C"
+        "It is him! The creator, the all knowing, the myth, the legend $ALEX_TWITCH_USER_NAME !",
+        "$ALEX_TWITCH_USER_NAME ? More like the coolest programmer on earth (scientifically proven)",
+        "OMG is that the guy that built me?! YEAH IT'S HIM, $ALEX_TWITCH_USER_NAME !!",
+        "All rise! $ALEX_TWITCH_USER_NAME has entered the building \uD83E\uDEE1",
+        "Sound the alarms! The mastermind $ALEX_TWITCH_USER_NAME is here!",
+        "Everyone be cool. $ALEX_TWITCH_USER_NAME is watching \uD83D\uDC40",
+        "From code to glory—$ALEX_TWITCH_USER_NAME just showed up \uD83D\uDCBB\uD83D\uDC51",
+        "He didn’t just walk in… he deployed himself. Welcome, $ALEX_TWITCH_USER_NAME!",
+        "Legend says $ALEX_TWITCH_USER_NAME coded this chat while skydiving \u2601\uFE0F\uD83D\uDCBB",
+        "Hear ye, hear ye! The noble $ALEX_TWITCH_USER_NAME, architect of code and chaos, hath arrived!",
+        "It’s a bird! It’s a plane! No—it’s $ALEX_TWITCH_USER_NAME!",
+        "Brace yourselves. The wizard of ones and zeroes—$ALEX_TWITCH_USER_NAME—is here!",
+        "You hear that? That’s the sound of greatness logging in: $ALEX_TWITCH_USER_NAME \uD83C\uDFA7",
+        "Bleep bloop. Creator identified: $ALEX_TWITCH_USER_NAME. Initiating admiration protocol.",
+        "$ALEX_TWITCH_USER_NAME joined the chat. FPS just went up 20% from pure charisma.",
+        "OH MY GOD CHAT!! IT’S HIM!! IT’S REALLY HIM!! $ALEX_TWITCH_USER_NAME IS HERE AAAAA \uD83D\uDE31",
+        "The dev, the myth, the chillest coder alive: $ALEX_TWITCH_USER_NAME \uD83D\uDE4C"
     ).random().run{ sendMessageToTwitchChatAndLogIt(chat, this) }
 }
 
@@ -987,7 +987,7 @@ fun startSpotifySongGetter(requestedByQueueHandler: RequestedByQueueHandler) {
 fun isSpotifySongNameGetterEnabled(): Boolean {
     return try {
         BotConfig.isSpotifySongNameGetterEnabled
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -1085,7 +1085,7 @@ private fun createSongDisplayFolderAndFiles() {
                     try {
                         currentFile.createNewFile()
                         logger.info("Created current song display file ${currentFile.name}")
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         logger.error("Error while creating song display file ${currentFile.name} in createSongDisplayFolderAndFiles")
                     }
                 }
@@ -1112,7 +1112,7 @@ fun emptyAllSongDisplayFiles() {
     File("$DISPLAY_FILES_DIRECTORY\\$CURRENT_SONG_ALBUM_IMAGE_FILE_NAME").writeBytes(
         try {
             object {}.javaClass.getResourceAsStream("Blank.jpg")!!.readAllBytes()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             logger.error("Error while reading \"Blank.jpg\" data in emptyAllSongDisplayFiles")
             byteArrayOf()
         }

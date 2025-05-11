@@ -50,7 +50,7 @@ object SpotifyConfig {
     var maximumLengthSongRequestMinutes: Duration = try {
         getPropertyValue(properties, "maximumLengthSongRequestMinutes", spotifyConfigFile.path)
             .toDouble().minutes
-    } catch (e: NumberFormatException) {
+    } catch (_: NumberFormatException) {
         val defaultValue = 60.0.minutes
         logger.warn(
             "Invalid number found while parsing property maximumLengthSongRequestMinutes, setting to $defaultValue"

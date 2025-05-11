@@ -1,6 +1,6 @@
 package ui
 
-import NavController
+import ui.navigation.NavController
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -20,7 +20,7 @@ import androidx.compose.ui.window.WindowState
 import isWindowsInDarkMode
 import kotlinx.coroutines.delay
 import mainWindowState
-import rememberNavController
+import ui.navigation.rememberNavController
 import ui.navigation.NavigationHost
 import ui.navigation.composable
 import ui.screens.*

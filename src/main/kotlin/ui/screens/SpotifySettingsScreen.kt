@@ -62,7 +62,7 @@ fun spotifySettingsScreen() {
                         maximumLengthSongRequestMinutes.value = try {
                             it.toDouble()
                             it.replace("-", "")
-                        } catch (e: NumberFormatException) {
+                        } catch (_: NumberFormatException) {
                             "0"
                         }
                     }

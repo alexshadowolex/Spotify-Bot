@@ -52,7 +52,7 @@ object TwitchBotConfig {
         getPropertyValue(
             properties, "defaultCommandCoolDownSeconds", twitchBotConfigFile.path
         ).toInt().seconds
-    } catch (e: NumberFormatException) {
+    } catch (_: NumberFormatException) {
         val defaultValue = 0.seconds
         logger.warn(
             "Invalid number found while parsing property defaultCommandCoolDownSeconds, setting to $defaultValue"
@@ -69,7 +69,7 @@ object TwitchBotConfig {
         getPropertyValue(
             properties, "defaultUserCoolDownSeconds", twitchBotConfigFile.path
         ).toInt().seconds
-    } catch (e: NumberFormatException) {
+    } catch (_: NumberFormatException) {
         val defaultValue = 0.seconds
         logger.warn(
             "Invalid number found while parsing property defaultUserCoolDownSeconds, setting to $defaultValue"
@@ -112,7 +112,7 @@ object TwitchBotConfig {
     var minimumFollowingDurationMinutes: Duration = try {
         getPropertyValue(properties, "minimumFollowingDurationMinutes", twitchBotConfigFile.path)
             .toDouble().minutes
-    } catch (e: NumberFormatException) {
+    } catch (_: NumberFormatException) {
         val defaultValue = 0.minutes
         logger.warn(
             "Invalid number found while parsing property minimumFollowingDurationMinutes, setting to $defaultValue"
