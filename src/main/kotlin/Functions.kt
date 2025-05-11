@@ -47,7 +47,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 var wasAlexAlreadyPraised = false
-val ALEX_TWITCH_USER_NAME = "alexshadowolex"
 
 // Setup Twitch Bot
 /**
@@ -615,13 +614,27 @@ fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boole
  */
 fun praiseAlex(chat: TwitchChat) {
     wasAlexAlreadyPraised = true
+    val alexTwitchUserName = "alexshadowolex"
     logger.info("Praising alex")
     listOf(
-        "It is him! The creator, the all knowing, the myth, the legend $ALEX_TWITCH_USER_NAME !",
-        "Beware, chat. The powerful god $ALEX_TWITCH_USER_NAME has arrived \uD83D\uDE0E",
-        "$ALEX_TWITCH_USER_NAME ? More like the coolest programmer on earth (scientifically proven)",
-        "OMG is that the guy that built me?! YEAH IT'S HIM, $ALEX_TWITCH_USER_NAME !!"
-    ).random().run { sendMessageToTwitchChatAndLogIt(chat, this) }
+        "It is him! The creator, the all knowing, the myth, the legend $alexTwitchUserName !",
+        "$alexTwitchUserName ? More like the coolest programmer on earth (scientifically proven)",
+        "OMG is that the guy that built me?! YEAH IT'S HIM, $alexTwitchUserName !!",
+        "All rise! $alexTwitchUserName has entered the building \uD83E\uDEE1",
+        "Sound the alarms! The mastermind $alexTwitchUserName is here!",
+        "Everyone be cool. $alexTwitchUserName is watching \uD83D\uDC40",
+        "From code to glory—$alexTwitchUserName just showed up \uD83D\uDCBB\uD83D\uDC51",
+        "He didn’t just walk in… he deployed himself. Welcome, $alexTwitchUserName!",
+        "Legend says $alexTwitchUserName coded this chat while skydiving \u2601\uFE0F\uD83D\uDCBB",
+        "Hear ye, hear ye! The noble $alexTwitchUserName, architect of code and chaos, hath arrived!",
+        "It’s a bird! It’s a plane! No—it’s $alexTwitchUserName!",
+        "Brace yourselves. The wizard of ones and zeroes—$alexTwitchUserName—is here!",
+        "You hear that? That’s the sound of greatness logging in: $alexTwitchUserName \uD83C\uDFA7",
+        "Bleep bloop. Creator identified: $alexTwitchUserName. Initiating admiration protocol.",
+        "$alexTwitchUserName joined the chat. FPS just went up 20% from pure charisma.",
+        "OH MY GOD CHAT!! IT’S HIM!! IT’S REALLY HIM!! $alexTwitchUserName IS HERE AAAAA \uD83D\uDE31",
+        "The dev, the myth, the chillest coder alive: $alexTwitchUserName \uD83D\uDE4C"
+    ).random().run{ sendMessageToTwitchChatAndLogIt(chat, this) }
 }
 
 
