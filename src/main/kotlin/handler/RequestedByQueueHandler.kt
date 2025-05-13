@@ -14,7 +14,8 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Updates the requested by queue. Things that will be updated are:
+     * Updates the RequestedBy-queue.
+     * Things that will be updated are:
      *  - indexes, where the songs are supposed to be currently (-1)
      *  - get and update the current requested by username (if there is one)
      *  - update the amount of the same track in queue before
@@ -51,9 +52,10 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Searches the requestedByQueue, if the current song is requested by a user. If it is, it returns the
+     * Searches the requestedByQueue if the current song is requested by a user.
+     * If it is, it returns the
      * username and removes it.
-     * @return The username, if the current song is requested by them, else null
+     * @return The username, if they request the current song, else null
      */
     private fun getAndRemoveFoundUserName(): String? {
         val userName = requestedByQueue.find { isCurrentSongRequestedByUser(it) }?.userName
@@ -67,7 +69,7 @@ class RequestedByQueueHandler {
 
     /**
      * Helper function which checks if the current song is requested by a user in the requestedByQueue. This is the
-     * case, when the saved track in the requestedByQueue is the same as the currently playing song and the amount
+     * case when the saved track in the requestedByQueue is the same as the currently playing song, and the number
      * of same tracks before is 0.
      * @param entry the requestedByQueue-entry to check for
      * @return true, if the song is requested by the user given in the entry, else false
@@ -178,7 +180,7 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Finds the amount of identical tracks in the queue before the given track.
+     * Finds the number of identical tracks in the queue before the given track.
      * @param currentTrack the reference-track and its index
      * @param queue the whole queue (before or after the song got added)
      * @return the amount of the given track before the reference-index

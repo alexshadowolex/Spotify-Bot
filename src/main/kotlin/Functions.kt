@@ -413,7 +413,7 @@ fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<Str
 /**
  * Function that does all general sanity checks for commands without security level checks and handles the logging and
  * result communication via chat.
- * Following sanity checks are done:
+ * The following sanity checks are done:
  *      - Is the command enabled
  * @param commandName name of the command which is used for the logging
  * @param isCommandEnabledFlag the flag of the specific command
@@ -639,7 +639,9 @@ fun praiseAlex(chat: TwitchChat) {
 
 // Spotify Functions
 /**
- * Helper function to be called both by redeem and command. Calls the update queue and issues a message to twitch chat.
+ * Helper function to be called both by redeem and command.
+ * It calls the updateQueue-function and issues a message
+ * to twitch chat.
  * @param chat the twitch chat
  * @param query query or link
  * @return true on success, else false
@@ -770,7 +772,7 @@ fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
 
 
 /**
- * Gets the first (if there are more than one included) blocked artist from the given spotify config property.
+ * Gets the first (if there exist more than one included) blocked artist from the given spotify config property.
  * @param artists artist names
  * @return the name of the (first) blocked artist or an empty string, if no artist is blocked
  */
@@ -929,7 +931,7 @@ private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
  * On Start up it creates the dir and files, if needed.
  * If isSpotifySongNameGetterEnabled is true, it constantly does a GET-Request to get the currently playing
  * song name and writes it into a file.
- * Delay for next pull is 2 seconds
+ * The delay for the next pull is 2 seconds.
  * @param requestedByQueueHandler RequestedByQueueHandler-instance
  */
 fun startSpotifySongGetter(requestedByQueueHandler: RequestedByQueueHandler) {
@@ -1150,7 +1152,7 @@ fun isSongRequestRedeemActive(): Boolean {
 
 /**
  * Checks spotify api if the player is playing.
- * For reference of what the return codes mean, check here:
+ * For reference to what the return codes mean, check here:
  * https://developer.spotify.com/documentation/web-api/reference/get-information-about-the-users-current-playback
  * @return true, if the player is playing. False, if the player is not playing or not active. Null on error.
  */
@@ -1440,7 +1442,7 @@ const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotif
 
 /**
  * Gets and saves the latest release information from GitHub. The information is saved in BuildInfo.
- * Information that will be saved are:
+ * Information that will be saved is:
  *  - latest available version
  *  - release body text
  *  - release assets

@@ -33,7 +33,7 @@ val songRequestCommand = Command(
 
         logger.info("query: $query")
 
-        // The queue has to be saved before successfully adding the song to the queue for the requested by handler!
+        // The queue has to be saved before successfully adding the song to the queue for the RequestedBy-handler!
         val queueBefore = spotifyClient.player.getUserQueue().queue
         val success = handleSongRequestQuery(twitchClient.chat, query)
         if (success) {
