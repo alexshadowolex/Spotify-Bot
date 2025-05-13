@@ -27,7 +27,6 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.json.Json
-import org.jsoup.Jsoup
 import ui.screens.isFollowerOnlyModeEnabled
 import java.awt.Color
 import java.awt.Image
@@ -1437,34 +1436,56 @@ fun isUserEligibleForCommand(
 
 // Github
 const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotify-Bot/releases/latest"
-/**
- * Checks GitHub to see if a new version of this app is available
- * @return true, if there is a new version, else false
- */
-fun isNewAppReleaseAvailable(): Boolean {
-    logger.info("called isNewAppReleaseAvailable")
-    // response = httpClient.get("https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest'") {}
-    // TODO: at some point use the api of github with get request, as soon as we find out how to use it without auth
-    val titleTagName = "title"
-    val textBeforeVersionNumber = "Release v"
-    val delimiterAfterVersionNumber = " "
 
-    val latestVersion = try {
-        Jsoup.connect(GITHUB_LATEST_VERSION_LINK).get()
-            .select(titleTagName).first()?.text()
-            ?.substringAfter(textBeforeVersionNumber)
-            ?.substringBefore(delimiterAfterVersionNumber) ?: BuildInfo.version
-    } catch (e: IOException) {
-        logger.error("Error while getting latest version from github.")
+
+/**
+ * Gets and saves the latest release information from GitHub. The information is saved in BuildInfo.
+ * Information that will be saved are:
+ *  - latest available version
+ *  - release body text
+ *  - release assets
+ */
+suspend fun saveLatestGitHubReleaseInformation() {
+    val textBeforeVersionNumber = "v"
+    val gitHubOwner = "alexshadowolex"
+    val giHubRepo = "Spotify-Bot"
+    val latestReleaseEndpoint = "https://api.github.com/repos/$gitHubOwner/$giHubRepo/releases/latest"
+
+    val json = Json { ignoreUnknownKeys = true }
+
+    val response = try {
+        httpClient.get(latestReleaseEndpoint) {
+            header("ACCEPT", "application/vnd.github+json")
+        }
+    } catch (e: Exception) {
+        logger.error("Error while getting information from GitHub.")
         logger.error(e.stackTraceToString())
-        BuildInfo.version
+        return
     }
+
+    if(HttpStatusCode.OK != response.status) {
+        logger.error("An error occurred while accessing GitHub release endpoint. Code: ${response.status}. " +
+                "Message: ${response.bodyAsText()}"
+        )
+        return
+    }
+
+    val responseParsed = try {
+        json.decodeFromString<GitHubReleaseResponse>(response.bodyAsText())
+    } catch (e: Exception) {
+        logger.error("Error while parsing response body from GitHub.")
+        logger.error(e.stackTraceToString())
+        return
+    }
+
+    val latestVersion = responseParsed.name.substringAfter(textBeforeVersionNumber)
 
     if(BuildInfo.version != latestVersion) {
         logger.info("Found new Build version $latestVersion")
         BuildInfo.latestAvailableVersion = latestVersion
-        return true
+        BuildInfo.isNewVersionAvailable = true
     }
 
-    return false
+    BuildInfo.releaseBodyText = responseParsed.body
+    BuildInfo.releaseAssets = responseParsed.assets
 }

@@ -1,5 +1,6 @@
 package config
 
+import GitHubReleaseAsset
 import java.util.*
 
 object BuildInfo {
@@ -9,4 +10,7 @@ object BuildInfo {
 
     val version: String = properties.getProperty("version")
     var latestAvailableVersion: String = properties.getProperty("version")
+    var isNewVersionAvailable: Boolean = false
+    var releaseBodyText: String? = null
+    var releaseAssets = listOf<GitHubReleaseAsset>()
 }

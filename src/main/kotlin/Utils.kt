@@ -33,6 +33,19 @@ data class SongRequestResult(
     val songRequestResultExplanation: String
 )
 
+@Serializable
+data class GitHubReleaseResponse (
+    val name: String,
+    val body: String,
+    val assets: List<GitHubReleaseAsset>
+)
+
+@Serializable
+data class GitHubReleaseAsset (
+    val name: String,
+    val browser_download_url: String
+)
+
 enum class CustomCommandPermissions {
     BROADCASTER,
     MODERATOR,

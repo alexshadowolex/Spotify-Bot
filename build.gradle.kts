@@ -55,8 +55,6 @@ dependencies {
 
     implementation("org.slf4j:slf4j-simple:2.0.16")
 
-    implementation("org.jsoup:jsoup:1.18.1")
-
     implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")

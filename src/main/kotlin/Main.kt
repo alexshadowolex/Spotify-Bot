@@ -12,6 +12,7 @@ import com.adamratzman.spotify.models.Token
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
 import config.BotConfig
+import config.BuildInfo
 import config.SpotifyConfig
 import handler.RequestedByQueueHandler
 import io.ktor.client.*
@@ -54,12 +55,14 @@ var currentSpotifySong: Track? = null
 var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen.width, Screen.HomeScreen.height)))
 
 
-fun main() = try {
+suspend fun main() = try {
     setupLogging()
     val requestedByQueueHandler = RequestedByQueueHandler()
     val twitchClient = setupTwitchBot(requestedByQueueHandler)
     val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())
+
     var alreadyCheckedNewVersion = false
+    saveLatestGitHubReleaseInformation()
 
     application {
         initializeFlagVariables()
@@ -112,7 +115,7 @@ fun main() = try {
 
         if (BotConfig.isNewVersionCheckEnabled && !alreadyCheckedNewVersion) {
             alreadyCheckedNewVersion = true
-            if(isNewAppReleaseAvailable()) {
+            if(BuildInfo.isNewVersionAvailable) {
                 val isNewVersionWindowOpen = remember { mutableStateOf(true) }
                 if (isNewVersionWindowOpen.value) {
                     Window(

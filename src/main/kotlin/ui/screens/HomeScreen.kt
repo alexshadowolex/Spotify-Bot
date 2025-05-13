@@ -55,14 +55,14 @@ fun homeScreen() {
                             "Hello ${TwitchBotConfig.channel} you beautiful person and valued user! " +
                             "Thank you for trusting in my app and using it to enhance your stream's experience with Spotify!\n\n" +
                             "There is a small update on how to communicate bugs/features: Since this project's binaries are hosted " +
-                            "and distributed over Github, why not also use more of this site's features? On Github, you can " +
+                            "and distributed over GitHub, why not also use more of this site's features? On GitHub, you can " +
                             "create issues and label them as an \"enhancement\" or a \"bug\". It is available under this link: "
                         )
 
                         appendInlineContent(issuesHyperLinkId)
 
                         append(
-                            ". Please use it to tell me new feature ideas and bugs. You only need a (free) Github account :)\n" +
+                            ". Please use it to tell me new feature ideas and bugs. You only need a (free) GitHub account :)\n" +
                             "Of course you can still message me and then I will do that. But it would be nice to see that feature get used.\n\n" +
                             "With that said - have fun and enjoy :)"
                         )
