@@ -1488,6 +1488,13 @@ suspend fun saveLatestGitHubReleaseInformation() {
         BuildInfo.isNewVersionAvailable = true
     }
 
-    BuildInfo.releaseBodyText = responseParsed.body
+    var adjustedBodyText = responseParsed.body
+        .split("\n").filter { !it.contains("**Full Changelog**") }
+
+    if(adjustedBodyText.last().isBlank()) {
+        adjustedBodyText = adjustedBodyText.toMutableList().dropLast(1)
+    }
+
+    BuildInfo.releaseBodyText = adjustedBodyText.joinToString("\n")
     BuildInfo.releaseAssets = responseParsed.assets
 }

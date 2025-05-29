@@ -100,7 +100,7 @@ private var blacklistedUsers = mutableStateListOf("")
         field = value
         BotConfig.blacklistedUsers = value
     }
-private var isNewVersionCheckEnabled = mutableStateOf(false)
+var isNewVersionCheckEnabled = mutableStateOf(false)
     set(value) {
         field = value
         BotConfig.isNewVersionCheckEnabled = value.value

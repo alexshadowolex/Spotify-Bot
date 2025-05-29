@@ -1,23 +1,21 @@
 package ui.screens
 
 import GITHUB_LATEST_VERSION_LINK
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import backgroundCoroutineScope
 import config.BuildInfo
 import isWindowsInDarkMode
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import logger
 import ui.darkColorPalette
 import ui.lightColorPalette
@@ -25,6 +23,7 @@ import java.awt.Desktop
 import java.net.URI
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
     var isInDarkMode by remember { mutableStateOf(false) }
@@ -51,44 +50,65 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
             ) {
                 Row {
                     Text(
-                        text = "You currently have Version v${BuildInfo.version}.",
+                        text = "You currently have Version v${BuildInfo.version}. New Version " +
+                                "v${BuildInfo.latestAvailableVersion} of this app is available on GitHub!",
                         style = MaterialTheme.typography.body1,
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                     )
                 }
 
-                Row {
-                    Text(
-                        text = "New Version v${BuildInfo.latestAvailableVersion} of this app is available on ",
-                        style = MaterialTheme.typography.body1,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                    )
 
-                    Text(
-                        style = MaterialTheme.typography.body1,
-                        text = "GitHub",
+                if(BuildInfo.releaseBodyText != null) {
+                    Row (
                         modifier = Modifier
-                            .clickable {
-                                logger.info("Clicked on Go To GitHub Link")
-                                backgroundCoroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        try {
-                                            Desktop.getDesktop().browse(URI.create(GITHUB_LATEST_VERSION_LINK))
-                                        } catch (e: java.io.IOException) {
-                                            logger.error("Couldn't open GitHub-link in browser.")
-                                            logger.error(e.stackTraceToString())
-                                        }
+                            .padding(top = 10.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "Changes in this version: "
+                            )
+                            val scrollState = rememberScrollState(0)
+                            val scrollBarAdapter = rememberScrollbarAdapter(scrollState)
+                            Column(
+                                modifier = Modifier
+                                    .height(300.dp)
+                                    .fillMaxWidth()
+                                    .padding(top = 5.dp)
+                                    .border(1.dp, Color(30, 30, 30), RoundedCornerShape(4.dp))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(all = 5.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.95f)
+                                            .verticalScroll(scrollState)
+                                    ) {
+                                        Text(
+                                            text = BuildInfo.releaseBodyText!!,
+                                            modifier = Modifier
+                                                .padding(all = 5.dp)
+                                        )
+                                    }
+
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    ) {
+                                        VerticalScrollbar(
+                                            adapter = scrollBarAdapter,
+                                            modifier = Modifier
+                                                .align(Alignment.End)
+                                                .padding(start = 2.dp)
+                                                .padding(end = 1.dp)
+                                        )
                                     }
                                 }
                             }
-                            .padding(3.dp)
-                            .pointerHoverIcon(PointerIcon.Hand)
-                            .align(Alignment.CenterVertically),
-                        textDecoration = TextDecoration.Underline,
-                        color = MaterialTheme.colors.primary
-                    )
+                        }
+                    }
                 }
 
                 Row (
@@ -100,15 +120,18 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                             .fillMaxWidth()
                             .align(Alignment.Bottom)
                     ) {
-                        Row {
+                        Row (
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
                             Column(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.5F)
                             ) {
                                 Button(
                                     onClick = {
-                                        logger.info("Clicked on Ignore Button")
+                                        logger.info("Clicked on don't show again button")
                                         isNewVersionWindowOpen.value = false
+                                        isNewVersionCheckEnabled.value = false
                                     },
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
@@ -116,15 +139,14 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
                                 ) {
                                     Text(
-                                        text = "Ignore",
+                                        text = "Don't show again",
                                         color = MaterialTheme.colors.onPrimary
                                     )
                                 }
+
                             }
 
                             Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
                             ) {
                                 Button(
                                     onClick = {
@@ -146,6 +168,27 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                         color = MaterialTheme.colors.onPrimary
                                     )
                                 }
+                            }
+
+                            Column(
+                            ) {
+                                Button(
+                                    onClick = {
+                                        logger.info("Clicked on Update Button")
+                                        // TODO
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .pointerHoverIcon(PointerIcon.Hand),
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
+                                ) {
+                                    Text(
+                                        text = "Update",
+                                        color = MaterialTheme.colors.onPrimary,
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                }
+
                             }
                         }
                     }
