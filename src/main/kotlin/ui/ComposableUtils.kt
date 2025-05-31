@@ -502,3 +502,54 @@ fun propertiesTextField(
             .padding(top = 5.dp, bottom = 5.dp)
     )
 }
+
+
+@Composable
+fun alertDialogSurface(
+    isVisible: MutableState<Boolean>,
+    title: MutableState<String>,
+    message: MutableState<String>,
+    onOkClick: MutableState<() -> Unit>
+) {
+    if(isVisible.value) {
+        AlertDialog(
+            onDismissRequest = {
+                isVisible.value = false
+            },
+            title = {
+                Text(text = title.value)
+            },
+            text = {
+                Text(text = message.value)
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .padding(all = 8.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column {
+                        Button(
+                            modifier = Modifier
+                                .pointerHoverIcon(PointerIcon.Hand),
+                            onClick = { isVisible.value = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+
+                    Column {
+                        Button(
+                            modifier = Modifier
+                                .pointerHoverIcon(PointerIcon.Hand),
+                            onClick = onOkClick.value
+                        ) {
+                            Text("Ok")
+                        }
+                    }
+                }
+            }
+        )
+    }
+}

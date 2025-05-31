@@ -17,6 +17,8 @@ import config.BuildInfo
 import isWindowsInDarkMode
 import kotlinx.coroutines.delay
 import logger
+import prepareAndStartAutoUpdate
+import ui.alertDialogSurface
 import ui.darkColorPalette
 import ui.lightColorPalette
 import java.awt.Desktop
@@ -35,6 +37,11 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
         }
     }
 
+    var isAlertDialogVisible = mutableStateOf(false)
+    var alertDialogTitle = mutableStateOf("")
+    var alertDialogMessage = mutableStateOf("")
+    var alertDialogOnOkClick = mutableStateOf({})
+
     MaterialTheme(
         colors = if (isInDarkMode) {
             darkColorPalette
@@ -43,6 +50,13 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
         }
     ) {
         Scaffold {
+            alertDialogSurface(
+                isVisible = isAlertDialogVisible,
+                title = alertDialogTitle,
+                message = alertDialogMessage,
+                onOkClick = alertDialogOnOkClick
+            )
+
             Column (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -125,13 +139,19 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Column(
-                            ) {
+                            Column {
                                 Button(
                                     onClick = {
                                         logger.info("Clicked on don't show again button")
-                                        isNewVersionWindowOpen.value = false
-                                        isNewVersionCheckEnabled.value = false
+                                        alertDialogTitle.value = "Note"
+                                        alertDialogMessage.value = "This will disable the check for new Versions on start up." +
+                                                " You can always enable this again in the general settings screen."
+                                        alertDialogOnOkClick.value = {
+                                            isNewVersionWindowOpen.value = false
+                                            isNewVersionCheckEnabled.value = false
+                                            isAlertDialogVisible.value = false
+                                        }
+                                        isAlertDialogVisible.value = true
                                     },
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
@@ -143,11 +163,9 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                         color = MaterialTheme.colors.onPrimary
                                     )
                                 }
-
                             }
 
-                            Column(
-                            ) {
+                            Column {
                                 Button(
                                     onClick = {
                                         logger.info("Clicked on Go To GitHub Button")
@@ -170,12 +188,24 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                 }
                             }
 
-                            Column(
-                            ) {
+                            Column {
                                 Button(
                                     onClick = {
                                         logger.info("Clicked on Update Button")
-                                        // TODO
+                                        alertDialogTitle.value = "Note"
+                                        alertDialogMessage.value = "This will automatically update this Bot to the newest " +
+                                                "version. It will download the update-script from GitHub, if it is " +
+                                                "not existing already, and then execute it. The script will close the Bot, open " +
+                                                "several consoles (do not be scared) and update everything and launch the new version. " +
+                                                "In the process, old versions of the Spotify-Bot- and UpdateProperties-Jars will " +
+                                                "be deleted from the base directory. If you want to keep them, move them somewhere " +
+                                                "else. Keep in mind that they are always available online."
+                                        alertDialogOnOkClick.value = {
+                                            // TODO Update script here
+                                            prepareAndStartAutoUpdate()
+                                            isAlertDialogVisible.value = false
+                                        }
+                                        isAlertDialogVisible.value = true
                                     },
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
@@ -188,7 +218,6 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                         textDecoration = TextDecoration.Underline
                                     )
                                 }
-
                             }
                         }
                     }
