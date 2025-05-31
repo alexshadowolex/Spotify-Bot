@@ -62,12 +62,12 @@ val propertiesFilesToProperties = listOf(
 
 // This file holds all properties, that should exist for the latest version in all files.
 // Executing it will write the properties with default values of the latest version.
-fun main() {
+fun main(args: Array<String>) {
     try {
 
         val outputString = mutableListOf<String>()
 
-        outputString += "Checking for updates, latest verson: $latestVersion"
+        outputString += "Checking for updates, latest version: $latestVersion"
 
         propertiesFilesToProperties.forEach { (file, properties) ->
             if (!file.exists()) {
@@ -86,6 +86,16 @@ fun main() {
             file.writeText(propertyFileContent.joinToString("\n"))
         }
 
+        if(args.isNotEmpty()) {
+            val doneFile = File("temp\\UPDATE_DONE.txt")
+            if(!doneFile.exists()) {
+                doneFile.createNewFile()
+            }
+
+            val currentContent = doneFile.readText()
+            doneFile.writeText("$currentContent\nUpdateProperties")
+        }
+
         outputString += "Successfully updated properties!"
         Runtime.getRuntime().exec(
             arrayOf(
@@ -97,7 +107,7 @@ fun main() {
         Runtime.getRuntime().exec(
             arrayOf(
                 "cmd", "/c", "start", "cmd", "/k",
-                "echo An error occured, see the exception here:& echo.${e.message}"
+                "echo An error occurred, see the exception here:& echo.${e.message}"
             )
         )
     }

@@ -1498,3 +1498,34 @@ suspend fun saveLatestGitHubReleaseInformation() {
     BuildInfo.releaseBodyText = adjustedBodyText.joinToString("\n")
     BuildInfo.releaseAssets = responseParsed.assets
 }
+
+
+fun prepareAndStartAutoUpdate() {
+    val updateNamePrefix = "Update_"
+    val updateNameVersion = "v1"
+    val updateNameExtension = ".jar"
+    val updateJarName = "$updateNamePrefix$updateNameVersion$updateNameExtension"
+
+    val updateScriptsFolder = File("data\\bin")
+    val updateJar = File("${updateScriptsFolder.path}\\$updateJarName")
+
+    if(!updateScriptsFolder.exists() || !updateScriptsFolder.isDirectory) {
+        updateScriptsFolder.mkdir()
+    }
+
+    if(!updateJar.exists()) {
+        // TODO Download jar from github
+        // delete old versions?
+    }
+
+
+    Runtime.getRuntime().exec(
+        arrayOf(
+            "cmd", "/c", "start", "cmd", "/k",
+            "java -jar ${updateJar.path} ${BuildInfo.latestAvailableVersion} " +
+                    BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url }
+        )
+    )
+
+    exitProcess(0)
+}
