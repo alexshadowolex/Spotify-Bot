@@ -194,9 +194,10 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                         logger.info("Clicked on Update Button")
                                         alertDialogTitle.value = "Note"
                                         alertDialogMessage.value = "This will automatically update this Bot to the newest " +
-                                                "version. It will download the update-script from GitHub, if it is " +
-                                                "not existing already, and then execute it. The script will close the Bot, open " +
-                                                "several consoles (do not be scared) and update everything and launch the new version. " +
+                                                "version. It will download the newest version of update-script from GitHub, if it is " +
+                                                "not existing already, and then execute it.\n" +
+                                                "The update-script will close the Spotify-Bot, open several consoles (do not be scared, " +
+                                                "that is supposed to happen), update everything and launch the new Spotify-Bot-version.\n" +
                                                 "In the process, old versions of the Spotify-Bot- and UpdateProperties-Jars will " +
                                                 "be deleted from the base directory. If you want to keep them, move them somewhere " +
                                                 "else. Keep in mind that they are always available online."

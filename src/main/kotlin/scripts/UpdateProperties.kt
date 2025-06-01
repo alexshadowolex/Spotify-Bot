@@ -86,16 +86,6 @@ fun main(args: Array<String>) {
             file.writeText(propertyFileContent.joinToString("\n"))
         }
 
-        if(args.isNotEmpty()) {
-            val doneFile = File("temp\\UPDATE_DONE.txt")
-            if(!doneFile.exists()) {
-                doneFile.createNewFile()
-            }
-
-            val currentContent = doneFile.readText()
-            doneFile.writeText("$currentContent\nUpdateProperties")
-        }
-
         outputString += "Successfully updated properties!"
         Runtime.getRuntime().exec(
             arrayOf(
