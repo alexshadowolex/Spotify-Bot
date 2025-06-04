@@ -1523,7 +1523,8 @@ fun prepareAndStartAutoUpdate() {
         arrayOf(
             "cmd", "/c", "start", "cmd", "/k",
             "java -jar ${updateJar.path} ${BuildInfo.latestAvailableVersion} " +
-                    BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url }
+                    BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url } +
+                    " & exit"
         )
     )
 

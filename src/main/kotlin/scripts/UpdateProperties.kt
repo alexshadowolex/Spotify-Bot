@@ -62,7 +62,7 @@ val propertiesFilesToProperties = listOf(
 
 // This file holds all properties, that should exist for the latest version in all files.
 // Executing it will write the properties with default values of the latest version.
-fun main(args: Array<String>) {
+fun main() {
     try {
 
         val outputString = mutableListOf<String>()
@@ -90,7 +90,9 @@ fun main(args: Array<String>) {
         Runtime.getRuntime().exec(
             arrayOf(
                 "cmd", "/c", "start", "cmd", "/k",
-                "echo ${outputString.joinToString("& echo.")}"
+                "echo ${outputString.joinToString("& echo.")}" +
+                "& echo.Closing console in 15s" +
+                "& timeout 15 & exit"
             )
         )
     } catch (e: Exception) {

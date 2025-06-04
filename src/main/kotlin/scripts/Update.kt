@@ -47,14 +47,8 @@ fun main(args: Array<String>) {
 
     startSpotifyBot(localReleaseAssets)
 
-    println("Closing all CMD windows in 15s")
+    println("Console will close in 15s")
     Thread.sleep(15000)
-
-    ProcessBuilder(
-        listOf(
-            "taskkill", "/IM", "cmd.exe"
-        )
-    ).start().waitFor()
 }
 
 fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset> {
@@ -74,7 +68,8 @@ fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): MutableL
         }
         val file = File("${baseDir.path}${asset.name}")
 
-        file.writeBytes(URL(asset.browser_download_url).readBytes())
+        if(!asset.name.contains(UPDATE_PROPERTIES_SUBSTRING))
+            file.writeBytes(URL(asset.browser_download_url).readBytes())
         localAssets += LocalReleaseAsset(asset.name, file)
         println("Downloaded asset \"${asset.name}\"")
     }
@@ -94,7 +89,7 @@ fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
     for (step in order) {
         val asset = assets.find { it.name.contains(step) } ?: continue
         println("Executing ${asset.name}")
-        ProcessBuilder("cmd", "/c", "start /wait java -jar ${asset.localFile.name}")
+        ProcessBuilder("javaw", "-jar", asset.localFile.name)
             .inheritIO().start().waitFor()
         println("Finished execution of ${asset.name}")
     }
@@ -139,7 +134,7 @@ fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
 
 fun startSpotifyBot(assets: List<LocalReleaseAsset>) {
     val bot = assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }?.name ?: return
-    ProcessBuilder("cmd", "/c", "javaw -jar $bot &").start()
+    ProcessBuilder("javaw", "-jar", bot).start()
 }
 
 
