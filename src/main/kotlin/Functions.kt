@@ -31,7 +31,10 @@ import ui.screens.isFollowerOnlyModeEnabled
 import java.awt.Color
 import java.awt.Image
 import java.awt.image.BufferedImage
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -39,7 +42,6 @@ import java.time.format.DateTimeFormatterBuilder
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.JOptionPane
-import kotlin.collections.set
 import kotlin.system.exitProcess
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -1500,22 +1502,34 @@ suspend fun saveLatestGitHubReleaseInformation() {
 }
 
 
+/**
+ * This functions prepares and starts the auto update-script. If the bin-folder is not existing, it will be created.
+ * If the specified version of the Update-Jar is not existing, it will be downloaded and older versions of it will
+ * be deleted.
+ * In the end, the update-script will be executed and the Spotify-Bot will be closed.
+ */
 fun prepareAndStartAutoUpdate() {
-    val updateNamePrefix = "Update_"
-    val updateNameVersion = "v1"
-    val updateNameExtension = ".jar"
-    val updateJarName = "$updateNamePrefix$updateNameVersion$updateNameExtension"
+    val updateJarNamePrefix = "Update_v"
+    val updateJarName = "${updateJarNamePrefix}1.jar"
+    val latestUpdateJarDownloadLink = "https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.5/$updateJarName"
 
-    val updateScriptsFolder = File("data\\bin")
-    val updateJar = File("${updateScriptsFolder.path}\\$updateJarName")
+    val binFolder = File("data\\bin")
+    val updateJar = File("${binFolder.path}\\$updateJarName")
 
-    if(!updateScriptsFolder.exists() || !updateScriptsFolder.isDirectory) {
-        updateScriptsFolder.mkdir()
+    if(!binFolder.exists() || !binFolder.isDirectory) {
+        binFolder.mkdir()
     }
 
     if(!updateJar.exists()) {
-        // TODO Download jar from github
-        // delete old versions?
+        updateJar.writeBytes(URL(latestUpdateJarDownloadLink).readBytes())
+
+        binFolder.listFiles().filter {
+            it.name.contains(updateJarNamePrefix) &&
+            it.name != updateJarName &&
+            it.extension == "jar"
+        }.forEach {
+            it.delete()
+        }
     }
 
     val updateJarPath = updateJar.path

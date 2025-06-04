@@ -9,6 +9,7 @@ const val UPDATE_SCRIPT_VERSION = "v1"
 const val SPOTIFY_BOT_SUBSTRING = "Spotify"
 const val UPDATE_PROPERTIES_SUBSTRING = "UpdateProperties"
 const val UPDATE_ORDER_NAME = "UpdateOrder.config"
+const val UPDATE_SCRIPT_SUBSTRING = "Update_v"
 val CURRENT_DIR = File(Paths.get("").toAbsolutePath().toString())
 var updateOrder = listOf<String>()
 
@@ -86,7 +87,11 @@ fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset> {
  */
 fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): List<LocalReleaseAsset> {
     val localAssets = mutableListOf<LocalReleaseAsset>()
+
     for (asset in assets) {
+        if(asset.name.contains(UPDATE_SCRIPT_SUBSTRING)) {
+            continue
+        }
         val baseDir = if (asset.name == UPDATE_ORDER_NAME) {
             tempFolder
         } else {
