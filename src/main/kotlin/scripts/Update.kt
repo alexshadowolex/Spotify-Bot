@@ -14,6 +14,11 @@ var updateOrder = listOf<String>()
 
 // Compile with: kotlinc Update.kt -include-runtime -d Update_v1.jar
 
+/**
+ * This script will automatically update the Spotify-Bot. It is compiled into a standalone Jar that gets executed
+ * by the Spotify-Bot after clicking on the Update-Button.
+ * @param args Array with the newVersion on index 0 and all Spotify Assets (name, Download-URL) as a list on index 1
+ */
 fun main(args: Array<String>) {
     if (args.size < 2) {
         println("Not enough arguments given. Usage: <version> <assetList>")
@@ -37,7 +42,14 @@ fun main(args: Array<String>) {
 
     println("Given update order: ${updateOrder.joinToString(" -> ")}")
 
-    executeUpdateScripts(updateOrder, localReleaseAssets)
+    try {
+        executeUpdateScripts(updateOrder, localReleaseAssets)
+    } catch (e: Exception) {
+        println("Error during update: ${e.message}")
+        println("Attempting to start previous Spotify-Bot version")
+        startOldSpotifyBot()
+        exitProcess(-1)
+    }
 
     println("Executed all update assets. Cleaning up temp-files now")
 
@@ -51,6 +63,12 @@ fun main(args: Array<String>) {
     Thread.sleep(15000)
 }
 
+
+/**
+ * Parses the raw String to GitHubReleaseAsset-objects.
+ * @param raw the raw String
+ * @return the list of the parsed GitHubReleaseAsset-objects
+ */
 fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset> {
     return raw.split(";").map {
         val (name, url) = it.split(",")
@@ -58,7 +76,15 @@ fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset> {
     }
 }
 
-fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): MutableList<LocalReleaseAsset> {
+
+/**
+ * Downloads the given assets from GitHub and saves them in the base-directory. If it is a file containing the
+ * UPDATE_ORDER_NAME, it will be saved in the temp-folder.
+ * @param assets the list of GitHubReleaseAsset-objects to be downloaded
+ * @param tempFolder the temp-folder
+ * @return list of the LocalReleaseAsset-objects
+ */
+fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): List<LocalReleaseAsset> {
     val localAssets = mutableListOf<LocalReleaseAsset>()
     for (asset in assets) {
         val baseDir = if (asset.name == UPDATE_ORDER_NAME) {
@@ -68,14 +94,21 @@ fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): MutableL
         }
         val file = File("${baseDir.path}${asset.name}")
 
-        if(!asset.name.contains(UPDATE_PROPERTIES_SUBSTRING))
-            file.writeBytes(URL(asset.browser_download_url).readBytes())
+        file.writeBytes(URL(asset.browser_download_url).readBytes())
         localAssets += LocalReleaseAsset(asset.name, file)
         println("Downloaded asset \"${asset.name}\"")
     }
     return localAssets
 }
 
+
+/**
+ * Determines the update-order, depending on whether there is an asset containing the UPDATE_ORDER_NAME-String. If
+ * there is no file like that, the update-order will only consist of the UpdateProperties-file if it exists as
+ * an asset. If that is also not the case, the list will be empty.
+ * @param assets the list of LocalReleaseAsset-objects
+ * @return the update-order as a list of Strings
+ */
 fun determineUpdateOrder(assets: List<LocalReleaseAsset>): List<String> {
     val orderFile = assets.find { it.name == UPDATE_ORDER_NAME }?.localFile
     return when {
@@ -85,16 +118,48 @@ fun determineUpdateOrder(assets: List<LocalReleaseAsset>): List<String> {
     }
 }
 
+
+/**
+ * Executes all update-scripts downloaded from GitHub. If a script returned with an error, it will be retried 3
+ * times. If all of them were not executed successfully, the function throws a RuntimeException.
+ * @param order the execution-order for the update-scripts
+ * @param assets list of LocalReleaseAsset-objects
+ */
 fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
     for (step in order) {
+        val retries = 3
         val asset = assets.find { it.name.contains(step) } ?: continue
         println("Executing ${asset.name}")
-        ProcessBuilder("javaw", "-jar", asset.localFile.name)
-            .inheritIO().start().waitFor()
+        var success = false
+        for (attempt in 0..retries) {
+            val process = ProcessBuilder("java", "-jar", asset.localFile.name, "autoUpdate")
+                .inheritIO().start()
+            val exitCode = process.waitFor()
+
+            if(exitCode == 0) {
+                success = true
+                break
+            } else {
+                println("Attempt ${attempt + 1} for ${asset.name} failed with exit code $exitCode")
+                Thread.sleep(2000)
+            }
+
+        }
+
+        if (!success) {
+            throw RuntimeException("Update step \"${asset.name}\" failed after $retries retries")
+        }
         println("Finished execution of ${asset.name}")
     }
 }
 
+
+/**
+ * Deletes up all the one-time-update-scripts and the temp-folder. Then it deletes the older versions of the
+ * UpdateProperties- and Spotify-Bot-Jar.
+ * @param tempFolder the temp-folder
+ * @param assets list of LocalReleaseAsset-objects
+ */
 fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
     println("Deleting temp-folder")
 
@@ -132,6 +197,26 @@ fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
 }
 
 
+/**
+ * Starts the old version of the Spotify-Bot. This is meant in case of an error while updating and has to be called
+ * before the cleanup-function.
+ */
+fun startOldSpotifyBot() {
+    val candidates = CURRENT_DIR.listFiles()?.filter {
+        it.name.contains(SPOTIFY_BOT_SUBSTRING) && it.extension == "jar"
+    } ?: return
+
+    val mostRecentOld = candidates.sortedByDescending { it.lastModified() }.drop(1).firstOrNull() ?: return
+
+    println("Restarting old Spotify-Bot: ${mostRecentOld.name}")
+    ProcessBuilder("javaw", "-jar", mostRecentOld.absolutePath).start()
+}
+
+
+/**
+ * Starts the new version of the Spotify-Bot. This should only be called after successfully updating everything.
+ * @param assets list of LocalReleaseAsset-objects
+ */
 fun startSpotifyBot(assets: List<LocalReleaseAsset>) {
     val bot = assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }?.name ?: return
     ProcessBuilder("javaw", "-jar", bot).start()

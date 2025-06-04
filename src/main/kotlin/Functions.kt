@@ -1518,15 +1518,14 @@ fun prepareAndStartAutoUpdate() {
         // delete old versions?
     }
 
+    val updateJarPath = updateJar.path
+    val versionArg = BuildInfo.latestAvailableVersion
+    val assetsArg = BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url }
 
-    Runtime.getRuntime().exec(
-        arrayOf(
-            "cmd", "/c", "start", "cmd", "/k",
-            "java -jar ${updateJar.path} ${BuildInfo.latestAvailableVersion} " +
-                    BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url } +
-                    " & exit"
-        )
-    )
+    ProcessBuilder(
+        "cmd", "/c",
+        "start cmd /k \"java -jar $updateJarPath $versionArg $assetsArg && exit\""
+    ).start()
 
     exitProcess(0)
 }

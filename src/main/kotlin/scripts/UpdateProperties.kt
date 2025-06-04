@@ -1,6 +1,7 @@
 package scripts
 
 import java.io.File
+import kotlin.system.exitProcess
 
 // Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-0-3.jar
 
@@ -60,47 +61,72 @@ val propertiesFilesToProperties = listOf(
     )
 )
 
+val outputString = mutableListOf<String>()
+var isJarStartedByAutoUpdate = false
+
 // This file holds all properties, that should exist for the latest version in all files.
 // Executing it will write the properties with default values of the latest version.
-fun main() {
+fun main(args: Array<String>) {
+    var didAnythingGetUpdated = false
+    isJarStartedByAutoUpdate = args.isNotEmpty()
+
     try {
-
-        val outputString = mutableListOf<String>()
-
-        outputString += "Checking for updates, latest version: $latestVersion"
+        logLine("=============================================")
+        logLine("Checking for all non-existing properties with latest version: $latestVersion")
 
         propertiesFilesToProperties.forEach { (file, properties) ->
             if (!file.exists()) {
                 file.createNewFile()
-                outputString += "Created properties file ${file.name}"
+                logLine("Created properties file ${file.name}")
             }
             val propertyFileContent = file.readLines().toMutableList()
 
             properties.forEach { (property, defaultValue) ->
                 if (propertyFileContent.find { it.contains(property) } == null) {
+                    didAnythingGetUpdated = true
                     propertyFileContent += "$property=$defaultValue"
-                    outputString += "Added property: \"$property\" to ${file.name} with default value \"$defaultValue\""
+                    logLine("Added property: \"$property\" to ${file.name} with default value \"$defaultValue\"")
                 }
             }
 
             file.writeText(propertyFileContent.joinToString("\n"))
         }
 
-        outputString += "Successfully updated properties!"
-        Runtime.getRuntime().exec(
-            arrayOf(
-                "cmd", "/c", "start", "cmd", "/k",
-                "echo ${outputString.joinToString("& echo.")}" +
-                "& echo.Closing console in 15s" +
-                "& timeout 15 & exit"
-            )
-        )
+        val resultMessage = if(didAnythingGetUpdated) {
+            "Successfully updated properties!"
+        } else {
+            "No properties-file had to be updated!"
+        }
+        logLine(resultMessage)
+        logLine("=============================================")
     } catch (e: Exception) {
-        Runtime.getRuntime().exec(
-            arrayOf(
-                "cmd", "/c", "start", "cmd", "/k",
-                "echo An error occurred, see the exception here:& echo.${e.message}"
-            )
-        )
+        logLine("An error occurred, see the exception here:& echo.${e.message}")
+        logLine("=============================================")
+        if(isJarStartedByAutoUpdate) {
+            exitProcess(-1)
+        }
+    }
+
+    if(!isJarStartedByAutoUpdate) {
+        ProcessBuilder(
+            "cmd", "/c", "start", "cmd", "/k",
+            "echo ${outputString.joinToString("& echo ")} && pause & exit"
+        ).start()
+    }
+
+    exitProcess(0)
+}
+
+
+/**
+ * Logs the line either to the output string, which will be displayed in the console at the end or immediately printed
+ * to console with println(), depending on the variable "isJarStartedByAutoUpdate".
+ * @param line Message-Line to be logged
+ */
+fun logLine(line: String) {
+    if(isJarStartedByAutoUpdate) {
+        println(line)
+    } else {
+        outputString += line
     }
 }
