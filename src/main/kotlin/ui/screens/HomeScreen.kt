@@ -54,16 +54,19 @@ fun homeScreen() {
                         append(
                             "Hello ${TwitchBotConfig.channel} you beautiful person and valued user! " +
                             "Thank you for trusting in my app and using it to enhance your stream's experience with Spotify!\n\n" +
-                            "There is a small update on how to communicate bugs/features: Since this project's binaries are hosted " +
-                            "and distributed over GitHub, why not also use more of this site's features? On GitHub, you can " +
-                            "create issues and label them as an \"enhancement\" or a \"bug\". It is available under this link: "
+                            "Report bugs or enhancements here: "
                         )
 
                         appendInlineContent(issuesHyperLinkId)
 
                         append(
-                            ". Please use it to tell me new feature ideas and bugs. You only need a (free) GitHub account :)\n" +
-                            "Of course you can still message me and then I will do that. But it would be nice to see that feature get used.\n\n" +
+                            "\n\n" +
+                            "Important notice:\n" +
+                            "From the next version on (probably version v2.0.6), you will be able to auto-update the bot by just ONE click. " +
+                            "Well two, if you count the confirmation click.\n" +
+                            "Make sure to check the new and fresh look of the new-version-window and find the new button called \"Update\". " +
+                            "Of course only, when version v.2.0.6 is released. Though I do produce a lot of magic with building this bot, " +
+                            "I ain't no wizard!\n\n" +
                             "With that said - have fun and enjoy :)"
                         )
                     },
