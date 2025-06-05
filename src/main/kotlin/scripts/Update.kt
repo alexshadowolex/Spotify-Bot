@@ -1,6 +1,7 @@
 package scripts
 
 import java.io.File
+import java.io.IOException
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -39,6 +40,13 @@ fun main(args: Array<String>) {
     val newVersion = args[0]
     val gitHubReleaseAssets = parseGitHubAssets(args[1])
 
+    if(gitHubReleaseAssets == null) {
+        printAndLogMessage("Error while parsing GitHub-assets command-line arguments")
+        logMessageToFile()
+
+        exitProcess(-1)
+    }
+
     printAndLogMessage("Update-script version $UPDATE_SCRIPT_VERSION")
     printAndLogMessage("Starting update to Spotify-Bot version $newVersion")
 
@@ -47,6 +55,12 @@ fun main(args: Array<String>) {
     printAndLogMessage("Starting the downloads of the release assets")
 
     val localReleaseAssets = downloadAssets(gitHubReleaseAssets, tempFolder)
+    if(localReleaseAssets == null) {
+        printAndLogMessage("Error while downloading GitHub-assets")
+        logMessageToFile()
+
+        exitProcess(-1)
+    }
     printAndLogMessage("Finished the downloads of the release assets")
 
     updateOrder = determineUpdateOrder(localReleaseAssets)
@@ -84,12 +98,16 @@ fun main(args: Array<String>) {
 /**
  * Parses the raw String to GitHubReleaseAsset-objects.
  * @param raw the raw String
- * @return the list of the parsed GitHubReleaseAsset-objects
+ * @return the list of the parsed GitHubReleaseAsset-objects, null on error
  */
-fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset> {
-    return raw.split(";").map {
+fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset>? = raw.split(";").mapNotNull {
+    val parts = it.split(",")
+    if(parts.size == 2) {
         val (name, url) = it.split(",")
         GitHubReleaseAsset(name.trim(), url.trim())
+    } else {
+        printAndLogMessage("Malformed asset definition: $it")
+        null
     }
 }
 
@@ -101,7 +119,7 @@ fun parseGitHubAssets(raw: String): List<GitHubReleaseAsset> {
  * @param tempFolder the temp-folder
  * @return list of the LocalReleaseAsset-objects
  */
-fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): List<LocalReleaseAsset> {
+fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): List<LocalReleaseAsset>? {
     val localAssets = mutableListOf<LocalReleaseAsset>()
 
     for (asset in assets) {
@@ -115,9 +133,14 @@ fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): List<Loc
         }
         val file = File("${baseDir.path}${asset.name}")
 
-        file.writeBytes(URL(asset.browser_download_url).readBytes())
-        localAssets += LocalReleaseAsset(asset.name, file)
-        printAndLogMessage("Downloaded asset \"${asset.name}\"")
+        try {
+            file.writeBytes(URL(asset.browser_download_url).readBytes())
+            localAssets += LocalReleaseAsset(asset.name, file)
+            printAndLogMessage("Downloaded asset \"${asset.name}\"")
+        } catch (e: IOException) {
+            printAndLogMessage("Error downloading ${asset.name}: ${e.message}")
+            return null
+        }
     }
     return localAssets
 }
@@ -153,9 +176,14 @@ fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
         printAndLogMessage("Executing ${asset.name}")
         var success = false
         for (attempt in 0..retries) {
-            val process = ProcessBuilder("java", "-jar", asset.localFile.name, "autoUpdate")
-                .inheritIO().start()
-            val exitCode = process.waitFor()
+            val exitCode = try {
+                val process = ProcessBuilder("java", "-jar", asset.localFile.name, "autoUpdate")
+                    .inheritIO().start()
+                process.waitFor()
+            } catch (e: IOException) {
+                printAndLogMessage("Process start failed for ${asset.name}: ${e.message}")
+                -1
+            }
 
             if(exitCode == 0) {
                 success = true
@@ -193,26 +221,44 @@ fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
         assetNames.contains(file.name) &&
                 !file.name.contains(SPOTIFY_BOT_SUBSTRING) &&
                 !file.name.contains(UPDATE_PROPERTIES_SUBSTRING)
-    }?.forEach { it.delete() }
-
-    printAndLogMessage("Deleting old versions of $UPDATE_PROPERTIES_SUBSTRING and $SPOTIFY_BOT_SUBSTRING")
-    val spotifyBotAsset = assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }!!
-    CURRENT_DIR.listFiles().filter {
-        it.name.contains(SPOTIFY_BOT_SUBSTRING) &&
-        it.name != spotifyBotAsset.localFile.name &&
-        it.extension == spotifyBotAsset.localFile.extension
-    }.forEach {
-        it.delete()
+    }?.forEach {
+        val isDeleteSuccessful = it.delete()
+        if(!isDeleteSuccessful) {
+            printAndLogMessage("Warning: could not delete ${it.name}")
+        }
     }
 
-    val updatePropertiesAsset = assets.find { it.name.contains(UPDATE_PROPERTIES_SUBSTRING) }!!
-    if(assets.find{ it.name.contains(UPDATE_PROPERTIES_SUBSTRING) } != null) {
-        CURRENT_DIR.listFiles().filter {
-            it.name.contains(UPDATE_PROPERTIES_SUBSTRING) &&
-            it.name != updatePropertiesAsset.localFile.name &&
-            it.extension == updatePropertiesAsset.localFile.extension
-        }.forEach {
-            it.delete()
+    printAndLogMessage("Deleting old versions of $UPDATE_PROPERTIES_SUBSTRING and $SPOTIFY_BOT_SUBSTRING")
+    deleteOldVersions(
+        SPOTIFY_BOT_SUBSTRING,
+        assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }!!.localFile
+    )
+
+    deleteOldVersions(
+        UPDATE_PROPERTIES_SUBSTRING,
+        assets.find { it.name.contains(UPDATE_PROPERTIES_SUBSTRING) }!!.localFile
+    )
+}
+
+
+/**
+ * Deletes all old JAR files in the current directory that match the given identifier,
+ * keeping only the specified current file.
+ * This method looks for files whose names contain the given identifier and have the
+ * same extension as the current file.
+ * If a file matches but is not the current file, it will be deleted.
+ * @param identifier A string used to identify which files should be considered for deletion.
+ * @param currentFile The file that should be kept; all other matching files will be deleted.
+ */
+fun deleteOldVersions(identifier: String, currentFile: File) {
+    CURRENT_DIR.listFiles()?.filter {
+        it.name.contains(identifier) &&
+                it.name != currentFile.name &&
+                it.extension == currentFile.extension
+    }?.forEach {
+        val isDeleteSuccessful = it.delete()
+        if(!isDeleteSuccessful) {
+            printAndLogMessage("Warning: could not delete ${it.name}")
         }
     }
 }
@@ -229,8 +275,12 @@ fun startOldSpotifyBot() {
 
     val mostRecentOld = candidates.sortedByDescending { it.lastModified() }.drop(1).firstOrNull() ?: return
 
-    printAndLogMessage("Restarting old Spotify-Bot: ${mostRecentOld.name}")
-    ProcessBuilder("javaw", "-jar", mostRecentOld.absolutePath).start()
+    try {
+        printAndLogMessage("Restarting old Spotify-Bot: ${mostRecentOld.name}")
+        ProcessBuilder("javaw", "-jar", mostRecentOld.absolutePath).start()
+    } catch (e: IOException) {
+        printAndLogMessage("Failed to restart old bot: ${e.message}")
+    }
 }
 
 
@@ -240,7 +290,12 @@ fun startOldSpotifyBot() {
  */
 fun startSpotifyBot(assets: List<LocalReleaseAsset>) {
     val bot = assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }?.name ?: return
-    ProcessBuilder("javaw", "-jar", bot).start()
+
+    try {
+        ProcessBuilder("javaw", "-jar", bot).start()
+    } catch (e: IOException) {
+        printAndLogMessage("Failed to start new bot: ${e.message}")
+    }
 }
 
 
@@ -285,13 +340,17 @@ fun backupDataFolder() {
         return
     }
 
-    if (backupDirectory.exists()) {
-        backupDirectory.deleteRecursively()
-    }
-    backupDirectory.mkdirs()
+    try {
+        if (backupDirectory.exists()) {
+            backupDirectory.deleteRecursively()
+        }
+        backupDirectory.mkdirs()
 
-    dataDirectory.copyRecursively(backupDirectory, overwrite = true)
-    printAndLogMessage("Finished backing up data-directory")
+        dataDirectory.copyRecursively(backupDirectory, overwrite = true)
+        printAndLogMessage("Finished backing up data-directory")
+    } catch (e: IOException) {
+        printAndLogMessage("backing up data-directory failed: ${e.message}")
+    }
 }
 
 
@@ -307,13 +366,17 @@ fun restoreDataFolderBackup() {
         return
     }
 
-    if (dataDirectory.exists()) {
-        dataDirectory.deleteRecursively()
-    }
-    dataDirectory.mkdirs()
+    try {
+        if (dataDirectory.exists()) {
+            dataDirectory.deleteRecursively()
+        }
+        dataDirectory.mkdirs()
 
-    backupDirectory.copyRecursively(dataDirectory, overwrite = true)
-    printAndLogMessage("Finished restoring backed up data-directory")
+        backupDirectory.copyRecursively(dataDirectory, overwrite = true)
+        printAndLogMessage("Finished restoring backed up data-directory")
+    } catch (e: IOException) {
+        printAndLogMessage("Restoring backed up data-directory failed: ${e.message}")
+    }
 }
 
 
