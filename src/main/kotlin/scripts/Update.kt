@@ -2,17 +2,21 @@ package scripts
 
 import java.io.File
 import java.net.URL
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.format.DateTimeFormatter
 import kotlin.system.exitProcess
 
-const val UPDATE_SCRIPT_VERSION = "v1"
-const val SPOTIFY_BOT_SUBSTRING = "Spotify"
-const val UPDATE_PROPERTIES_SUBSTRING = "UpdateProperties"
-const val UPDATE_ORDER_NAME = "UpdateOrder.config"
-const val UPDATE_SCRIPT_SUBSTRING = "Update_v"
-val CURRENT_DIR = File(Paths.get("").toAbsolutePath().toString())
-var updateOrder = listOf<String>()
+private const val UPDATE_SCRIPT_VERSION = "v1"
+private const val SPOTIFY_BOT_SUBSTRING = "Spotify"
+private const val UPDATE_PROPERTIES_SUBSTRING = "UpdateProperties"
+private const val UPDATE_ORDER_NAME = "UpdateOrder.config"
+private const val UPDATE_SCRIPT_SUBSTRING = "Update_v"
+private val CURRENT_DIR = File(Paths.get("").toAbsolutePath().toString())
+private const val LOG_DIRECTORY = "logs\\update"
+private var updateOrder = listOf<String>()
 
+private val outputString = mutableListOf<String>()
 // Compile with: kotlinc Update.kt -include-runtime -d Update_v1.jar
 
 /**
@@ -22,45 +26,50 @@ var updateOrder = listOf<String>()
  */
 fun main(args: Array<String>) {
     if (args.size < 2) {
-        println("Not enough arguments given. Usage: <version> <assetList>")
+        printAndLogMessage("Not enough arguments given. Usage: <version> <assetList>")
+        logMessageToFile()
         exitProcess(-1)
     }
 
     val newVersion = args[0]
     val gitHubReleaseAssets = parseGitHubAssets(args[1])
 
-    println("Update-script version $UPDATE_SCRIPT_VERSION")
-    println("Starting update to Spotify-Bot version $newVersion")
+    printAndLogMessage("Update-script version $UPDATE_SCRIPT_VERSION")
+    printAndLogMessage("Starting update to Spotify-Bot version $newVersion")
 
     val tempFolder = File("temp").apply { mkdir() }
 
-    println("Starting the downloads of the release assets")
+    printAndLogMessage("Starting the downloads of the release assets")
+
+    // TODO: Save data-folder to temp-folder for backup.
 
     val localReleaseAssets = downloadAssets(gitHubReleaseAssets, tempFolder)
-    println("Finished the downloads of the release assets")
+    printAndLogMessage("Finished the downloads of the release assets")
 
     updateOrder = determineUpdateOrder(localReleaseAssets)
 
-    println("Given update order: ${updateOrder.joinToString(" -> ")}")
+    printAndLogMessage("Given update order: ${updateOrder.joinToString(" -> ")}")
 
     try {
         executeUpdateScripts(updateOrder, localReleaseAssets)
     } catch (e: Exception) {
-        println("Error during update: ${e.message}")
-        println("Attempting to start previous Spotify-Bot version")
+        printAndLogMessage("Error during update: ${e.message}")
+        printAndLogMessage("Attempting to start previous Spotify-Bot version")
         startOldSpotifyBot()
+        logMessageToFile()
         exitProcess(-1)
     }
 
-    println("Executed all update assets. Cleaning up temp-files now")
+    printAndLogMessage("Executed all update assets. Cleaning up temp-files now")
 
     cleanup(tempFolder, localReleaseAssets)
 
-    println("Update finished. Starting Spotify-Bot")
+    printAndLogMessage("Update finished. Starting Spotify-Bot")
 
     startSpotifyBot(localReleaseAssets)
 
-    println("Console will close in 15s")
+    printAndLogMessage("Console will close in 15s")
+    logMessageToFile()
     Thread.sleep(15000)
 }
 
@@ -101,7 +110,7 @@ fun downloadAssets(assets: List<GitHubReleaseAsset>, tempFolder: File): List<Loc
 
         file.writeBytes(URL(asset.browser_download_url).readBytes())
         localAssets += LocalReleaseAsset(asset.name, file)
-        println("Downloaded asset \"${asset.name}\"")
+        printAndLogMessage("Downloaded asset \"${asset.name}\"")
     }
     return localAssets
 }
@@ -134,7 +143,7 @@ fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
     for (step in order) {
         val retries = 3
         val asset = assets.find { it.name.contains(step) } ?: continue
-        println("Executing ${asset.name}")
+        printAndLogMessage("Executing ${asset.name}")
         var success = false
         for (attempt in 0..retries) {
             val process = ProcessBuilder("java", "-jar", asset.localFile.name, "autoUpdate")
@@ -145,7 +154,7 @@ fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
                 success = true
                 break
             } else {
-                println("Attempt ${attempt + 1} for ${asset.name} failed with exit code $exitCode")
+                printAndLogMessage("Attempt ${attempt + 1} for ${asset.name} failed with exit code $exitCode")
                 Thread.sleep(2000)
             }
 
@@ -154,7 +163,7 @@ fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
         if (!success) {
             throw RuntimeException("Update step \"${asset.name}\" failed after $retries retries")
         }
-        println("Finished execution of ${asset.name}")
+        printAndLogMessage("Finished execution of ${asset.name}")
     }
 }
 
@@ -166,20 +175,20 @@ fun executeUpdateScripts(order: List<String>, assets: List<LocalReleaseAsset>) {
  * @param assets list of LocalReleaseAsset-objects
  */
 fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
-    println("Deleting temp-folder")
+    printAndLogMessage("Deleting temp-folder")
 
     tempFolder.deleteRecursively()
 
     val assetNames = assets.map { it.name }.toSet()
 
-    println("Deleting all assets not located in the temp-folder")
+    printAndLogMessage("Deleting all assets not located in the temp-folder")
     CURRENT_DIR.listFiles()?.filter { file ->
         assetNames.contains(file.name) &&
                 !file.name.contains(SPOTIFY_BOT_SUBSTRING) &&
                 !file.name.contains(UPDATE_PROPERTIES_SUBSTRING)
     }?.forEach { it.delete() }
 
-    println("Deleting old versions of $UPDATE_PROPERTIES_SUBSTRING and $SPOTIFY_BOT_SUBSTRING")
+    printAndLogMessage("Deleting old versions of $UPDATE_PROPERTIES_SUBSTRING and $SPOTIFY_BOT_SUBSTRING")
     val spotifyBotAsset = assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }!!
     CURRENT_DIR.listFiles().filter {
         it.name.contains(SPOTIFY_BOT_SUBSTRING) &&
@@ -213,7 +222,7 @@ fun startOldSpotifyBot() {
 
     val mostRecentOld = candidates.sortedByDescending { it.lastModified() }.drop(1).firstOrNull() ?: return
 
-    println("Restarting old Spotify-Bot: ${mostRecentOld.name}")
+    printAndLogMessage("Restarting old Spotify-Bot: ${mostRecentOld.name}")
     ProcessBuilder("javaw", "-jar", mostRecentOld.absolutePath).start()
 }
 
@@ -225,6 +234,35 @@ fun startOldSpotifyBot() {
 fun startSpotifyBot(assets: List<LocalReleaseAsset>) {
     val bot = assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }?.name ?: return
     ProcessBuilder("javaw", "-jar", bot).start()
+}
+
+
+/**
+ * Prints the given message to console and writes it to the to be logged output-string.
+ * @param message the message to print and log
+ */
+fun printAndLogMessage(message: String) {
+    println(message)
+    outputString += message
+}
+
+
+/**
+ * Writes the content of the outputString-variable to the log-file.
+ */
+fun logMessageToFile() {
+    Files.createDirectories(Paths.get(LOG_DIRECTORY))
+
+    val logFileName = DateTimeFormatter
+        .ISO_INSTANT
+        .format(java.time.Instant.now())
+        .replace(':', '-')
+
+    Paths.get(LOG_DIRECTORY, "Update_${logFileName}.log").toFile().also {
+        if (!it.exists()) {
+            it.createNewFile()
+        }
+    }.writeText(outputString.joinToString("\n"))
 }
 
 

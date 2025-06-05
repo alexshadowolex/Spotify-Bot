@@ -1,15 +1,19 @@
 package scripts
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.format.DateTimeFormatter
 import kotlin.system.exitProcess
 
 // Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-0-3.jar
 
-const val latestVersion = "2.0.3"
+private const val latestVersion = "2.0.3"
+private const val LOG_DIRECTORY = "logs\\update"
 
-// In Version 2.0.0 almost all properties got renamed to camel case spelling. That's why all of them are noted down as
+// In Version 2.0.0, almost all properties got renamed to camel case spelling. That's why all of them are noted down as
 // "Since Version: 2.0.0" though their functionality exists for much longer already.
-val propertiesFilesToProperties = listOf(
+private val propertiesFilesToProperties = listOf(
     File("data\\properties\\twitchBotConfig.properties") to
     mapOf(
         // Since Version: 1.0.0
@@ -61,13 +65,14 @@ val propertiesFilesToProperties = listOf(
     )
 )
 
-val outputString = mutableListOf<String>()
-var isJarStartedByAutoUpdate = false
+private val outputString = mutableListOf<String>()
+private var isJarStartedByAutoUpdate = false
 
 // This file holds all properties, that should exist for the latest version in all files.
 // Executing it will write the properties with default values of the latest version.
 fun main(args: Array<String>) {
     var didAnythingGetUpdated = false
+    var isUpdateSuccessfull = true
     isJarStartedByAutoUpdate = args.isNotEmpty()
 
     try {
@@ -102,10 +107,21 @@ fun main(args: Array<String>) {
     } catch (e: Exception) {
         logLine("An error occurred, see the exception here:& echo.${e.message}")
         logLine("=============================================")
-        if(isJarStartedByAutoUpdate) {
-            exitProcess(-1)
-        }
+        isUpdateSuccessfull = false
     }
+
+    Files.createDirectories(Paths.get(LOG_DIRECTORY))
+
+    val logFileName = DateTimeFormatter
+        .ISO_INSTANT
+        .format(java.time.Instant.now())
+        .replace(':', '-')
+
+    Paths.get(LOG_DIRECTORY, "UpdateProperties_${logFileName}.log").toFile().also {
+        if (!it.exists()) {
+            it.createNewFile()
+        }
+    }.writeText(outputString.joinToString("\n"))
 
     if(!isJarStartedByAutoUpdate) {
         ProcessBuilder(
@@ -114,19 +130,25 @@ fun main(args: Array<String>) {
         ).start()
     }
 
-    exitProcess(0)
+    val exitCode = if(isUpdateSuccessfull) {
+        0
+    } else {
+        -1
+    }
+
+    exitProcess(exitCode)
 }
 
 
 /**
- * Logs the line either to the output string, which will be displayed in the console at the end or immediately printed
- * to console with println(), depending on the variable "isJarStartedByAutoUpdate".
+ * Logs the line to the output string, which will be displayed in the console and in the log-file at the end. If the
+ * variable "isJarStartedByAutoUpdate" is true, it also immediately logs it to the console.
  * @param line Message-Line to be logged
  */
 fun logLine(line: String) {
     if(isJarStartedByAutoUpdate) {
         println(line)
-    } else {
-        outputString += line
     }
+
+    outputString += line
 }
