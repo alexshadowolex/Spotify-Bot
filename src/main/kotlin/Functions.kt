@@ -34,6 +34,7 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
@@ -1507,39 +1508,46 @@ suspend fun saveLatestGitHubReleaseInformation() {
  * If the specified version of the Update-Jar is not existing, it will be downloaded and older versions of it will
  * be deleted.
  * In the end, the update-script will be executed and the Spotify-Bot will be closed.
+ * @return false, if the preparation or start of the auto update was not successful
  */
-fun prepareAndStartAutoUpdate() {
-    val updateJarNamePrefix = "Update_v"
-    val updateJarName = "${updateJarNamePrefix}1.jar"
-    val latestUpdateJarDownloadLink = "https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.5/$updateJarName"
+fun prepareAndStartAutoUpdate(): Boolean {
+    try {
+        val updateJarNamePrefix = "Update_v"
+        val updateJarName = "${updateJarNamePrefix}1.jar"
+        val latestUpdateJarDownloadLink = "https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.5/$updateJarName"
 
-    val binFolder = File("bin")
-    val updateJar = File("${binFolder.path}\\$updateJarName")
+        val binFolder = File("bin")
+        val updateJar = File("${binFolder.path}\\$updateJarName")
 
-    if(!binFolder.exists() || !binFolder.isDirectory) {
-        binFolder.mkdir()
-    }
-
-    if(!updateJar.exists()) {
-        updateJar.writeBytes(URL(latestUpdateJarDownloadLink).readBytes())
-
-        binFolder.listFiles().filter {
-            it.name.contains(updateJarNamePrefix) &&
-            it.name != updateJarName &&
-            it.extension == "jar"
-        }.forEach {
-            it.delete()
+        if(!binFolder.exists() || !binFolder.isDirectory) {
+            binFolder.mkdir()
         }
+
+        if(!updateJar.exists()) {
+            updateJar.writeBytes(URL(latestUpdateJarDownloadLink).readBytes())
+
+            binFolder.listFiles().filter {
+                it.name.contains(updateJarNamePrefix) &&
+                it.name != updateJarName &&
+                it.extension == "jar"
+            }.forEach {
+                it.delete()
+            }
+        }
+
+        val updateJarPath = updateJar.path
+        val versionArg = BuildInfo.latestAvailableVersion
+        val assetsArg = BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url }
+
+        ProcessBuilder(
+            "cmd", "/c",
+            "start cmd /k \"java -jar $updateJarPath $versionArg $assetsArg && exit\""
+        ).start()
+
+        exitProcess(0)
+    } catch (e: Exception) {
+        logger.error("Error while starting auto-update: ", e)
     }
 
-    val updateJarPath = updateJar.path
-    val versionArg = BuildInfo.latestAvailableVersion
-    val assetsArg = BuildInfo.releaseAssets.joinToString(";") { it.name + "," + it.browser_download_url }
-
-    ProcessBuilder(
-        "cmd", "/c",
-        "start cmd /k \"java -jar $updateJarPath $versionArg $assetsArg && exit\""
-    ).start()
-
-    exitProcess(0)
+    return false
 }

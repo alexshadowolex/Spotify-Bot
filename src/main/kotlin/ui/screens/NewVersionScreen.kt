@@ -13,9 +13,11 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import backgroundCoroutineScope
 import config.BuildInfo
 import isWindowsInDarkMode
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import logger
 import prepareAndStartAutoUpdate
 import ui.alertDialogSurface
@@ -49,7 +51,10 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
             lightColorPalette
         }
     ) {
-        Scaffold {
+        val scaffoldState = rememberScaffoldState()
+        Scaffold (
+            scaffoldState = scaffoldState
+        ) {
             alertDialogSurface(
                 isVisible = isAlertDialogVisible,
                 title = alertDialogTitle,
@@ -189,6 +194,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                             }
 
                             Column {
+                                val isUpdateButtonEnabled = remember {mutableStateOf(true) }
                                 Button(
                                     onClick = {
                                         logger.info("Clicked on Update Button")
@@ -202,12 +208,23 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                                 "be deleted from the base directory. If you want to keep them, move them somewhere " +
                                                 "else. Keep in mind that they are always available online."
                                         alertDialogOnOkClick.value = {
-                                            // TODO Update script here
-                                            prepareAndStartAutoUpdate()
                                             isAlertDialogVisible.value = false
+                                            val isAutoUpdateSuccessful = prepareAndStartAutoUpdate()
+
+                                            if(!isAutoUpdateSuccessful) {
+                                                isUpdateButtonEnabled.value = false
+
+                                                backgroundCoroutineScope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar(
+                                                        message = "Error while starting auto-update. Disabling auto-update button. Check the logs!",
+                                                        duration = SnackbarDuration.Short
+                                                    )
+                                                }
+                                            }
                                         }
                                         isAlertDialogVisible.value = true
                                     },
+                                    enabled = isUpdateButtonEnabled.value,
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
                                         .pointerHoverIcon(PointerIcon.Hand),

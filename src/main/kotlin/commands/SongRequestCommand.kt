@@ -5,6 +5,7 @@ import handleCommandSanityChecksWithoutSecurityLevel
 import handleSongRequestQuery
 import handler.Command
 import isSongRequestCommandActive
+import isSpotifySongNameGetterEnabled
 import logger
 import sendMessageToTwitchChatAndLogIt
 import spotifyClient
@@ -34,13 +35,23 @@ val songRequestCommand = Command(
         logger.info("query: $query")
 
         // The queue has to be saved before successfully adding the song to the queue for the RequestedBy-handler!
-        val queueBefore = spotifyClient.player.getUserQueue().queue
+        val queueBefore = if(isSpotifySongNameGetterEnabled()) {
+            spotifyClient.player.getUserQueue().queue
+        } else {
+            null
+        }
+
         val success = handleSongRequestQuery(twitchClient.chat, query)
         if (success) {
             addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
             addedUserCoolDown = TwitchBotConfig.defaultUserCoolDownSeconds
 
-            requestedByQueueHandler.addEntryToRequestedByQueue(queueBefore, messageEvent.user.name)
+            if(isSpotifySongNameGetterEnabled()) {
+                requestedByQueueHandler.addEntryToRequestedByQueue(
+                    queueBefore!!,
+                    messageEvent.user.name
+                )
+            }
         } else {
             addedCommandCoolDown = 5.seconds
             addedUserCoolDown = 5.seconds
