@@ -1513,7 +1513,7 @@ fun prepareAndStartAutoUpdate() {
     val updateJarName = "${updateJarNamePrefix}1.jar"
     val latestUpdateJarDownloadLink = "https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.5/$updateJarName"
 
-    val binFolder = File("data\\bin")
+    val binFolder = File("bin")
     val updateJar = File("${binFolder.path}\\$updateJarName")
 
     if(!binFolder.exists() || !binFolder.isDirectory) {

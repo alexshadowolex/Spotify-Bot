@@ -12,8 +12,13 @@ private const val SPOTIFY_BOT_SUBSTRING = "Spotify"
 private const val UPDATE_PROPERTIES_SUBSTRING = "UpdateProperties"
 private const val UPDATE_ORDER_NAME = "UpdateOrder.config"
 private const val UPDATE_SCRIPT_SUBSTRING = "Update_v"
+
 private val CURRENT_DIR = File(Paths.get("").toAbsolutePath().toString())
+private const val TEMP_DIRECTORY = "temp"
 private const val LOG_DIRECTORY = "logs\\update"
+private const val DATA_DIRECTORY = "data"
+private const val BACKUP_DIRECTORY = "$TEMP_DIRECTORY\\data_backup"
+
 private var updateOrder = listOf<String>()
 
 private val outputString = mutableListOf<String>()
@@ -37,11 +42,9 @@ fun main(args: Array<String>) {
     printAndLogMessage("Update-script version $UPDATE_SCRIPT_VERSION")
     printAndLogMessage("Starting update to Spotify-Bot version $newVersion")
 
-    val tempFolder = File("temp").apply { mkdir() }
+    val tempFolder = File(TEMP_DIRECTORY).apply { mkdir() }
 
     printAndLogMessage("Starting the downloads of the release assets")
-
-    // TODO: Save data-folder to temp-folder for backup.
 
     val localReleaseAssets = downloadAssets(gitHubReleaseAssets, tempFolder)
     printAndLogMessage("Finished the downloads of the release assets")
@@ -50,13 +53,17 @@ fun main(args: Array<String>) {
 
     printAndLogMessage("Given update order: ${updateOrder.joinToString(" -> ")}")
 
+    backupDataFolder()
     try {
         executeUpdateScripts(updateOrder, localReleaseAssets)
     } catch (e: Exception) {
         printAndLogMessage("Error during update: ${e.message}")
         printAndLogMessage("Attempting to start previous Spotify-Bot version")
+
+        restoreDataFolderBackup()
         startOldSpotifyBot()
         logMessageToFile()
+
         exitProcess(-1)
     }
 
@@ -263,6 +270,50 @@ fun logMessageToFile() {
             it.createNewFile()
         }
     }.writeText(outputString.joinToString("\n"))
+}
+
+
+/**
+ * Backs up the data-directory to the temp folder.
+ */
+fun backupDataFolder() {
+    printAndLogMessage("Backing up data-directory")
+    val dataDirectory = File(DATA_DIRECTORY)
+    val backupDirectory = File(BACKUP_DIRECTORY)
+
+    if (!dataDirectory.exists() || !dataDirectory.isDirectory) {
+        return
+    }
+
+    if (backupDirectory.exists()) {
+        backupDirectory.deleteRecursively()
+    }
+    backupDirectory.mkdirs()
+
+    dataDirectory.copyRecursively(backupDirectory, overwrite = true)
+    printAndLogMessage("Finished backing up data-directory")
+}
+
+
+/**
+ * Restores the backed-up data-folder.
+ */
+fun restoreDataFolderBackup() {
+    printAndLogMessage("Restoring backed up data-directory")
+    val dataDirectory = File(DATA_DIRECTORY)
+    val backupDirectory = File(BACKUP_DIRECTORY)
+
+    if (!backupDirectory.exists() || !backupDirectory.isDirectory) {
+        return
+    }
+
+    if (dataDirectory.exists()) {
+        dataDirectory.deleteRecursively()
+    }
+    dataDirectory.mkdirs()
+
+    backupDirectory.copyRecursively(dataDirectory, overwrite = true)
+    printAndLogMessage("Finished restoring backed up data-directory")
 }
 
 
