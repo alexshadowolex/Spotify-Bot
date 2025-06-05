@@ -234,10 +234,13 @@ fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
         assets.find { it.name.contains(SPOTIFY_BOT_SUBSTRING) }!!.localFile
     )
 
-    deleteOldVersions(
-        UPDATE_PROPERTIES_SUBSTRING,
-        assets.find { it.name.contains(UPDATE_PROPERTIES_SUBSTRING) }!!.localFile
-    )
+    val updatePropertiesAsset = assets.find { it.name.contains(UPDATE_PROPERTIES_SUBSTRING) }
+    if(updatePropertiesAsset != null) {
+        deleteOldVersions(
+            UPDATE_PROPERTIES_SUBSTRING,
+            updatePropertiesAsset.localFile
+        )
+    }
 }
 
 
@@ -253,8 +256,8 @@ fun cleanup(tempFolder: File, assets: List<LocalReleaseAsset>) {
 fun deleteOldVersions(identifier: String, currentFile: File) {
     CURRENT_DIR.listFiles()?.filter {
         it.name.contains(identifier) &&
-                it.name != currentFile.name &&
-                it.extension == currentFile.extension
+        it.name != currentFile.name &&
+        it.extension == currentFile.extension
     }?.forEach {
         val isDeleteSuccessful = it.delete()
         if(!isDeleteSuccessful) {
