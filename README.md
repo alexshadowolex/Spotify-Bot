@@ -13,7 +13,7 @@ The builds of this app could do anything, but they don't. They do exactly what i
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/alexshadowolex/Spotify-Bot/total)
 
 
-Table of Contents:
+## Table of Contents:
 1. [Current Versions](#current-versions)
 2. [How to set up](#how-to-set-up)
    1. [Requirements](#requirements)
