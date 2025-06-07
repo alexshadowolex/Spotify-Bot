@@ -3,6 +3,16 @@ Spotify Bot for everyone to use. The main functionality is to have users add son
 Though the Bot is free to use, consider giving credit on your twitch via command or panel.<br>
 Created by [alexshadowolex](https://www.twitch.tv/alexshadowolex)
 
+## Statistics
+The builds of this app could do anything, but they don't. They do exactly what it says they do. But don't trust me, trust the number of already performed downloads with 0 complaints afterwards:<br>
+
+#### Latest Release
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/alexshadowolex/Spotify-Bot/latest/total)
+
+#### All Releases
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/alexshadowolex/Spotify-Bot/total)
+
+
 Table of Contents:
 1. [Current Versions](#current-versions)
 2. [How to set up](#how-to-set-up)
