@@ -26,5 +26,6 @@ val commands = listOf(
     addSongCommand,
     skipSongCommand,
     removeSongFromQueueCommand,
-    blockSongCommand
+    blockSongCommand,
+    pauseResumeCommand
 )

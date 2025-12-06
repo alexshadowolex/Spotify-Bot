@@ -1397,6 +1397,24 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 
 
 /**
+ * Checks if the user is eligible for using the pause resume command. The eligibility is set
+ * in the parameter pauseResumeCommandSecurityLevel
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @return true, if the user is eligible, else false
+ */
+fun isUserEligibleForPauseResumeCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
+    logger.info("called isUserEligibleForPauseResumeCommand")
+    return isUserEligibleForCommand(
+        permissions,
+        userName,
+        BotConfig.pauseResumeCommandSecurityLevel,
+        BotConfig.customGroupUserNamesPauseResumeCommand
+    )
+}
+
+
+/**
  * Checks if the user is eligible for using the block song command. The eligibility is set
  * in the parameter blockSongCommandSecurityLevel
  * @param permissions permissions of current user

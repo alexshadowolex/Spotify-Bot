@@ -268,6 +268,43 @@ object BotConfig {
             savePropertiesToFile()
         }
 
+    var isPauseResumeCommandEnabled = getPropertyValue(
+        properties, "isPauseResumeCommandEnabled", botConfigFile.path
+    ).toBoolean()
+        set(value) {
+            field = value
+            properties.setProperty("isPauseResumeCommandEnabled", value.toString())
+            savePropertiesToFile()
+        }
+
+    var pauseResumeCommandSecurityLevel = try {
+        CustomCommandPermissions.valueOf(
+            getPropertyValue(
+                properties,
+                "pauseResumeCommandSecurityLevel",
+                botConfigFile.path
+            )
+        )
+    } catch (e: Exception) {
+        displayEnumParsingErrorWindow(
+            propertyName = "pauseResumeCommandSecurityLevel",
+            propertyFilePath = botConfigFile.path,
+            exception = e,
+            enumClassValues = CustomCommandPermissions.entries.map { it.toString() }
+        )
+        exitProcess(-1)
+    }
+
+    var customGroupUserNamesPauseResumeCommand: List<String> = getPropertyValue(
+        properties, "customGroupUserNamesPauseResumeCommand", botConfigFile.path
+    ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
+        set(value) {
+            field = value
+            properties.setProperty(
+                "customGroupUserNamesPauseResumeCommand", value.joinToLowercasePropertiesString(",")
+            )
+            savePropertiesToFile()
+        }
 
     private fun savePropertiesToFile() {
         try {

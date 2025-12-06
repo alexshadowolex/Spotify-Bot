@@ -61,7 +61,11 @@ private val propertiesFilesToProperties = listOf(
         Pair("blockSongCommandSecurityLevel", "BROADCASTER"),
         Pair("customGroupUserNamesBlockSongCommand", ""),
         // Since Version: 2.0.3
-        Pair("isFollowerOnlyModeEnabled", "false")
+        Pair("isFollowerOnlyModeEnabled", "false"),
+        // Since Version: 2.0.6
+        Pair("isPauseResumeCommandEnabled", "true"),
+        Pair("pauseResumeCommandSecurityLevel", "BROADCASTER"),
+        Pair("customGroupUserNamesPauseResumeCommand", "")
     )
 )
 
