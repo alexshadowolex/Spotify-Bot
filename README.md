@@ -37,9 +37,9 @@ The builds of this app could do anything, but they don't. They do exactly what i
 ## How to set up
 
 ### Requirements
-You need to have java 17 or higher installed on your pc. To check if that is the case, open a cmd (type "cmd" bottom left into search bar) and type "java --version". If it responds with a version, you will see the version number. If not, you can download java 19 installer from here: [Oracle Java 19](https://download.oracle.com/java/19/archive/jdk-19.0.2_windows-x64_bin.msi).
+You need to have java 17 or higher installed on your pc. To check if that is the case, open a cmd (type "cmd" bottom left into search bar) and type "java --version". If it responds with a version, you will see the version number. If not, you can download java 17 installer from here: [Oracle Java 17](https://download.oracle.com/java/17/archive/jdk-17.0.12_windows-x64_bin.msi). Though it is recommended to use the latest java version, see [here](https://www.oracle.com/java/technologies/downloads/).
 After installing, check again on a new cmd if it is installed.
-<br>
+<br><br>
 The app also only works on windows.
 <br><br>
 

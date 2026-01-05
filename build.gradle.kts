@@ -1,13 +1,18 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileOutputStream
 import java.util.*
 
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    val kotlinVersion = "2.3.0"
 
-    id("org.jetbrains.compose") version "1.5.12"
+    kotlin("jvm") version kotlinVersion
+    kotlin("plugin.serialization") version kotlinVersion
+
+    id("org.jetbrains.kotlin.plugin.compose") version kotlinVersion
+
+    id("org.jetbrains.compose") version "1.7.0"
 }
 
 group = "alex.spotify.bot"
@@ -49,11 +54,11 @@ tasks.withType<Jar> {
 }
 
 dependencies {
-    val ktorVersion = "2.3.13"
+    val ktorVersion = "3.3.3"
 
     implementation(compose.desktop.currentOs)
 
-    implementation("org.slf4j:slf4j-simple:2.0.16")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
 
     implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.3")
 
@@ -61,7 +66,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0")
 
-    implementation("com.github.twitch4j:twitch4j:1.22.0")
+    implementation("com.github.twitch4j:twitch4j:1.25.0")
     implementation("com.adamratzman:spotify-api-kotlin-core:4.1.3")
 
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
@@ -81,8 +86,14 @@ tasks.withType<KotlinCompile> {
         }
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+
+        freeCompilerArgs.addAll(
+            "-Xcontext-receivers",
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlin.time.ExperimentalTime"
+        )
     }
 }
 
