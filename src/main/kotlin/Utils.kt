@@ -1,4 +1,5 @@
 
+import com.adamratzman.spotify.models.Device
 import com.adamratzman.spotify.models.Track
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
@@ -25,7 +26,8 @@ class MultiOutputStream(private vararg val streams: OutputStream) : OutputStream
 
 @Serializable
 data class SimplifiedSpotifyPlaybackResponse(
-    val is_playing: Boolean
+    val is_playing: Boolean,
+    val device: Device
 )
 
 data class SongRequestResult(

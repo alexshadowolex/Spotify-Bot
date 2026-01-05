@@ -1152,6 +1152,7 @@ fun isSongRequestRedeemActive(): Boolean {
     return isSongRequestEnabledAsRedeem() && BotConfig.isSongRequestEnabled
 }
 
+var deviceId: String? = null
 
 /**
  * Checks spotify api if the player is playing.
@@ -1175,7 +1176,10 @@ suspend fun isSpotifyPlaying(): Boolean? {
     val isPlaying = when (response.status) {
         HttpStatusCode.OK -> {
             try {
-                json.decodeFromString<SimplifiedSpotifyPlaybackResponse>(response.bodyAsText()).is_playing
+                val res = json.decodeFromString<SimplifiedSpotifyPlaybackResponse>(response.bodyAsText())
+                deviceId = res.device.id
+                println(deviceId)
+                res.is_playing
             } catch (e: Exception) {
                 logger.error("Exception while parsing Spotify Playback response: ", e)
                 null
