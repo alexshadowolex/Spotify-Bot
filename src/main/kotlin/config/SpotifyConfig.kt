@@ -33,12 +33,20 @@ object SpotifyConfig {
     }
 
     val spotifyClientSecret: String = File("data\\tokens\\spotifyClientSecret.txt").readText()
-    val spotifyClientId: String = getPropertyValue(properties, "spotifyClientId", spotifyConfigFile.path)
+    val spotifyClientId: String = getPropertyValue(
+        properties,
+        propertyName = "spotifyClientId",
+        propertiesFileRelativePath = spotifyConfigFile.path,
+        setPropertyIfNotExisting = false
+    )
 
     var playlistNameForAddSongCommand = ""
 
     var playlistIdForAddSongCommand: String = getPropertyValue(
-        properties, "playlistIdForAddSongCommand", spotifyConfigFile.path
+        properties,
+        propertyName = "playlistIdForAddSongCommand",
+        propertiesFileRelativePath = spotifyConfigFile.path,
+        setPropertyIfNotExisting = false
     )
         set(value) {
             field = value
@@ -48,8 +56,12 @@ object SpotifyConfig {
 
 
     var maximumLengthSongRequestMinutes: Duration = try {
-        getPropertyValue(properties, "maximumLengthSongRequestMinutes", spotifyConfigFile.path)
-            .toDouble().minutes
+        getPropertyValue(
+            properties,
+            propertyName = "maximumLengthSongRequestMinutes",
+            propertiesFileRelativePath = spotifyConfigFile.path,
+            setPropertyIfNotExisting = false
+        ).toDouble().minutes
     } catch (_: NumberFormatException) {
         val defaultValue = 60.0.minutes
         logger.warn(
@@ -66,7 +78,10 @@ object SpotifyConfig {
         }
 
     var blockedSongLinks: List<String> = getPropertyValue(
-        properties, "blockedSongLinks", spotifyConfigFile.path
+        properties,
+        propertyName = "blockedSongLinks",
+        propertiesFileRelativePath = spotifyConfigFile.path,
+        setPropertyIfNotExisting = false
     ).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -75,7 +90,10 @@ object SpotifyConfig {
         }
 
     var blockedSongArtists: List<String> = getPropertyValue(
-        properties, "blockedSongArtists", spotifyConfigFile.path
+        properties,
+        propertyName = "blockedSongArtists",
+        propertiesFileRelativePath = spotifyConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value

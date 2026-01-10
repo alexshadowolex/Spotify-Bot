@@ -32,7 +32,10 @@ object BotConfig {
 
 
     var isSongRequestCommandEnabled = getPropertyValue(
-        properties, "isSongRequestCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isSongRequestCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -41,7 +44,10 @@ object BotConfig {
         }
 
     var blacklistedUsers = getPropertyValue(
-        properties, "blacklistedUsers", botConfigFile.path
+        properties,
+        propertyName = "blacklistedUsers",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -50,7 +56,10 @@ object BotConfig {
         }
 
     var isSpotifySongNameGetterEnabled = getPropertyValue(
-        properties, "isSpotifySongNameGetterEnabled", botConfigFile.path
+        properties,
+        propertyName = "isSpotifySongNameGetterEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -59,7 +68,10 @@ object BotConfig {
         }
 
     var isNewVersionCheckEnabled = getPropertyValue(
-        properties, "isNewVersionCheckEnabled", botConfigFile.path
+        properties,
+        propertyName = "isNewVersionCheckEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -68,7 +80,10 @@ object BotConfig {
         }
 
     var isSongRequestEnabled = getPropertyValue(
-        properties, "isSongRequestEnabled", botConfigFile.path
+        properties,
+        propertyName = "isSongRequestEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -77,7 +92,10 @@ object BotConfig {
         }
 
     var isSongInfoCommandEnabled = getPropertyValue(
-        properties, "isSongInfoCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isSongInfoCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -86,7 +104,10 @@ object BotConfig {
         }
 
     var isEmptySongDisplayFilesOnPauseEnabled = getPropertyValue(
-        properties, "isEmptySongDisplayFilesOnPauseEnabled", botConfigFile.path
+        properties,
+        propertyName = "isEmptySongDisplayFilesOnPauseEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -95,7 +116,10 @@ object BotConfig {
         }
 
     var isAddSongCommandEnabled = getPropertyValue(
-        properties, "isAddSongCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isAddSongCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -104,7 +128,10 @@ object BotConfig {
         }
 
     var isSkipSongCommandEnabled = getPropertyValue(
-        properties, "isSkipSongCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isSkipSongCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -113,7 +140,10 @@ object BotConfig {
         }
 
     var isRemoveSongFromQueueCommandEnabled = getPropertyValue(
-        properties, "isRemoveSongFromQueueCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isRemoveSongFromQueueCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -123,7 +153,12 @@ object BotConfig {
 
     var addSongCommandSecurityLevel = try {
         CustomCommandPermissions.valueOf(
-            getPropertyValue(properties, "addSongCommandSecurityLevel", botConfigFile.path)
+            getPropertyValue(
+                properties,
+                propertyName = "addSongCommandSecurityLevel",
+                propertiesFileRelativePath = botConfigFile.path,
+                setPropertyIfNotExisting = false
+            )
         )
     } catch (e: Exception) {
         displayEnumParsingErrorWindow(
@@ -142,7 +177,12 @@ object BotConfig {
 
     var skipSongCommandSecurityLevel = try {
         CustomCommandPermissions.valueOf(
-            getPropertyValue(properties, "skipSongCommandSecurityLevel", botConfigFile.path)
+            getPropertyValue(
+                properties,
+                propertyName = "skipSongCommandSecurityLevel",
+                propertiesFileRelativePath = botConfigFile.path,
+                setPropertyIfNotExisting = false
+            )
         )
 
     } catch (e: Exception) {
@@ -161,7 +201,10 @@ object BotConfig {
         }
 
     var customGroupUserNamesAddSongCommand: List<String> = getPropertyValue(
-        properties, "customGroupUserNamesAddSongCommand", botConfigFile.path
+        properties,
+        propertyName = "customGroupUserNamesAddSongCommand",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -172,7 +215,10 @@ object BotConfig {
         }
 
     var customGroupUserNamesSkipSongCommand: List<String> = getPropertyValue(
-        properties, "customGroupUserNamesSkipSongCommand", botConfigFile.path
+        properties,
+        propertyName = "customGroupUserNamesSkipSongCommand",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -186,8 +232,9 @@ object BotConfig {
         CustomCommandPermissions.valueOf(
             getPropertyValue(
                 properties,
-                "removeSongFromQueueCommandSecurityLevel",
-                botConfigFile.path
+                propertyName = "removeSongFromQueueCommandSecurityLevel",
+                propertiesFileRelativePath = botConfigFile.path,
+                setPropertyIfNotExisting = false
             )
         )
     } catch (e: Exception) {
@@ -206,7 +253,10 @@ object BotConfig {
         }
 
     var customGroupUserNamesRemoveSongFromQueueCommand: List<String> = getPropertyValue(
-        properties, "customGroupUserNamesRemoveSongFromQueueCommand", botConfigFile.path
+        properties,
+        propertyName = "customGroupUserNamesRemoveSongFromQueueCommand",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -217,7 +267,10 @@ object BotConfig {
         }
 
     var isBlockSongCommandEnabled = getPropertyValue(
-        properties, "isBlockSongCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isBlockSongCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -229,8 +282,9 @@ object BotConfig {
         CustomCommandPermissions.valueOf(
             getPropertyValue(
                 properties,
-                "blockSongCommandSecurityLevel",
-                botConfigFile.path
+                propertyName = "blockSongCommandSecurityLevel",
+                propertiesFileRelativePath = botConfigFile.path,
+                setPropertyIfNotExisting = false
             )
         )
     } catch (e: Exception) {
@@ -249,7 +303,10 @@ object BotConfig {
         }
 
     var customGroupUserNamesBlockSongCommand: List<String> = getPropertyValue(
-        properties, "customGroupUserNamesBlockSongCommand", botConfigFile.path
+        properties,
+        propertyName = "customGroupUserNamesBlockSongCommand",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -260,7 +317,10 @@ object BotConfig {
         }
 
     var isFollowerOnlyModeEnabled = getPropertyValue(
-        properties, "isFollowerOnlyModeEnabled", botConfigFile.path
+        properties,
+        propertyName = "isFollowerOnlyModeEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -269,7 +329,10 @@ object BotConfig {
         }
 
     var isPauseResumeCommandEnabled = getPropertyValue(
-        properties, "isPauseResumeCommandEnabled", botConfigFile.path
+        properties,
+        propertyName = "isPauseResumeCommandEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).toBoolean()
         set(value) {
             field = value
@@ -281,8 +344,9 @@ object BotConfig {
         CustomCommandPermissions.valueOf(
             getPropertyValue(
                 properties,
-                "pauseResumeCommandSecurityLevel",
-                botConfigFile.path
+                propertyName = "pauseResumeCommandSecurityLevel",
+                propertiesFileRelativePath = botConfigFile.path,
+                setPropertyIfNotExisting = false
             )
         )
     } catch (e: Exception) {
@@ -296,7 +360,10 @@ object BotConfig {
     }
 
     var customGroupUserNamesPauseResumeCommand: List<String> = getPropertyValue(
-        properties, "customGroupUserNamesPauseResumeCommand", botConfigFile.path
+        properties,
+        propertyName = "customGroupUserNamesPauseResumeCommand",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
     ).lowercase(Locale.getDefault()).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
