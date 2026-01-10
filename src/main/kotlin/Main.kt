@@ -57,8 +57,6 @@ var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen
 
 suspend fun main() = try {
     setupLogging()
-    val requestedByQueueHandler = RequestedByQueueHandler()
-    val twitchClient = setupTwitchBot(requestedByQueueHandler)
     val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())
 
     var alreadyCheckedNewVersion = false
@@ -66,6 +64,10 @@ suspend fun main() = try {
 
     application {
         initializeFlagVariables()
+        // Both needs to be called after "initializeFlagVariables" so the flags are initialized
+        // before they get used in other functions/handlers
+        val requestedByQueueHandler = RequestedByQueueHandler()
+        val twitchClient = setupTwitchBot(requestedByQueueHandler)
         DisposableEffect(Unit) {
             spotifyClient = runBlocking {
                 spotifyClientApi(

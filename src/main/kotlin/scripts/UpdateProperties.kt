@@ -76,7 +76,7 @@ private var isJarStartedByAutoUpdate = false
 // Executing it will write the properties with default values of the latest version.
 fun main(args: Array<String>) {
     var didAnythingGetUpdated = false
-    var isUpdateSuccessfull = true
+    var isUpdateSuccessful = true
     isJarStartedByAutoUpdate = args.isNotEmpty()
 
     try {
@@ -91,7 +91,7 @@ fun main(args: Array<String>) {
             val propertyFileContent = file.readLines().toMutableList()
 
             properties.forEach { (property, defaultValue) ->
-                if (propertyFileContent.find { it.contains(property) } == null) {
+                if (propertyFileContent.find { it.substringBefore("=") == property } == null) {
                     didAnythingGetUpdated = true
                     propertyFileContent += "$property=$defaultValue"
                     logLine("Added property: \"$property\" to ${file.name} with default value \"$defaultValue\"")
@@ -111,7 +111,7 @@ fun main(args: Array<String>) {
     } catch (e: Exception) {
         logLine("An error occurred, see the exception here:& echo.${e.message}")
         logLine("=============================================")
-        isUpdateSuccessfull = false
+        isUpdateSuccessful = false
     }
 
     Files.createDirectories(Paths.get(LOG_DIRECTORY))
@@ -134,7 +134,7 @@ fun main(args: Array<String>) {
         ).start()
     }
 
-    val exitCode = if(isUpdateSuccessfull) {
+    val exitCode = if(isUpdateSuccessful) {
         0
     } else {
         -1
