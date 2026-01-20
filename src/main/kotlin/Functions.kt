@@ -1,6 +1,5 @@
 import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.endpoints.pub.SearchApi
-import com.adamratzman.spotify.models.CurrentlyPlayingContext
 import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.utils.Market
@@ -1476,12 +1475,25 @@ fun isUserEligibleForCommand(
 }
 
 
+/**
+ * Retrieves the Spotify device ID currently associated with playback.
+ *
+ * This function first attempts to resolve the device ID from the current playback
+ * context.
+ * If no active context is available, it falls back to the first device
+ * returned by the user's available Spotify devices list.
+ *
+ * If an exception occurs (for example, when no devices are available or the API
+ * request fails), the error is logged and `null` is returned.
+ *
+ * @return the resolved Spotify device ID, or `null` if no device could be found
+ */
 suspend fun getCurrentDeviceId(): String? {
     return try {
         spotifyClient.player.getCurrentContext()?.device?.id ?:
             spotifyClient.player.getDevices().first().id
     } catch (_: Exception) {
-        logger.warn("No active device found in getCurrentDeviceId")
+        logger.warn("No device found in getCurrentDeviceId")
         null
     }
 }

@@ -1,19 +1,15 @@
 package commands
 
-import com.adamratzman.spotify.models.CurrentlyPlayingContext
 import config.BotConfig
 import config.CacheConfig
 import getCurrentDeviceId
 import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import httpClient
-import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.request.header
 import io.ktor.client.statement.*
 import isSpotifyPlaying
 import isUserEligibleForPauseResumeCommand
-import kotlinx.serialization.json.Json
 import logger
 import sendMessageToTwitchChatAndLogIt
 import spotifyClient
@@ -89,6 +85,16 @@ val pauseResumeCommand: Command = Command(
     }
 )
 
+
+/**
+ * Resolves the current Spotify device ID.
+ *
+ * This function first attempts to return a cached device ID from [CacheConfig.spotifyDeviceId].
+ * If no cached value is present, it fetches the current device ID via [getCurrentDeviceId],
+ * caches the result, and returns it.
+ *
+ * @return the resolved Spotify device ID, or `null` if no active device is available
+ */
 private suspend fun resolveDeviceId(): String? {
     val cached = CacheConfig.spotifyDeviceId
     if (cached != null) return cached
@@ -99,6 +105,19 @@ private suspend fun resolveDeviceId(): String? {
 }
 
 
+/**
+ * Toggles Spotify playback state for the current user.
+ *
+ * If the player is currently active, this function pauses playback; otherwise, it
+ * starts or resumes playback. An optional device ID may be supplied to target
+ * a specific playback device.
+ *
+ * @param isPlayerActive `true` if playback is currently active and should be paused,
+ * `false` if playback is inactive and should be started
+ * @param deviceId optional Spotify device ID; if provided, playback is controlled
+ * on that specific device
+ * @return the [HttpResponse] returned by the Spotify Web API
+ */
 private suspend fun toggleSpotifyPlayback(isPlayerActive: Boolean, deviceId: String?): HttpResponse {
     val endpoint = "https://api.spotify.com/v1/me/player/"
     val deviceIdString = deviceId?.let { "?device_id=$deviceId" } ?: ""

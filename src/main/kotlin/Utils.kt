@@ -1,5 +1,4 @@
 
-import com.adamratzman.spotify.models.Device
 import com.adamratzman.spotify.models.Track
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
