@@ -28,7 +28,12 @@ import logger
 import java.awt.Desktop
 import java.net.URI
 
-
+/**
+ * Displays a horizontal divider used to visually separate UI sections.
+ *
+ * The divider spans the full available width, uses the primary theme color,
+ * and applies a small top padding to improve visual spacing.
+ */
 @Composable
 fun sectionDivider() {
     Divider(
@@ -40,7 +45,12 @@ fun sectionDivider() {
     )
 }
 
-
+/**
+ * Displays a vertical divider used to visually separate columns or side-by-side content.
+ *
+ * The divider fills the available height, applies vertical padding,
+ * and uses the primary theme color.
+ */
 @Composable
 fun columnDivider() {
     Divider(
@@ -52,7 +62,17 @@ fun columnDivider() {
     )
 }
 
-
+/**
+ * Displays a labeled toggle row for enabling or disabling a specific functionality.
+ *
+ * The label text may dynamically reflect the current enabled state, and the toggle
+ * itself can be conditionally disabled based on an external state.
+ *
+ * @param labelPrefixText the text displayed before the optional enabled/disabled suffix
+ * @param showLabelSuffixText whether to append the current state ("Enabled"/"Disabled") to the label
+ * @param conditionClickable optional state controlling whether the toggle is interactable
+ * @param functionalityFlag the mutable state representing the functionality’s enabled status
+ */
 @Composable
 fun toggleFunctionalityRow(
     labelPrefixText: String,
@@ -101,6 +121,13 @@ fun toggleFunctionalityRow(
 }
 
 
+/**
+ * Displays the application version information and author credits.
+ *
+ * The version is retrieved from build configuration and shown alongside
+ * a clickable hyperlink to the author’s page, aligned to the bottom-right
+ * of the layout.
+ */
 @Composable
 fun versionAndCreditsRow() {
     Row(
@@ -132,6 +159,17 @@ fun versionAndCreditsRow() {
     }
 }
 
+
+/**
+ * Displays clickable, underlined text that opens a web link when pressed.
+ *
+ * The link is opened asynchronously using the system browser, and failures
+ * are logged gracefully. A hand cursor is shown on hover to indicate interactivity.
+ *
+ * @param hyperlinkText the visible text of the hyperlink
+ * @param hyperlinkAddress the URL to open when clicked
+ * @param fontSize optional font size override for the hyperlink text
+ */
 @Composable
 fun hyperlink(
     hyperlinkText: String,
@@ -166,7 +204,18 @@ fun hyperlink(
 }
 
 
-
+/**
+ * Displays an editable dropdown list for managing a list of string properties.
+ *
+ * Users can view, add, edit, or delete entries from the list. Changes are applied
+ * immediately to the provided [SnapshotStateList], and user feedback is shown
+ * using snackbars. Optional lowercase normalization can be applied to inputs.
+ *
+ * @param entries the mutable list of string entries to manage
+ * @param textFieldTitle the label shown for the text field and dropdown
+ * @param scaffoldState the scaffold state used to display snackbars
+ * @param lowercaseInput whether newly entered values should be converted to lowercase
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun dropDownStringPropertiesList(
@@ -483,6 +532,16 @@ fun dropDownStringPropertiesList(
 }
 
 
+/**
+ * Displays a simple single-line text field for editing a configurable property.
+ *
+ * The field shows a title label and propagates value changes through the provided
+ * callback.
+ *
+ * @param textFieldTitle the label displayed above the text field
+ * @param textFieldContent the mutable state holding the current field value
+ * @param onValueChange callback invoked when the text value changes
+ */
 @Composable
 fun propertiesTextField(
     textFieldTitle: String,
@@ -506,6 +565,17 @@ fun propertiesTextField(
 }
 
 
+/**
+ * Displays a modal alert dialog with customizable title, message, and confirmation action.
+ *
+ * The dialog is conditionally shown based on visibility state and provides
+ * "Cancel" and "Ok" actions. The OK action executes a caller-supplied callback.
+ *
+ * @param isVisible controls whether the dialog is currently displayed
+ * @param title the dialog title text
+ * @param message the dialog body message
+ * @param onOkClick the action executed when the OK button is pressed
+ */
 @Composable
 fun alertDialogSurface(
     isVisible: MutableState<Boolean>,

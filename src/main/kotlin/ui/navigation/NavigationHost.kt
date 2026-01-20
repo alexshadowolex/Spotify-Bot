@@ -24,7 +24,14 @@ class NavigationHost(
 
 
 /**
- * Composable to build the Navigation Host
+ * Registers composable content for a specific navigation route.
+ *
+ * The provided [content] is rendered only when the current route held by the
+ * [NavController] matches the given [route]. This enables simple, declarative
+ * screen switching based on the active navigation destination.
+ *
+ * @param route the navigation route that activates this composable content
+ * @param content the composable UI to display when the route is active
  */
 @Composable
 fun NavigationHost.NavigationGraphBuilder.composable(
