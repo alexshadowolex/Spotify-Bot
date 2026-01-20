@@ -278,7 +278,7 @@ fun setupLogging() {
 /**
  * Reads a property value from the given [Properties] object.
  *
- * If the property cannot be read (e.g. because itt is not existing) and the flag `setPropertyIfNotExisting`
+ * If the property cannot be read because it is not existing and the flag `setPropertyIfNotExisting`
  * is set to true, the property will be created with an empty string.
  * If not, displays an error dialog and terminates the application.
  *
