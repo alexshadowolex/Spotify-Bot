@@ -276,14 +276,18 @@ fun setupLogging() {
 
 // General functions
 /**
- * Gets the value of the specified property out of the given properties-file. When an error occurred, the
- * function will display a descriptive error message windows and end the app.
- * @param properties already initialized properties-class
- * @param propertyName name of the property
- * @param propertiesFileRelativePath the relative path of the properties file
+ * Reads a property value from the given [Properties] object.
+ *
+ * If the property cannot be read (e.g. because itt is not existing) and the flag `setPropertyIfNotExisting`
+ * is set to true, the property will be created with an empty string.
+ * If not, displays an error dialog and terminates the application.
+ *
+ * @param properties the [Properties] instance to read from
+ * @param propertyName the key of the property
+ * @param propertiesFileRelativePath the relative path of the properties file (used in error messages)
  * @param setPropertyIfNotExisting if true, the property is created with an empty value when it does not exist;
  * otherwise, the application logs an error and terminates.
- * @return on success, the raw value of the property
+ * @return the raw value of the property as a [String]
  */
 fun getPropertyValue(
     properties: Properties, propertyName: String,
