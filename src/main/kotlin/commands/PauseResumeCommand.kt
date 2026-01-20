@@ -22,7 +22,7 @@ val pauseResumeCommand: Command = Command(
 
         if(!handleCommandSanityChecksWithSecurityLevel(
                 commandName = "pauseResumeCommand",
-                isCommandEnabledFlag= BotConfig.isPauseResumeCommandEnabled,
+                isCommandEnabledFlag = BotConfig.isPauseResumeCommandEnabled,
                 messageEvent = messageEvent,
                 twitchClient = twitchClient,
                 securityCheckFunction = ::isUserEligibleForPauseResumeCommand,
