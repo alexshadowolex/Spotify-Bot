@@ -232,8 +232,7 @@ fun newVersionScreen(isNewVersionWindowOpen: MutableState<Boolean>) {
                                 ) {
                                     Text(
                                         text = "Update",
-                                        color = MaterialTheme.colors.onPrimary,
-                                        textDecoration = TextDecoration.Underline
+                                        color = MaterialTheme.colors.onPrimary
                                     )
                                 }
                             }
