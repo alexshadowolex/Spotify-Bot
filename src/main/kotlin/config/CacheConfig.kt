@@ -22,7 +22,17 @@ object CacheConfig {
     }
 
 
-    // Here
+    var spotifyDeviceId: String? = getPropertyValue(
+            properties,
+            propertyName = "spotifyDeviceId",
+            propertiesFileRelativePath = cacheConfigFile.path,
+            setPropertyIfNotExisting = true
+        )
+        set(value) {
+            field = value
+            properties.setProperty("spotifyDeviceId", value ?: "")
+            savePropertiesToFile()
+        }
 
 
     private fun savePropertiesToFile() {

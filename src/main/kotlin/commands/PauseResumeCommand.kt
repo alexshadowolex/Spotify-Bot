@@ -1,18 +1,23 @@
 package commands
 
+import com.adamratzman.spotify.models.CurrentlyPlayingContext
 import config.BotConfig
-import config.TwitchBotConfig
-import deviceId
-import getCurrentSpotifySong
+import config.CacheConfig
+import getCurrentDeviceId
 import handleCommandSanityChecksWithSecurityLevel
 import handler.Command
 import httpClient
+import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.http.*
+import io.ktor.client.request.header
+import io.ktor.client.statement.*
+import isSpotifyPlaying
 import isUserEligibleForPauseResumeCommand
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import logger
+import sendMessageToTwitchChatAndLogIt
 import spotifyClient
+import kotlin.time.Duration.Companion.seconds
 
 val pauseResumeCommand: Command = Command(
     commandDisplayName = "Pause/Resume Command",
@@ -30,43 +35,81 @@ val pauseResumeCommand: Command = Command(
             return@Command
         }
 
-        val isPlayerActive = getCurrentSpotifySong() != null
-        val spotifyPlayer = spotifyClient.player
-        val endpoint = "https://api.spotify.com/v1/me/player/"
+        val isPlayerActive = isSpotifyPlaying() == true
+        var deviceId = resolveDeviceId()
+        val httpResultSuccessStatus = 200
 
-        val result = if(isPlayerActive) {
-            //spotifyPlayer.pause()
-            // works
-            httpClient.put(endpoint + "pause") {
-                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-            }
+        val initialResult = toggleSpotifyPlayback(isPlayerActive, deviceId)
+
+        val success = if (initialResult.status.value == httpResultSuccessStatus) {
+            true
         } else {
-            //spotifyPlayer.resume()
-            // does not work
-            httpClient.post(endpoint + "play") {
-                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-                parameter("device_id", deviceId)
-                contentType(ContentType.Application.Json)
-                setBody(Json.encodeToString<Temp>(Temp("spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", T(5), 0)))
+            logger.info("First toggle was not finished successfully, retrying with new device ID")
+            logger.error("Initial device ID: " + if (deviceId == null || deviceId == "") {
+                "was null or empty"
+            } else {
+                "seemed valid (not null and not empty"
+            })
+            logger.error("Initial result body: ${initialResult.bodyAsText()}")
+            deviceId = getCurrentDeviceId()
+            CacheConfig.spotifyDeviceId = deviceId
+
+            val retryResult = toggleSpotifyPlayback(isPlayerActive, deviceId)
+
+            (deviceId != null && retryResult.status.value == httpResultSuccessStatus).also {
+                if (retryResult.status.value != httpResultSuccessStatus) {
+                    logger.error("Second toggle also did not work")
+                    logger.error("Retry device ID: " + if (deviceId == null || deviceId == "") {
+                        "was null or empty"
+                    } else {
+                        "seemed valid (not null and not empty)"
+                    })
+                    logger.error("Retry result body: ${retryResult.bodyAsText()}")
+                }
             }
         }
 
-        println(result.status)
-        println(result.headers)
+        val message = if (success) {
+            if (isPlayerActive) {
+                "Paused playback successfully"
+            } else {
+                "Resumed playback successfully"
+            }
+        } else {
+            if (isPlayerActive) {
+                "Pausing playback failed"
+            } else {
+                "Resuming playback failed"
+            }
+        }
 
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, message)
 
-        addedCommandCoolDown = TwitchBotConfig.defaultCommandCoolDownSeconds
+        addedCommandCoolDown = 5.seconds
     }
 )
 
+private suspend fun resolveDeviceId(): String? {
+    val cached = CacheConfig.spotifyDeviceId
+    if (cached != null) return cached
+
+    val fresh = getCurrentDeviceId()
+    CacheConfig.spotifyDeviceId = fresh
+    return fresh
+}
 
 
-data class T(
-    val position: Int
-)
+private suspend fun toggleSpotifyPlayback(isPlayerActive: Boolean, deviceId: String?): HttpResponse {
+    val endpoint = "https://api.spotify.com/v1/me/player/"
+    val deviceIdString = deviceId?.let { "?device_id=$deviceId" } ?: ""
 
-data class Temp(
-    val context_uri: String,
-    val offset: T,
-    val position_ms: Int
-)
+    return if(isPlayerActive) {
+        httpClient.put(endpoint + "pause$deviceIdString") {
+            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+        }
+    } else {
+        httpClient.put(endpoint + "play$deviceIdString") {
+            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+        }
+    }
+}

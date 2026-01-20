@@ -1,5 +1,6 @@
 import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.endpoints.pub.SearchApi
+import com.adamratzman.spotify.models.CurrentlyPlayingContext
 import com.adamratzman.spotify.models.SimpleArtist
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.utils.Market
@@ -34,7 +35,6 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
@@ -1171,7 +1171,6 @@ fun isSongRequestRedeemActive(): Boolean {
     return isSongRequestEnabledAsRedeem() && BotConfig.isSongRequestEnabled
 }
 
-var deviceId: String? = null
 
 /**
  * Checks spotify api if the player is playing.
@@ -1195,10 +1194,7 @@ suspend fun isSpotifyPlaying(): Boolean? {
     val isPlaying = when (response.status) {
         HttpStatusCode.OK -> {
             try {
-                val res = json.decodeFromString<SimplifiedSpotifyPlaybackResponse>(response.bodyAsText())
-                deviceId = res.device.id
-                println(deviceId)
-                res.is_playing
+                json.decodeFromString<SimplifiedSpotifyPlaybackResponse>(response.bodyAsText()).is_playing
             } catch (e: Exception) {
                 logger.error("Exception while parsing Spotify Playback response: ", e)
                 null
@@ -1476,6 +1472,17 @@ fun isUserEligibleForCommand(
         isUserPartOfCustomGroupOrBroadcaster(userName, customGroup)
     } else {
         permissions.contains(CommandPermission.valueOf(commandSecurityLevel.toString()))
+    }
+}
+
+
+suspend fun getCurrentDeviceId(): String? {
+    return try {
+        spotifyClient.player.getCurrentContext()?.device?.id ?:
+            spotifyClient.player.getDevices().first().id
+    } catch (_: Exception) {
+        logger.warn("No active device found in getCurrentDeviceId")
+        null
     }
 }
 

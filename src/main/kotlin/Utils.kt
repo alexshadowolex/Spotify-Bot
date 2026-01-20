@@ -26,8 +26,7 @@ class MultiOutputStream(private vararg val streams: OutputStream) : OutputStream
 
 @Serializable
 data class SimplifiedSpotifyPlaybackResponse(
-    val is_playing: Boolean,
-    val device: Device
+    val is_playing: Boolean
 )
 
 data class SongRequestResult(
