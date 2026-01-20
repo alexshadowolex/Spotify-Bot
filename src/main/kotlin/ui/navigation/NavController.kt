@@ -31,7 +31,18 @@ class NavController(
 
 
 /**
- * Composable to remember the state of the navcontroller
+ * Creates and remembers a [NavController] instance across recompositions and
+ * process recreation.
+ *
+ * The controller is stored using [rememberSaveable], ensuring that navigation
+ * state survives configuration changes such as screen rotations. The initial
+ * navigation stack is defined by the provided start destination and an optional
+ * set of back stack screens.
+ *
+ * @param startDestination the route used as the initial destination of the navigation stack
+ * @param backStackScreens a mutable set of additional routes that should already
+ * exist in the back stack when the controller is created
+ * @return a [MutableState] holding the remembered [NavController] instance
  */
 @Composable
 fun rememberNavController(

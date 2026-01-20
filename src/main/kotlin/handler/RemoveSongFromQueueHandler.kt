@@ -25,11 +25,19 @@ class RemoveSongFromQueueHandler {
 
 
     /**
-     * Adds a song to the set of songs marked for skipping. The input is searched for in the current queue
-     * to find the closest match.
-     * @param songSearchQuery query string of the song to be searched for and then skipped
-     * @return the track-object of the song to be skipped, if a fitting song was found, else null
+     * Searches the user's current Spotify queue for a track matching the given query
+     * and marks it for skipping.
+     *
+     * The query is resolved using fuzzy string matching against the tracks in the
+     * current queue.
+     * If a close enough match is found, the corresponding
+     * [Track] is added to the internal skip set and will be skipped automatically
+     * once it becomes the currently playing song.
+     *
+     * @param songSearchQuery a user-provided search string identifying the song to skip
+     * @return the matched [Track] if a suitable song was found and marked, or `null` otherwise
      */
+
     suspend fun addSongToSetMarkedForSkipping(songSearchQuery: String): Track? {
         val track = findTrackInQueue(songSearchQuery)
 
@@ -42,7 +50,13 @@ class RemoveSongFromQueueHandler {
 
 
     /**
-     * Starts the while-loop in a coroutine to check, if the current song is marked for skipping.
+     * Launches a background coroutine that continuously monitors the currently
+     * playing Spotify track and skips it if it has been marked for removal.
+     *
+     * The polling interval adapts depending on whether an external Spotify song
+     * name getter is enabled, minimizing unnecessary API calls when possible.
+     * Any failures while attempting to skip playback are logged and retried
+     * gracefully.
      */
     private fun startRemoveSongFromQueueChecker() {
         var delay: Duration
@@ -81,12 +95,17 @@ class RemoveSongFromQueueHandler {
 
 
     /**
-     * Finds the closest matching track from the current queue for the input using fuzzy string matching.
-     * This function tokenizes the input and each display string of each song in the queue,
-     * and calculates the similarity between corresponding tokens. It then selects the track with the
-     * highest overall similarity as the closest match.
-     * @param input The input to find a match for.
-     * @return The closest matching track from the queue, or null if no match is found.
+     * Attempts to find the best-matching track in the user's current Spotify queue
+     * for the given input string.
+     *
+     * The input and each queued track are tokenized and compared using fuzzy
+     * string matching. For each input token, the highest similarity score against
+     * the track tokens is accumulated. The track with the highest total similarity
+     * score is selected as the best match.
+     *
+     * @param input the search string used to identify a track in the queue
+     * @return the closest matching [Track], or `null` if the queue is empty or
+     * no suitable match could be determined
      */
     private suspend fun findTrackInQueue(input: String): Track? {
         val queue = try {
@@ -127,10 +146,13 @@ class RemoveSongFromQueueHandler {
 
 
     /**
-     * Lowercase and tokenize the input for the findTrackInQueue-function by splitting on whitespaces
-     * and removing punctuation.
-     * @param input input to be tokenized
-     * @return list of tokens
+     * Normalizes and tokenizes a string for fuzzy comparison.
+     *
+     * The input is converted to lowercase, split on non-word characters, and
+     * stripped of punctuation to produce a list of comparable tokens.
+     *
+     * @param input the raw input string to tokenize
+     * @return a list of lowercase tokens derived from the input
      */
     private fun tokenize(input: String): List<String> {
         return input.lowercase(Locale.getDefault()).split(Regex("\\W+"))

@@ -34,7 +34,6 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
@@ -53,9 +52,14 @@ const val ALEX_TWITCH_USER_NAME = "alexshadowolex"
 
 // Setup Twitch Bot
 /**
- * Sets up the connection to twitch
- * @param requestedByQueueHandler RequestedByQueueHandler-instance
- * @return the TwitchClient-object
+ * Sets up and initializes the Twitch bot client with chat, PubSub, and Helix support.
+ *
+ * Connects to the configured channel, listens for reward redemptions and messages,
+ * and handles command cooldowns per user and globally.
+ * Also sets up event handling for user messages and initializes the necessary handlers for song requests.
+ *
+ * @param requestedByQueueHandler the instance managing the "requested by" queue for song requests
+ * @return a fully initialized [TwitchClient] instance connected to the channel
  */
 fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClient {
     val oAuth2Credential = OAuth2Credential("twitch", TwitchBotConfig.chatAccountToken)
@@ -200,10 +204,16 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
 
 
 /**
- * Initiates the callback for the reward redeems
- * @param redeemEvent the redeem event
- * @param twitchClient the twitchClient
- * @param requestedByQueueHandler requestedByQueueHandler
+ * Handles a channel points reward redemption event.
+ *
+ * Looks up the corresponding redeem configuration and executes its handler
+ * asynchronously if the user is not blacklisted.
+ * Logs warnings if misconfigurations
+ * are detected.
+ *
+ * @param redeemEvent the [RewardRedeemedEvent] triggered by Twitch
+ * @param twitchClient the [TwitchClient] instance handling the bot connection
+ * @param requestedByQueueHandler the queue handler for requested songs
  */
 fun rewardRedeemEventHandler(
     redeemEvent: RewardRedeemedEvent,
@@ -243,7 +253,11 @@ fun rewardRedeemEventHandler(
 // Logging
 private const val LOG_DIRECTORY = "logs"
 /**
- * Sets up the logging process with multiple output stream to both console and log file
+ * Sets up the logging system for the bot.
+ *
+ * Creates a new log file in the "logs" directory with a timestamped name,
+ * redirects standard output to both console and file, and logs bot version information.
+ * Displays an error message window and exits the application on failure.
  */
 fun setupLogging() {
     try {
@@ -277,12 +291,14 @@ fun setupLogging() {
 
 // General functions
 /**
- * Gets the value of the specified property out of the given properties-file. When an error occurred, the
- * function will display a descriptive error message windows and end the app.
- * @param properties already initialized properties-class
- * @param propertyName name of the property
- * @param propertiesFileRelativePath the relative path of the properties file
- * @return on success, the raw value of the property
+ * Reads a property value from the given [Properties] object.
+ *
+ * If the property cannot be read, displays an error dialog and terminates the application.
+ *
+ * @param properties the [Properties] instance to read from
+ * @param propertyName the key of the property
+ * @param propertiesFileRelativePath the relative path of the properties file (used in error messages)
+ * @return the raw value of the property as a [String]
  */
 fun getPropertyValue(properties: Properties, propertyName: String, propertiesFileRelativePath: String): String {
     return try {
@@ -300,9 +316,10 @@ fun getPropertyValue(properties: Properties, propertyName: String, propertiesFil
 
 
 /**
- * Displays an error message window as JOptionPane.
- * @param message the message to display
- * @param title the title to display
+ * Displays an error message in a modal dialog window.
+ *
+ * @param message the content of the error message
+ * @param title the title of the dialog window
  */
 fun showErrorMessageWindow(message: String, title: String) {
     JOptionPane.showMessageDialog(
@@ -315,11 +332,14 @@ fun showErrorMessageWindow(message: String, title: String) {
 
 
 /**
- * Displays an error message window for invalid enum class values.
- * @param propertyName name of the property
- * @param propertyFilePath path to the property file
- * @param exception occurred exception while parsing the value
- * @param enumClassValues possible string-values of the enum property
+ * Displays an error dialog for invalid enum property values.
+ *
+ * Logs the exception and shows which values are allowed.
+ *
+ * @param propertyName the name of the property that caused the error
+ * @param propertyFilePath the path to the properties file
+ * @param exception the exception that occurred during parsing
+ * @param enumClassValues the list of allowed enum string values
  */
 fun displayEnumParsingErrorWindow(
     propertyName: String,
@@ -341,8 +361,11 @@ fun displayEnumParsingErrorWindow(
 
 
 /**
- * Checks if the OS is windows and is in dark mode.
- * @return true, if OS is windows and in dark mode, else false
+ * Determines whether the current Windows OS is using dark mode for apps.
+ *
+ * Reads the relevant registry key and compares against the expected dark mode value.
+ *
+ * @return true if Windows is in dark mode, false otherwise
  */
 fun isWindowsInDarkMode(): Boolean {
     val windowsRegistryPath = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
@@ -361,9 +384,10 @@ fun isWindowsInDarkMode(): Boolean {
 
 
 /**
- * Checks if a user is the broadcaster, specified in TwitchBotConfig.properties channel property.
- * @param userName name of the user to check
- * @return true, if the user is the broadcaster, else false.
+ * Checks whether a given user is the broadcaster specified in the configuration.
+ *
+ * @param userName the username to check
+ * @return true if the user is the broadcaster, false otherwise
  */
 fun isUserBroadcaster(userName: String): Boolean {
     return userName == TwitchBotConfig.channel
@@ -372,10 +396,13 @@ fun isUserBroadcaster(userName: String): Boolean {
 
 // Twitch Bot functions
 /**
- * Checks if a user is blacklisted
- * @param userName user's Name
- * @param userId user's ID
- * @return true, if the user is blacklisted, else false
+ * Checks whether a user is blacklisted from using commands.
+ *
+ * Logs a warning if a blacklisted username is used instead of an ID.
+ *
+ * @param userName the username of the user
+ * @param userId the Twitch user ID
+ * @return true if the user is blacklisted, false otherwise
  */
 fun isUserBlacklisted(userName: String, userId: String): Boolean {
     if(userName in BotConfig.blacklistedUsers || userId in BotConfig.blacklistedUsers) {
@@ -392,9 +419,10 @@ fun isUserBlacklisted(userName: String, userId: String): Boolean {
 
 
 /**
- * Helper function that sends a message to twitch chat and logs it
- * @param chat the twitch chat
- * @param message content of the message
+ * Sends a message to Twitch chat and logs it to the console/log file.
+ *
+ * @param chat the [TwitchChat] instance to send the message through
+ * @param message the message content
  */
 fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
     chat.sendMessage(TwitchBotConfig.channel, message)
@@ -403,10 +431,13 @@ fun sendMessageToTwitchChatAndLogIt(chat: TwitchChat, message: String) {
 
 
 /**
- * Checks if a user is part of a custom group or the broadcaster.
- * @param userName user name
- * @param customGroup custom group to check
- * @return true, if the user is part of the custom group or the broadcaster, else false
+ * Checks if a user is either the broadcaster or a member of a custom group.
+ *
+ * Comparison is case-insensitive for group membership.
+ *
+ * @param userName the name of the user to check
+ * @param customGroup the list of usernames in the custom group
+ * @return true if the user is the broadcaster or part of the custom group, false otherwise
  */
 fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<String>): Boolean {
     return userName == TwitchBotConfig.channel || customGroup.contains(userName.lowercase(Locale.getDefault()))
@@ -414,16 +445,17 @@ fun isUserPartOfCustomGroupOrBroadcaster(userName: String, customGroup: List<Str
 
 
 /**
- * Function that does all general sanity checks for commands without security level checks and handles the logging and
- * result communication via chat.
- * The following sanity checks are done:
- *      - Is the command enabled
- * @param commandName name of the command which is used for the logging
- * @param isCommandEnabledFlag the flag of the specific command
- * @param userName Name of the user to check
- * @param userID ID of the user to check
- * @param twitchClient TwitchClient-Object
- * @return true, if all sanity checks succeeded, else false
+ * Performs general sanity checks for a command, ignoring security levels.
+ *
+ * Checks whether the command is enabled and optionally verifies follower-only mode restrictions.
+ * Sends feedback messages to the user via Twitch chat if checks fail.
+ *
+ * @param commandName the name of the command (used in logging)
+ * @param isCommandEnabledFlag whether the command is enabled
+ * @param userName the username executing the command
+ * @param userID the user ID executing the command
+ * @param twitchClient the [TwitchClient] instance
+ * @return true if all sanity checks pass, false otherwise
  */
 fun handleCommandSanityChecksWithoutSecurityLevel(
     commandName: String,
@@ -453,18 +485,18 @@ fun handleCommandSanityChecksWithoutSecurityLevel(
 
 
 /**
- * Function that does all general sanity checks for commands including security level checks and handles the logging and
- * result communication via chat.
- * Following sanity checks are done:
- *      - sanity checks of handleCommandSanityChecksWithoutSecurityLevel
- *      - security level checks
- * @param commandName name of the command which is used for the logging
- * @param isCommandEnabledFlag the flag of the specific command
- * @param messageEvent ChannelMessageEvent-Object
- * @param twitchClient TwitchClient-Object
- * @param securityCheckFunction security check function of the specific command
- * @param securityLevel current security setting of the command
- * @return true, if all sanity checks succeeded, else false
+ * Performs full command sanity checks including security level validation.
+ *
+ * Combines the general sanity checks with a user-specific security level check.
+ * Provides logging and Twitch chat feedback if checks fail.
+ *
+ * @param commandName the name of the command (used in logging)
+ * @param isCommandEnabledFlag whether the command is enabled
+ * @param messageEvent the [ChannelMessageEvent] containing user info
+ * @param twitchClient the [TwitchClient] instance
+ * @param securityCheckFunction function to verify user permissions
+ * @param securityLevel the current security level of the command
+ * @return true if all checks pass, false otherwise
  */
 fun handleCommandSanityChecksWithSecurityLevel(
     commandName: String,
@@ -500,10 +532,11 @@ fun handleCommandSanityChecksWithSecurityLevel(
 
 
 /**
- * Checks if the given user ID is following the broadcaster.
- * @param userID ID of the user to check if they are following
- * @param twitchClient client to execute the request
- * @return null on error, true if the user following, else false
+ * Determines if a user is currently following the broadcaster's channel.
+ *
+ * @param userID the Twitch user ID to check
+ * @param twitchClient the [TwitchClient] instance
+ * @return true if the user is following, false if not, null on error
  */
 fun isUserFollowingChannel(userID: String, twitchClient: TwitchClient): Boolean? {
     val followingUserInformation = getUserFollowingInformation(userID, twitchClient)
@@ -517,10 +550,13 @@ fun isUserFollowingChannel(userID: String, twitchClient: TwitchClient): Boolean?
 
 
 /**
- * Helper function to get the follow-information of the given user for the broadcaster's channel
- * @param userID ID of the user to get the information from
- * @param twitchClient client to execute the request
- * @return List of InboundFollow-Object. It contents no or exactly one element. Null on error
+ * Retrieves information about whether a user is following the broadcaster's channel.
+ *
+ * Returns a list containing at most one [InboundFollow] object, or null on error.
+ *
+ * @param userID the Twitch user ID
+ * @param twitchClient the [TwitchClient] instance
+ * @return a list of [InboundFollow] objects, or null if an error occurred
  */
 fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): List<InboundFollow>? {
     val followingUser = try {
@@ -569,11 +605,13 @@ fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): Lis
 
 
 /**
- * Gets the duration a user is following since. If the user is not following, it will return the duration -1
- * @param userID ID of the user to get the following duration for
- * @param twitchClient client to execute the request
- * @return null on error, Duration -1 if the user is not following, else the
- * Duration the user is following since
+ * Calculates how long a user has been following the broadcaster.
+ *
+ * Returns -1 second if the user is not following.
+ *
+ * @param userID the Twitch user ID
+ * @param twitchClient the [TwitchClient] instance
+ * @return the duration the user has been following, -1 second if not following, null on error
  */
 fun getUserFollowDuration(userID: String, twitchClient: TwitchClient): Duration? {
     val followingUserInformation = getUserFollowingInformation(userID, twitchClient)
@@ -591,12 +629,12 @@ fun getUserFollowDuration(userID: String, twitchClient: TwitchClient): Duration?
 
 
 /**
- * Checks if a user is following long enough. The following Duration is compared to the property
- * TwitchBotConfig.minimumFollowingDurationMinutes
- * @param userID ID of the user to check if they are following long enough
- * @param twitchClient client to execute the request
- * @return null on error, true if the following duration is longer than the value in
- * TwitchBotConfig.minimumFollowingDurationMinutes, else false
+ * Checks if a user has been following the broadcaster long enough to meet
+ * the minimum follow duration requirement.
+ *
+ * @param userID the Twitch user ID
+ * @param twitchClient the [TwitchClient] instance
+ * @return true if the following duration meets or exceeds the minimum, false if not, null on error
  */
 fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boolean? {
     val followingDuration = getUserFollowDuration(userID, twitchClient)
@@ -611,9 +649,12 @@ fun isUserFollowingLongEnough(userID: String, twitchClient: TwitchClient): Boole
 
 
 /**
- * This function gets called when the user-name of the creator "alexshadowolex", specified in
- * ALEX_TWITCH_USER_NAME, types the first message in chat and then praises him with a random message.
- * @param chat TwitchChat-object
+ * Sends a congratulatory message to the chat the first time the bot detects
+ * the creator "alexshadowolex" sending a message.
+ *
+ * Ensures the praise only occurs once per session.
+ *
+ * @param chat the [TwitchChat] instance to send the message
  */
 fun praiseAlex(chat: TwitchChat) {
     wasAlexAlreadyPraised = true
@@ -642,12 +683,15 @@ fun praiseAlex(chat: TwitchChat) {
 
 // Spotify Functions
 /**
- * Helper function to be called both by redeem and command.
- * It calls the updateQueue-function and issues a message
- * to twitch chat.
- * @param chat the twitch chat
- * @param query query or link
- * @return true on success, else false
+ * Handles a song request query from Twitch chat.
+ *
+ * Attempts to add the song to the Spotify queue, providing feedback to the user
+ * in Twitch chat.
+ * Returns whether the song was successfully added.
+ *
+ * @param chat the [TwitchChat] instance to send messages
+ * @param query the search query or Spotify link
+ * @return true if the song was successfully queued, false otherwise
  */
 suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
     logger.info("called handleSongRequestQuery with query $query")
@@ -681,9 +725,13 @@ suspend fun handleSongRequestQuery(chat: TwitchChat, query: String): Boolean {
 
 
 /**
- * Updates the spotify queue adding a song to it
- * @param query either a spotify link or a query that will be searched for
- * @return on success: track and explanation message, on failure: null and explanation message
+ * Adds a song to the Spotify playback queue based on a search query or direct link.
+ *
+ * Performs checks for blocked songs/artists and maximum length, logging
+ * all relevant events. Returns the track and an explanation message.
+ *
+ * @param query a search string or Spotify track link
+ * @return a [SongRequestResult] containing the track (or null) and a result explanation
  */
 private suspend fun updateQueue(query: String): SongRequestResult {
     logger.info("called updateQueue with query $query")
@@ -764,9 +812,10 @@ private suspend fun updateQueue(query: String): SongRequestResult {
 
 
 /**
- * Extracts the song ID from a spotify direct link.
- * @param directLink the spotify direct link as a String
- * @return the ID on success, null on failure
+ * Extracts the Spotify track ID from a direct track URL.
+ *
+ * @param directLink a full Spotify track link
+ * @return the track ID if valid, null otherwise
  */
 fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
     return Url(directLink).takeIf { isUrlSpotifyTrackDirectLink(it) }
@@ -775,9 +824,13 @@ fun getSongIdFromSpotifyDirectLink(directLink: String): String? {
 
 
 /**
- * Gets the first (if there exist more than one included) blocked artist from the given spotify config property.
- * @param artists artist names
- * @return the name of the (first) blocked artist or an empty string, if no artist is blocked
+ * Returns the first blocked artist from a list of artist names according to configuration.
+ *
+ * Comparison is case-insensitive.
+ * Returns an empty string if no artist is blocked.
+ *
+ * @param artists the list of artist names
+ * @return the first blocked artist name or empty string if none
  */
 private fun getFirstBlockedArtistName(artists: List<String?>): String {
     for(artist in artists.map { it?.lowercase(Locale.getDefault()) ?: "" }) {
@@ -790,9 +843,10 @@ private fun getFirstBlockedArtistName(artists: List<String?>): String {
 
 
 /**
- * Checks if a song is blocked.
- * @param songId ID of the song to check
- * @return true, if the song is blocked, else false
+ * Determines whether a specific song is blocked based on its ID.
+ *
+ * @param songId the Spotify track ID
+ * @return true if the song is blocked, false otherwise
  */
 private fun isSongBlocked(songId: String): Boolean {
     return SpotifyConfig.blockedSongLinks.map { getSongIdFromSpotifyDirectLink(it) ?: "" }.contains(songId)
@@ -800,9 +854,12 @@ private fun isSongBlocked(songId: String): Boolean {
 
 
 /**
- * Checks if one or more artists are blocked. The function is not case-sensitive.
- * @param artists artist names
- * @return true, if at least one artist ist blocked, else false
+ * Determines whether any artist in the given list is blocked.
+ *
+ * Comparison is case-insensitive.
+ *
+ * @param artists the list of artist names
+ * @return true if at least one artist is blocked, false otherwise
  */
 private fun isSongArtistBlocked(artists: List<String?>): Boolean {
     for(artist in artists.map { it?.lowercase(Locale.getDefault()) ?: "" }) {
@@ -813,7 +870,7 @@ private fun isSongArtistBlocked(artists: List<String?>): Boolean {
     return false
 }
 
-
+// TODO HERE
 /**
  * Checks if the given URL is a spotify direct link to a track.
  * @param url the given URL

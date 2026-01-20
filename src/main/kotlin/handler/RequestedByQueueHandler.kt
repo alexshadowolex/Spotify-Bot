@@ -14,16 +14,19 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Updates the RequestedBy-queue.
-     * Things that will be updated are:
-     *  - indexes, where the songs are supposed to be currently (-1)
-     *  - get and update the current requested by username (if there is one)
-     *  - update the amount of the same track in queue before
-     *  - remove overdue tracks
-     * Has to be called after the currentSpotifySong got updated (= changed) to correctly update the values.
-     * To know which amounts of the same track before to update, the spotify song name getter gives the
-     * song before the change as a parameter.
-     * @param trackBeforeChange the track before the currently playing track got updated to the new one
+     * Updates the internal "requested by" queue after the currently playing track changes.
+     *
+     * This method performs several maintenance tasks:
+     * - Decrements stored queue indexes to reflect playback progression
+     * - Determines whether the current track was requested by a user and exposes the username
+     * - Updates counters for identical tracks appearing earlier in the queue
+     * - Removes entries that have become overdue due to queue changes
+     *
+     * This function must be called **after** [currentSpotifySong] has been updated.
+     * The previously playing track must be supplied to correctly adjust duplicate-track counters.
+     *
+     * @param trackBeforeChange the track that was playing before the current track update,
+     * or `null` if unavailable
      */
     fun updateRequestedByQueue(trackBeforeChange: Track?) {
         currentRequestedByUsername = null
@@ -52,10 +55,13 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Searches the requestedByQueue if the current song is requested by a user.
-     * If it is, it returns the
-     * username and removes it.
-     * @return The username, if they request the current song, else null
+     * Checks whether the currently playing track was requested by a user.
+     *
+     * If a matching request entry is found, the associated username is returned
+     * and all corresponding entries are removed from the queue to prevent reuse.
+     *
+     * @return the username of the requesting user if the current track was requested,
+     * or `null` otherwise
      */
     private fun getAndRemoveFoundUserName(): String? {
         val userName = requestedByQueue.find { isCurrentSongRequestedByUser(it) }?.userName
@@ -68,11 +74,13 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Helper function which checks if the current song is requested by a user in the requestedByQueue. This is the
-     * case when the saved track in the requestedByQueue is the same as the currently playing song, and the number
-     * of same tracks before is 0.
-     * @param entry the requestedByQueue-entry to check for
-     * @return true, if the song is requested by the user given in the entry, else false
+     * Determines whether a requested-by entry corresponds to the currently playing track.
+     *
+     * A match occurs when the stored track equals the current Spotify track and no
+     * identical instances of the same track are still expected before it in the queue.
+     *
+     * @param entry the requested-by queue entry to evaluate
+     * @return `true` if the entry represents a request for the current track, `false` otherwise
      */
     private fun isCurrentSongRequestedByUser(entry: RequestedByEntry): Boolean {
         return  entry.indexInQueueAndTrack.track == currentSpotifySong &&
@@ -81,8 +89,12 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Updates (reduces by 1) all amounts of the same track before, specified by the trackBeforeChange parameter.
-     * @param trackBeforeChange the track before the currently playing track got updated
+     * Decrements the count of identical tracks expected before each matching request entry.
+     *
+     * This adjustment reflects that the previously playing track has advanced out of the queue.
+     *
+     * @param trackBeforeChange the track that was playing before the current track update,
+     * or `null` if unavailable
      */
     private fun updateAmountOfSameTrackInQueueBefore(trackBeforeChange: Track?) {
         requestedByQueue.filter {
@@ -94,8 +106,10 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Removes tracks that are overdue and apparently got removed out of the queue by the app. To have a small buffer
-     * for untrackable changes, they will not be removed right after index = 0, but later.
+     * Removes requested-by entries that have become overdue due to queue modifications.
+     *
+     * To tolerate untrackable Spotify queue changes, entries are not removed immediately
+     * when their index drops below zero, but only after exceeding a defined negative buffer.
      */
     private fun removeOverdueTracks() {
         // To have a little buffer in case of untrackable changes, the index for
@@ -108,7 +122,9 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Updates (reduces by 1) all indexes in the requestedByQueue.
+     * Decrements the stored queue index of every requested-by entry.
+     *
+     * This reflects the progression of playback as the queue advances.
      */
     private fun updateIndexesOfQueue() {
         requestedByQueue.forEach { entry ->
@@ -118,9 +134,14 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Compares two lists and finds the song that has been added to the second list and its index in the queue.
-     * @param queueBefore the spotify queue before the song has been added via song-request
-     * @return The Track and its index on success, null on error
+     * Identifies the track newly added to the Spotify queue and determines its index.
+     *
+     * This function compares the queue state before and after a song request by scanning
+     * for the first divergence between the two lists.
+     *
+     * @param queueBefore the full Spotify queue before the requested track was added
+     * @return an [IndexInQueueAndTrack] describing the added track and its position,
+     * or `null` if no difference could be determined
      */
     private suspend fun getAddedTrackWithIndex(queueBefore: List<Playable>): IndexInQueueAndTrack? {
         val queueAfter = mutableListOf(currentSpotifySong as Playable)
@@ -144,11 +165,15 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Adds an entry to the requestedByQueue. The queueBeforeWithoutCurrentlyPlaying has to be saved before successfully
-     * adding the song to the queue. This function then has to be called after the song got added to the queue.
-     * @param queueBeforeWithoutCurrentlyPlaying the queue (without currently playing song) before adding the song request
-     * @param userName name of the requesting user
+     * Records a new song request in the requested-by queue.
      *
+     * The queue state before the request must be provided. After the track has been
+     * successfully added to Spotify's queue, this function resolves the added track,
+     * determines its position, tracks duplicates, and associates it with the requesting user.
+     *
+     * @param queueBeforeWithoutCurrentlyPlaying the Spotify queue (excluding the
+     * currently playing track) before the request was added
+     * @param userName the name of the user who requested the song
      */
     suspend fun addEntryToRequestedByQueue(queueBeforeWithoutCurrentlyPlaying: List<Playable>, userName: String) {
         val queueBefore = mutableListOf(currentSpotifySong as Playable)
@@ -180,10 +205,14 @@ class RequestedByQueueHandler {
 
 
     /**
-     * Finds the number of identical tracks in the queue before the given track.
-     * @param currentTrack the reference-track and its index
-     * @param queue the whole queue (before or after the song got added)
-     * @return the amount of the given track before the reference-index
+     * Counts how many identical instances of a track appear earlier in the queue.
+     *
+     * This value is used to determine when a requested track should be attributed
+     * to the requesting user during playback.
+     *
+     * @param currentTrack the reference track and its index within the queue
+     * @param queue the complete Spotify queue
+     * @return the number of identical tracks occurring before the given index
      */
     private fun getAmountOfSameTrackInQueue(
         currentTrack: IndexInQueueAndTrack,
