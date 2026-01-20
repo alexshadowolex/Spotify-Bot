@@ -11,6 +11,7 @@ import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
 import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
+import com.github.twitch4j.TwitchClient
 import config.BotConfig
 import config.BuildInfo
 import config.SpotifyConfig
@@ -23,7 +24,6 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import ui.Screen
@@ -57,15 +57,24 @@ var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen
 
 suspend fun main() = try {
     setupLogging()
-    val requestedByQueueHandler = RequestedByQueueHandler()
-    val twitchClient = setupTwitchBot(requestedByQueueHandler)
     val initialToken: Token = Json.decodeFromString(File("data\\tokens\\spotifyToken.json").readText())
 
     var alreadyCheckedNewVersion = false
     saveLatestGitHubReleaseInformation()
 
+    var requestedByQueueHandler: RequestedByQueueHandler? = null
+    var twitchClient: TwitchClient? = null
+
     application {
         initializeFlagVariables()
+        // Both needs to be called after "initializeFlagVariables" so the flags are initialized
+        // before they get used in other functions/handlers
+        if(requestedByQueueHandler == null) {
+            requestedByQueueHandler = RequestedByQueueHandler()
+        }
+        if(twitchClient == null) {
+            twitchClient = setupTwitchBot(requestedByQueueHandler)
+        }
         DisposableEffect(Unit) {
             spotifyClient = runBlocking {
                 spotifyClientApi(

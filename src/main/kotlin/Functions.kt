@@ -293,24 +293,45 @@ fun setupLogging() {
 /**
  * Reads a property value from the given [Properties] object.
  *
- * If the property cannot be read, displays an error dialog and terminates the application.
+ * If the property cannot be read because it is not existing and the flag `setPropertyIfNotExisting`
+ * is set to true, the property will be created with an empty string.
+ * If not, displays an error dialog and terminates the application.
  *
  * @param properties the [Properties] instance to read from
  * @param propertyName the key of the property
  * @param propertiesFileRelativePath the relative path of the properties file (used in error messages)
+ * @param setPropertyIfNotExisting if true, the property is created with an empty value when it does not exist;
+ * otherwise, the application logs an error and terminates.
  * @return the raw value of the property as a [String]
  */
-fun getPropertyValue(properties: Properties, propertyName: String, propertiesFileRelativePath: String): String {
+fun getPropertyValue(
+    properties: Properties, propertyName: String,
+    propertiesFileRelativePath: String,
+    setPropertyIfNotExisting: Boolean
+): String {
     return try {
         properties.getProperty(propertyName)
     } catch (e: Exception) {
-        logger.error("Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ", e)
-        showErrorMessageWindow(
-            message =   "Error while reading value of property ${propertyName.addQuotationMarks()} " +
-                        "in file $propertiesFileRelativePath.",
-            title = "Error while reading properties"
-        )
-        exitProcess(-1)
+        if(setPropertyIfNotExisting) {
+            val emptyString = ""
+            properties.setProperty(propertyName, emptyString)
+            logger.info("Created property $propertyName in file $propertiesFileRelativePath with empty value.")
+            emptyString
+        } else {
+            logger.error(
+                "Exception occurred while reading property $propertyName in file $propertiesFileRelativePath: ",
+                e
+            )
+            showErrorMessageWindow(
+                message = "Error while reading value of property ${propertyName.addQuotationMarks()} " +
+                        "in file $propertiesFileRelativePath.\n" +
+                        "Try running the latest version of UpdateProperties.jar " +
+                        "or fix it manually by adding it to the mentioned file.",
+                title = "Error while reading properties"
+            )
+            logger.error("test")
+            exitProcess(-1)
+        }
     }
 }
 
@@ -1454,6 +1475,24 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 
 
 /**
+ * Checks if the user is eligible for using the pause resume command. The eligibility is set
+ * in the parameter pauseResumeCommandSecurityLevel
+ * @param permissions permissions of current user
+ * @param userName username of the user
+ * @return true, if the user is eligible, else false
+ */
+fun isUserEligibleForPauseResumeCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
+    logger.info("called isUserEligibleForPauseResumeCommand")
+    return isUserEligibleForCommand(
+        permissions,
+        userName,
+        BotConfig.pauseResumeCommandSecurityLevel,
+        BotConfig.customGroupUserNamesPauseResumeCommand
+    )
+}
+
+
+/**
  * Checks if the user is eligible for using the block song command. The eligibility is set
  * in the parameter blockSongCommandSecurityLevel
  * @param permissions permissions of current user
@@ -1492,6 +1531,30 @@ fun isUserEligibleForCommand(
         isUserPartOfCustomGroupOrBroadcaster(userName, customGroup)
     } else {
         permissions.contains(CommandPermission.valueOf(commandSecurityLevel.toString()))
+    }
+}
+
+
+/**
+ * Retrieves the Spotify device ID currently associated with playback.
+ *
+ * This function first attempts to resolve the device ID from the current playback
+ * context.
+ * If no active context is available, it falls back to the first device
+ * returned by the user's available Spotify devices list.
+ *
+ * If an exception occurs (for example, when no devices are available or the API
+ * request fails), the error is logged and `null` is returned.
+ *
+ * @return the resolved Spotify device ID, or `null` if no device could be found
+ */
+suspend fun getCurrentDeviceId(): String? {
+    return try {
+        spotifyClient.player.getCurrentContext()?.device?.id ?:
+            spotifyClient.player.getDevices().first().id
+    } catch (_: Exception) {
+        logger.warn("No device found in getCurrentDeviceId")
+        null
     }
 }
 

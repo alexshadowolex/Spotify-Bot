@@ -39,9 +39,19 @@ object TwitchBotConfig {
     // Will be filled with the ID in function setupTwitchBot
     var chatAccountID = ""
 
-    val channel: String = getPropertyValue(properties, "channel", twitchBotConfigFile.path).lowercase()
+    val channel: String = getPropertyValue(
+        properties,
+        propertyName = "channel",
+        propertiesFileRelativePath = twitchBotConfigFile.path,
+        setPropertyIfNotExisting = false
+    ).lowercase()
 
-    var commandPrefix: String = getPropertyValue(properties, "commandPrefix", twitchBotConfigFile.path)
+    var commandPrefix: String = getPropertyValue(
+        properties,
+        propertyName = "commandPrefix",
+        propertiesFileRelativePath = twitchBotConfigFile.path,
+        setPropertyIfNotExisting = false
+    )
         set(value) {
             field = value
             properties.setProperty("commandPrefix", value)
@@ -50,7 +60,10 @@ object TwitchBotConfig {
 
     var defaultCommandCoolDownSeconds = try {
         getPropertyValue(
-            properties, "defaultCommandCoolDownSeconds", twitchBotConfigFile.path
+            properties,
+            propertyName = "defaultCommandCoolDownSeconds",
+            propertiesFileRelativePath = twitchBotConfigFile.path,
+            setPropertyIfNotExisting = false
         ).toInt().seconds
     } catch (_: NumberFormatException) {
         val defaultValue = 0.seconds
@@ -67,7 +80,10 @@ object TwitchBotConfig {
 
     var defaultUserCoolDownSeconds = try {
         getPropertyValue(
-            properties, "defaultUserCoolDownSeconds", twitchBotConfigFile.path
+            properties,
+            propertyName = "defaultUserCoolDownSeconds",
+            propertiesFileRelativePath = twitchBotConfigFile.path,
+            setPropertyIfNotExisting = false
         ).toInt().seconds
     } catch (_: NumberFormatException) {
         val defaultValue = 0.seconds
@@ -83,7 +99,10 @@ object TwitchBotConfig {
         }
 
     var songRequestRedeemId: String = getPropertyValue(
-        properties, "songRequestRedeemId", twitchBotConfigFile.path
+        properties,
+        propertyName = "songRequestRedeemId",
+        propertiesFileRelativePath = twitchBotConfigFile.path,
+        setPropertyIfNotExisting = false
     )
         set(value) {
             field = value
@@ -93,7 +112,10 @@ object TwitchBotConfig {
         }
 
     var songRequestEmotes: List<String> = getPropertyValue(
-        properties, "songRequestEmotes", twitchBotConfigFile.path
+        properties,
+        propertyName = "songRequestEmotes",
+        propertiesFileRelativePath = twitchBotConfigFile.path,
+        setPropertyIfNotExisting = false
     ).split(",").filter { it.isNotEmpty() }
         set(value) {
             field = value
@@ -101,7 +123,12 @@ object TwitchBotConfig {
             savePropertiesToFile()
         }
 
-    var blacklistMessage: String = getPropertyValue(properties, "blacklistMessage", twitchBotConfigFile.path)
+    var blacklistMessage: String = getPropertyValue(
+        properties,
+        propertyName = "blacklistMessage",
+        propertiesFileRelativePath = twitchBotConfigFile.path,
+        setPropertyIfNotExisting = false
+    )
         set(value) {
             field = value
             properties.setProperty("blacklistMessage", value)
@@ -110,8 +137,12 @@ object TwitchBotConfig {
 
 
     var minimumFollowingDurationMinutes: Duration = try {
-        getPropertyValue(properties, "minimumFollowingDurationMinutes", twitchBotConfigFile.path)
-            .toDouble().minutes
+        getPropertyValue(
+            properties,
+            propertyName = "minimumFollowingDurationMinutes",
+            propertiesFileRelativePath = twitchBotConfigFile.path,
+            setPropertyIfNotExisting = false
+        ).toDouble().minutes
     } catch (_: NumberFormatException) {
         val defaultValue = 0.minutes
         logger.warn(

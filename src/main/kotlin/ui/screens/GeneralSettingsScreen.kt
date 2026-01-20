@@ -125,6 +125,21 @@ var isFollowerOnlyModeEnabled = mutableStateOf(false)
         field = value
         BotConfig.isFollowerOnlyModeEnabled = value.value
     }
+private var isPauseResumeCommandEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isPauseResumeCommandEnabled = value.value
+    }
+private var pauseResumeCommandSecurityLevel = mutableStateOf(CustomCommandPermissions.BROADCASTER)
+    set(value) {
+        field = value
+        BotConfig.pauseResumeCommandSecurityLevel = value.value
+    }
+private var customGroupUserNamesPauseResumeCommand = mutableStateListOf("")
+    set(value) {
+        field = value
+        BotConfig.customGroupUserNamesPauseResumeCommand = value
+    }
 
 @Composable
 fun generalSettingsScreen() {
@@ -202,6 +217,53 @@ fun generalSettingsScreen() {
                             true,
                             null,
                             isFollowerOnlyModeEnabled
+                        )
+
+                        sectionDivider()
+
+
+                        toggleFunctionalityRow(
+                            "Pause/Resume Command ",
+                            true,
+                            null,
+                            isPauseResumeCommandEnabled
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 3.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Security Level of Pause/Resume Command: ",
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+                        }
+                        commandSecurityMultiToggleButton(
+                            currentSelection = pauseResumeCommandSecurityLevel.value,
+                            toggleStates = listOf(
+                                CustomCommandPermissions.BROADCASTER,
+                                CustomCommandPermissions.MODERATOR,
+                                CustomCommandPermissions.CUSTOM
+                            ),
+                            conditionClickable = isPauseResumeCommandEnabled,
+                            functionalityDisplayName = "Pause/Resume Command",
+                            onToggleChange = {
+                                pauseResumeCommandSecurityLevel.value = CustomCommandPermissions.valueOf(it)
+                            }
+                        )
+
+                        dropDownStringPropertiesList(
+                            entries = customGroupUserNamesPauseResumeCommand,
+                            textFieldTitle = "Custom Group Pause/Resume Command",
+                            scaffoldState = scaffoldState,
+                            lowercaseInput = true
                         )
 
                         sectionDivider()
@@ -602,4 +664,7 @@ fun initializeGeneralFlagVariables() {
     blockSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.blockSongCommandSecurityLevel) }
     customGroupUserNamesBlockSongCommand = remember { BotConfig.customGroupUserNamesBlockSongCommand.toMutableStateList() }
     isFollowerOnlyModeEnabled = remember { mutableStateOf(BotConfig.isFollowerOnlyModeEnabled) }
+    isPauseResumeCommandEnabled = remember { mutableStateOf(BotConfig.isPauseResumeCommandEnabled) }
+    pauseResumeCommandSecurityLevel = remember { mutableStateOf(BotConfig.pauseResumeCommandSecurityLevel) }
+    customGroupUserNamesPauseResumeCommand = remember { BotConfig.customGroupUserNamesPauseResumeCommand.toMutableStateList() }
 }
