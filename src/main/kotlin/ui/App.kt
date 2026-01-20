@@ -131,13 +131,13 @@ enum class Screen(
     HomeScreen(
         label = "Home",
         icon = Icons.Filled.Home,
-        height = 650.dp,
+        height = 700.dp,
         width = 500.dp
     ),
     GeneralSettingsScreen(
         label = "General Settings",
         icon = Icons.Filled.Settings,
-        height = 850.dp,
+        height = 900.dp,
         width = 900.dp
     ),
     SpotifySettingsScreen(

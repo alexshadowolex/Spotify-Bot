@@ -44,7 +44,8 @@ fun homeScreen() {
                         Placeholder(issuesHyperlinkWidth, issuesHyperlinkHeight, PlaceholderVerticalAlign.Center)) {
                             hyperlink(
                                 hyperlinkText = issuesHyperlinkText,
-                                hyperlinkAddress = "https://github.com/alexshadowolex/Spotify-Bot/issues"
+                                hyperlinkAddress = "https://github.com/alexshadowolex/Spotify-Bot/issues",
+                                useUnderline = true
                             )
                     }
                 )

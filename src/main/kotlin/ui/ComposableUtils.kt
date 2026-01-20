@@ -124,7 +124,8 @@ fun versionAndCreditsRow() {
                 hyperlink(
                     hyperlinkText = "alexshadowolex",
                     hyperlinkAddress = "https://www.twitch.tv/alexshadowolex",
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    useUnderline = false
                 )
             }
         }
@@ -135,7 +136,8 @@ fun versionAndCreditsRow() {
 fun hyperlink(
     hyperlinkText: String,
     hyperlinkAddress: String,
-    fontSize: TextUnit = TextUnit.Unspecified
+    fontSize: TextUnit = TextUnit.Unspecified,
+    useUnderline: Boolean
 ) {
     Text(
         style = MaterialTheme.typography.body1,
@@ -157,7 +159,7 @@ fun hyperlink(
                 }
             }
             .pointerHoverIcon(PointerIcon.Hand),
-        textDecoration = TextDecoration.Underline,
+        textDecoration = if(useUnderline) TextDecoration.Underline else TextDecoration.None,
         color = MaterialTheme.colors.primary,
         fontSize = fontSize
     )
