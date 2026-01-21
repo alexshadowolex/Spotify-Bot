@@ -1,7 +1,7 @@
 package handler
 
 import com.github.twitch4j.TwitchClient
-import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
+import com.github.twitch4j.eventsub.events.CustomRewardRedemptionAddEvent
 import redeems.songRequestRedeem
 
 data class Redeem(
@@ -11,7 +11,7 @@ data class Redeem(
 
 data class RedeemHandlerScope(
     val twitchClient: TwitchClient,
-    val redeemEvent: RewardRedeemedEvent,
+    val redeemEvent: CustomRewardRedemptionAddEvent,
     val requestedByQueueHandler: RequestedByQueueHandler
 )
 

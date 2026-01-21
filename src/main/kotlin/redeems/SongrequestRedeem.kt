@@ -15,8 +15,8 @@ val songRequestRedeem: Redeem = Redeem(
         if(!handleCommandSanityChecksWithoutSecurityLevel(
                 commandName = "songRequestRedeem",
                 isCommandEnabledFlag = isSongRequestRedeemActive(),
-                userName = redeemEvent.redemption.user.displayName,
-                userID = redeemEvent.redemption.user.id,
+                userName = redeemEvent.userName,
+                userID = redeemEvent.userId,
                 twitchClient = twitchClient
             )) {
             return@Redeem
@@ -29,7 +29,7 @@ val songRequestRedeem: Redeem = Redeem(
         if (success) {
             requestedByQueueHandler.addEntryToRequestedByQueue(
                 queueBefore,
-                redeemEvent.redemption.user.displayName
+                redeemEvent.userName
             )
         }
     }

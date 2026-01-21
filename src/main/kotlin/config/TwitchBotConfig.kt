@@ -37,7 +37,7 @@ object TwitchBotConfig {
 
     val chatAccountToken = File("data\\tokens\\twitchToken.txt").readText()
     // Will be filled with the ID in function setupTwitchBot
-    var chatAccountID = ""
+    var channelID = ""
 
     val channel: String = getPropertyValue(
         properties,

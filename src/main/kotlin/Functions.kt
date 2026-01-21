@@ -11,6 +11,8 @@ import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.chat.TwitchChat
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.common.enums.CommandPermission
+import com.github.twitch4j.eventsub.events.CustomRewardRedemptionAddEvent
+import com.github.twitch4j.eventsub.subscriptions.SubscriptionTypes
 import com.github.twitch4j.helix.domain.InboundFollow
 import com.github.twitch4j.pubsub.events.RewardRedeemedEvent
 import config.BotConfig
@@ -67,9 +69,12 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
     val twitchClient = TwitchClientBuilder.builder()
         .withEnableHelix(true)
         .withEnableChat(true)
-        .withEnablePubSub(true)
+        .withEnableEventSocket(true)
+        .withDefaultAuthToken(oAuth2Credential)
         .withChatAccount(oAuth2Credential)
         .build()
+
+    val eventSocket = twitchClient.eventSocket
 
     twitchClient.chat.run {
         connect()
@@ -96,16 +101,21 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
         exitProcess(-1)
     }
 
-    TwitchBotConfig.chatAccountID = channelID
+    TwitchBotConfig.channelID = channelID
 
-    twitchClient.pubSub.listenForChannelPointsRedemptionEvents(
-        oAuth2Credential,
-        channelID
-    )
+    // TODO this does not work yet, probably cuz the access token needs to be the one of the broadcaster
+    // look more into this later: https://github.com/mitchwadair/tesjs/issues/13
+    val sub = SubscriptionTypes.CHANNEL_POINTS_CUSTOM_REWARD_REDEMPTION_ADD
+        .prepareSubscription({ builder ->
+            builder.broadcasterUserId(TwitchBotConfig.channelID).build()
+        }, null)
+
+    eventSocket.register(sub)
 
     val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
-    
-    twitchClient.eventManager.onEvent(RewardRedeemedEvent::class.java) { rewardRedeemEvent ->
+
+    eventSocket.eventManager.onEvent(CustomRewardRedemptionAddEvent::class.java) { rewardRedeemEvent ->
+        logger.error("Event came through: ${rewardRedeemEvent.reward.title}")
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient, requestedByQueueHandler)
     }
 
@@ -113,7 +123,7 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
         val message = messageEvent.message
 
         if(messageEvent.user.name == ALEX_TWITCH_USER_NAME && !wasAlexAlreadyPraised) {
-            praiseAlex(twitchClient.chat)
+            //praiseAlex(twitchClient.chat)
         }
 
         if (!message.startsWith(TwitchBotConfig.commandPrefix)) {
@@ -216,12 +226,18 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
  * @param requestedByQueueHandler the queue handler for requested songs
  */
 fun rewardRedeemEventHandler(
-    redeemEvent: RewardRedeemedEvent,
+    redeemEvent: CustomRewardRedemptionAddEvent?,
     twitchClient: TwitchClient,
     requestedByQueueHandler: RequestedByQueueHandler
 ) {
-    val redeemId = redeemEvent.redemption.reward.id
-    val redeemTitle = redeemEvent.redemption.reward.title
+    if(redeemEvent == null) {
+        sendMessageToTwitchChatAndLogIt(twitchClient.chat, "Could not handle the redeem.")
+        logger.error("Error in rewardRedeemEventHandler. The redeemEvent was null.")
+        return
+    }
+
+    val redeemId = redeemEvent.reward.id
+    val redeemTitle = redeemEvent.reward.title
 
     val redeem = redeems.find { redeemId in it.id || redeemTitle in it.id }.also {
         if (it != null) {
@@ -234,8 +250,8 @@ fun rewardRedeemEventHandler(
         }
     } ?: return
 
-    if(isUserBlacklisted(redeemEvent.redemption.user.displayName, redeemEvent.redemption.user.id)) {
-        logger.info("User ${redeemEvent.redemption.user} is blacklisted. Aborting")
+    if(isUserBlacklisted(redeemEvent.userName, redeemEvent.userId)) {
+        logger.info("User ${redeemEvent.userName} is blacklisted. Aborting")
         return
     }
 
@@ -246,7 +262,7 @@ fun rewardRedeemEventHandler(
     )
 
     backgroundCoroutineScope.launch {
-        redeem.handler(redeemHandlerScope, redeemEvent.redemption.userInput ?: "")
+        redeem.handler(redeemHandlerScope, redeemEvent.reward.prompt ?: "")
     }
 }
 
@@ -583,7 +599,7 @@ fun getUserFollowingInformation(userID: String, twitchClient: TwitchClient): Lis
     val followingUser = try {
         twitchClient.helix.getChannelFollowers(
             TwitchBotConfig.chatAccountToken,
-            TwitchBotConfig.chatAccountID,
+            TwitchBotConfig.channelID,
             userID,
             null,
             null
