@@ -891,11 +891,15 @@ private fun isSongArtistBlocked(artists: List<String?>): Boolean {
     return false
 }
 
-// TODO HERE
+
 /**
- * Checks if the given URL is a spotify direct link to a track.
- * @param url the given URL
- * @return true, if it is a spotify direct link to a track, else false
+ * Determines whether the given URL is a direct Spotify link to a track.
+ *
+ * This validates both that the URL points to Spotify and that its path
+ * explicitly references a track resource.
+ *
+ * @param url the URL to evaluate
+ * @return true if the URL is a Spotify track link, false otherwise
  */
 private fun isUrlSpotifyTrackDirectLink(url: Url): Boolean {
     return isUrlSpotifyDirectLink(url) && url.encodedPath.contains("/track/")
@@ -903,9 +907,13 @@ private fun isUrlSpotifyTrackDirectLink(url: Url): Boolean {
 
 
 /**
- * Checks if the given URL is a spotify direct link to anything.
- * @param url the given URL
- * @return true, if it is a spotify direct link to anything, else false
+ * Checks whether the given URL points to Spotify's web player domain.
+ *
+ * This function does not validate the resource type (track, album, playlist, etc.),
+ * only that the URL originates from Spotify.
+ *
+ * @param url the URL to check
+ * @return true if the URL belongs to Spotify, false otherwise
  */
 private fun isUrlSpotifyDirectLink(url: Url): Boolean {
     return url.host == "open.spotify.com"
@@ -913,9 +921,12 @@ private fun isUrlSpotifyDirectLink(url: Url): Boolean {
 
 
 /**
- * Gets the track from the Spotify APIs track endpoint.
- * @param songId the link's songId
- * @return a track on success, null on error
+ * Retrieves a Spotify track by its unique track ID using the Tracks API.
+ *
+ * Any API or network error is logged and results in a null return value.
+ *
+ * @param songId the Spotify track ID
+ * @return the retrieved Track on success, or null if the request fails
  */
 private suspend fun getSpotifyTrackById(songId: String): Track? {
     logger.info("called getSpotifyTrackById with ID: $songId")
@@ -932,10 +943,13 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
 
 
 /**
- * Gets the track from the Spotify APIs search endpoint. If the query is a spotify direct link to something
- * but not to a track, it will not search for a track to reduce random results.
- * @param query the search query
- * @return a track on success, null on error
+ * Searches for a Spotify track using a free-text query.
+ *
+ * If the query is a Spotify direct link that does not point to a track,
+ * the search is intentionally aborted to avoid unrelated results.
+ *
+ * @param query the search query string
+ * @return the first matching Track on success, or null if none is found or an error occurs
  */
 private suspend fun getSpotifyTrackByQuery(query: String): Track? {
     logger.info("called getSpotifyTrackByQuery with query: $query")
@@ -962,9 +976,12 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
 
 
 /**
- * Issues a GET-Request to get the currently playing spotify song. If the player is not active,
- * the request will run until a TimeoutException occurred.
- * @return track, if successful, else null
+ * Retrieves the currently playing Spotify track for the active player.
+ *
+ * If no playback is active or an error occurs while querying the API,
+ * null is returned.
+ *
+ * @return the currently playing Track, or null if unavailable
  */
 suspend fun getCurrentSpotifySong(): Track? {
     return try {
@@ -976,10 +993,14 @@ suspend fun getCurrentSpotifySong(): Track? {
 
 
 /**
- * Creates a string from the given song with Title and Artists
- * @param name name of the given song
- * @param artists artists of the given song
- * @return song name and artists
+ * Builds a human-readable string representation of a song.
+ *
+ * The resulting format is:
+ * `"Song Title" by Artist 1, Artist 2 and Artist 3`
+ *
+ * @param name the song title
+ * @param artists the list of contributing artists
+ * @return a formatted song description string
  */
 fun createSongString(name: String, artists: List<SimpleArtist>): String {
     return "${name.addQuotationMarks()} by ${getArtistsString(artists)}"
@@ -987,9 +1008,12 @@ fun createSongString(name: String, artists: List<SimpleArtist>): String {
 
 
 /**
- * Creates the concatenation of a list of artists with "," and the last 2 with "and"
- * @param artists artists
- * @return concatenation of the artists
+ * Formats a list of artists into a natural-language string.
+ *
+ * Artists are separated by commas, with the final two joined using "and".
+ *
+ * @param artists the list of artists
+ * @return a readable concatenation of artist names
  */
 fun getArtistsString(artists: List<SimpleArtist>): String {
     return artists.map { it.name }.let { artist ->
@@ -1008,12 +1032,14 @@ private const val CURRENT_SONG_ALBUM_IMAGE_FILE_NAME = "currentAlbumImage.jpg"
 private const val CURRENT_REQUESTED_BY_FILE_NAME = "currentRequestedByText.txt"
 private const val DISPLAY_FILES_DIRECTORY = "data\\displayFiles"
 /**
- * Function that handles the coroutine to get the current spotify song.
- * On Start up it creates the dir and files, if needed.
- * If isSpotifySongNameGetterEnabled is true, it constantly does a GET-Request to get the currently playing
- * song name and writes it into a file.
- * The delay for the next pull is 2 seconds.
- * @param requestedByQueueHandler RequestedByQueueHandler-instance
+ * Starts a background coroutine that continuously fetches and persists
+ * the currently playing Spotify song.
+ *
+ * On startup, required directories and files are created if missing.
+ * While enabled, the current song information is refreshed every two seconds
+ * and written to display files used by external systems (e.g., stream overlays).
+ *
+ * @param requestedByQueueHandler handler used to resolve and update request metadata
  */
 fun startSpotifySongGetter(requestedByQueueHandler: RequestedByQueueHandler) {
     logger.info("called startSpotifySongGetter")
@@ -1063,8 +1089,11 @@ fun startSpotifySongGetter(requestedByQueueHandler: RequestedByQueueHandler) {
 
 
 /**
- * Helper function to outsource the try-catch block of accessing the variable isSpotifySongNameGetterEnabled
- * @return true, if the functionality is enabled. False, if not or an error occurred.
+ * Safely checks whether the Spotify song name getter feature is enabled.
+ *
+ * Any exception while accessing configuration values is treated as disabled.
+ *
+ * @return true if enabled, false otherwise
  */
 fun isSpotifySongNameGetterEnabled(): Boolean {
     return try {
@@ -1076,11 +1105,13 @@ fun isSpotifySongNameGetterEnabled(): Boolean {
 
 
 /**
- * Writes current song into the separate text files. If the song is requested by a user, which is indicated
- * the variable currentRequestedByUsername not being null, an extra file will be filled with the content
- * "requested by <username>"
- * @param currentTrack current Track
- * @param currentRequestedByUsername the current requested by username
+ * Writes the current song metadata to display text files.
+ *
+ * If the song was requested by a user, an additional file is populated
+ * indicating the requesting username.
+ *
+ * @param currentTrack the currently playing Spotify track
+ * @param currentRequestedByUsername the username that requested the song, or null
  */
 private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUsername: String?) {
     try {
@@ -1106,9 +1137,12 @@ private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUse
 
 
 /**
- * Downloads the current song's album image. If the image is not the default size 640x640 pixels, it gets scaled
- * to be the default size.
- * @param currentTrack current Track
+ * Downloads and stores the album artwork of the current track.
+ *
+ * If the image resolution differs from the default 640x640 pixels,
+ * it is resized before being saved.
+ *
+ * @param currentTrack the currently playing Spotify track
  */
 private fun downloadAndSaveAlbumImage(currentTrack: Track) {
     try {
@@ -1145,7 +1179,9 @@ private fun downloadAndSaveAlbumImage(currentTrack: Track) {
 
 
 /**
- * Creates the song display folder and the files
+ * Ensures the song display directory and required files exist.
+ *
+ * Missing folders and files are created asynchronously on startup.
  */
 private fun createSongDisplayFolderAndFiles() {
     backgroundCoroutineScope.launch {
@@ -1178,8 +1214,10 @@ private fun createSongDisplayFolderAndFiles() {
 
 
 /**
- * Empties all song display files. Text files get the value of the string "", picture file gets
- * the value of a 1x1 white picture.
+ * Clears all song display files.
+ *
+ * Text files are emptied, and the album image file is replaced
+ * with a minimal placeholder image.
  */
 fun emptyAllSongDisplayFiles() {
     listOf(
@@ -1203,8 +1241,9 @@ fun emptyAllSongDisplayFiles() {
 
 
 /**
- * Checks if song request redeem is enabled. This is the case when song request command is not enabled.
- * @return true, if song request redeem is enabled, else false
+ * Determines whether song requests are enabled exclusively as channel redeems.
+ *
+ * @return true if song requests are enabled as redeems, false otherwise
  */
 fun isSongRequestEnabledAsRedeem(): Boolean {
     return !BotConfig.isSongRequestCommandEnabled
@@ -1212,9 +1251,9 @@ fun isSongRequestEnabledAsRedeem(): Boolean {
 
 
 /**
- * Helper function to check if the song request command is active. This is the case when both song requests
- * generally are enabled and the song requests are used as commands.
- * @return true, if both flags are true, else false
+ * Checks whether song requests are enabled and handled via chat commands.
+ *
+ * @return true if song request commands are active, false otherwise
  */
 fun isSongRequestCommandActive(): Boolean {
     return BotConfig.isSongRequestCommandEnabled && BotConfig.isSongRequestEnabled
@@ -1222,9 +1261,9 @@ fun isSongRequestCommandActive(): Boolean {
 
 
 /**
- * Helper function to check if the song request redeem is active. This is the case when both song requests
- * generally are enabled and the song requests are used as redeems.
- * @return true, if both flags are true, else false
+ * Checks whether song requests are enabled and handled via channel redeems.
+ *
+ * @return true if song request redeems are active, false otherwise
  */
 fun isSongRequestRedeemActive(): Boolean {
     return isSongRequestEnabledAsRedeem() && BotConfig.isSongRequestEnabled
@@ -1232,10 +1271,10 @@ fun isSongRequestRedeemActive(): Boolean {
 
 
 /**
- * Checks spotify api if the player is playing.
- * For reference to what the return codes mean, check here:
+ * Queries the Spotify Player API to determine playback state, see
  * https://developer.spotify.com/documentation/web-api/reference/get-information-about-the-users-current-playback
- * @return true, if the player is playing. False, if the player is not playing or not active. Null on error.
+ *
+ * @return true if playback is active, false if paused or inactive, or null on error
  */
 suspend fun isSpotifyPlaying(): Boolean? {
     val playbackEndpoint = "https://api.spotify.com/v1/me/player"
@@ -1277,10 +1316,11 @@ suspend fun isSpotifyPlaying(): Boolean? {
 
 
 /**
- * Adds a song to the playlist with the given playlist ID
- * @param song the song to add
- * @param playlistId playlist's ID
- * @return true on success, else false
+ * Adds the given track to the specified Spotify playlist.
+ *
+ * @param song the track to add
+ * @param playlistId the target playlist ID
+ * @return true if the operation succeeded, false otherwise
  */
 suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
     logger.info("called addSongToPlaylist")
@@ -1300,11 +1340,11 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
 
 
 /**
- * Checks if the user is eligible for using the add song command. The eligibility is set
- * in the parameter addSongCommandSecurityLevel
- * @param permissions permissions of current user
- * @param userName username of the user
- * @return true, if the user is eligible, else false
+ * Checks whether a user is allowed to use the add-song command.
+ *
+ * @param permissions the user's permission set
+ * @param userName the user's name
+ * @return true if the user is eligible, false otherwise
  */
 fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForAddSongCommand")
@@ -1318,9 +1358,10 @@ fun isUserEligibleForAddSongCommand(permissions: Set<CommandPermission>, userNam
 
 
 /**
- * Issues a GET-Request to spotify API to get the playlist's name of the given playlist ID
- * @param playlistId playlist's ID to get the name of
- * @return the name on success, empty String on failure
+ * Retrieves the name of a Spotify playlist by its ID.
+ *
+ * @param playlistId the playlist ID
+ * @return the playlist name, or an empty string if retrieval fails
  */
 suspend fun getPlaylistName(playlistId: String): String {
     return try {
@@ -1333,9 +1374,10 @@ suspend fun getPlaylistName(playlistId: String): String {
 
 
 /**
- * Checks if the given playlist ID is valid.
- * @param playlistId playlist ID to check for
- * @return true if the ID is valid, else and on error false
+ * Validates whether the given Spotify playlist ID exists.
+ *
+ * @param playlistId the playlist ID to validate
+ * @return true if valid, false otherwise
  */
 suspend fun isPlaylistIdValid(playlistId: String): Boolean {
     val result = try {
@@ -1349,10 +1391,11 @@ suspend fun isPlaylistIdValid(playlistId: String): Boolean {
 
 
 /**
- * Checks if a song is in a given playlist by ID
- * @param songId the song's ID to check for
- * @param playlistId the playlist's ID
- * @return true, if the playlist contains the song, else false, null on error
+ * Checks whether a track is already contained in a Spotify playlist.
+ *
+ * @param songId the track ID to check
+ * @param playlistId the playlist ID
+ * @return true if present, false if not, or null on error
  */
 suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
     val playlistSongIds = getPlaylistSongIds(playlistId) ?: return null
@@ -1361,11 +1404,12 @@ suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
 
 
 /**
- * Gets all the song IDs of the specified playlist's songs. It issues a GET-Request to spotify api for every 100
- * songs contained in that playlist.
- * @param playlistId ID of the playlist to get the song IDs of
- * @return IDs of the songs in that playlist, empty strings if issues occurred, null if issues
- * with the playlist in general occurred
+ * Retrieves all track IDs from a Spotify playlist.
+ *
+ * The playlist is fetched in pages of up to 100 tracks until complete.
+ *
+ * @param playlistId the playlist ID
+ * @return a list of track IDs, or null if retrieval fails
  */
 suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
     val playlistSongIds = mutableListOf<String?>()
@@ -1396,11 +1440,12 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
 
 
 /**
- * Handles the functionality of the add song command after all sanity checks succeeded.
- * Checks if the song is already in the give playlist. If so, it will not be added. If not, it adds the song
- * to the playlist specified per ID in SpotifyConfig.playlistIdForAddSongCommand.
- * @param song song to add
- * @return message to display in twitch chat afterward
+ * Executes the add-song command logic after validation.
+ *
+ * The track is added only if it does not already exist in the target playlist.
+ *
+ * @param song the track to add
+ * @return a user-facing status message
  */
 suspend fun handleAddSongCommandFunctionality(song: Track): String {
     return when(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
@@ -1425,9 +1470,11 @@ suspend fun handleAddSongCommandFunctionality(song: Track): String {
 
 
 /**
- * Gets the playlist's name from the add Song Command. Since the property might still be empty, this needs to get
- * checked and if so, try and fill the property with the correct name.
- * @return the playlist's name. If the property is not empty, it will be surrounded by quotation marks
+ * Retrieves and caches the display name of the add-song playlist.
+ *
+ * If not yet cached, the playlist name is fetched from Spotify.
+ *
+ * @return the playlist name wrapped in quotation marks
  */
 suspend fun getAddSongPlaylistNameString(): String {
     if(SpotifyConfig.playlistNameForAddSongCommand.isEmpty()) {
@@ -1439,11 +1486,11 @@ suspend fun getAddSongPlaylistNameString(): String {
 
 
 /**
- * Checks if the user is eligible for using the skip song command. The eligibility is set
- * in the parameter skipSongCommandSecurityLevel
- * @param permissions permissions of current user
- * @param userName username of the user
- * @return true, if the user is eligible, else false
+ * Checks whether a user is allowed to use the skip-song command.
+ *
+ * @param permissions the user's permission set
+ * @param userName the user's name
+ * @return true if the user is eligible, false otherwise
  */
 fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForSkipSongCommand")
@@ -1457,11 +1504,11 @@ fun isUserEligibleForSkipSongCommand(permissions: Set<CommandPermission>, userNa
 
 
 /**
- * Checks if the user is eligible for using the remove song from queue command. The eligibility is set
- * in the parameter removeSongFromQueueCommandSecurityLevel
- * @param permissions permissions of current user
- * @param userName username of the user
- * @return true, if the user is eligible, else false
+ * Checks whether a user is allowed to remove a song from the queue.
+ *
+ * @param permissions the user's permission set
+ * @param userName the user's name
+ * @return true if the user is eligible, false otherwise
  */
 fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForRemoveSongFromQueueCommand")
@@ -1475,11 +1522,11 @@ fun isUserEligibleForRemoveSongFromQueueCommand(permissions: Set<CommandPermissi
 
 
 /**
- * Checks if the user is eligible for using the pause resume command. The eligibility is set
- * in the parameter pauseResumeCommandSecurityLevel
- * @param permissions permissions of current user
- * @param userName username of the user
- * @return true, if the user is eligible, else false
+ * Checks whether a user is allowed to pause or resume playback.
+ *
+ * @param permissions the user's permission set
+ * @param userName the user's name
+ * @return true if the user is eligible, false otherwise
  */
 fun isUserEligibleForPauseResumeCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForPauseResumeCommand")
@@ -1493,11 +1540,11 @@ fun isUserEligibleForPauseResumeCommand(permissions: Set<CommandPermission>, use
 
 
 /**
- * Checks if the user is eligible for using the block song command. The eligibility is set
- * in the parameter blockSongCommandSecurityLevel
- * @param permissions permissions of current user
- * @param userName username of the user
- * @return true, if the user is eligible, else false
+ * Checks whether a user is allowed to block a song.
+ *
+ * @param permissions the user's permission set
+ * @param userName the user's name
+ * @return true if the user is eligible, false otherwise
  */
 fun isUserEligibleForBlockSongCommand(permissions: Set<CommandPermission>, userName: String): Boolean {
     logger.info("called isUserEligibleForBlockSongCommand")
@@ -1511,15 +1558,16 @@ fun isUserEligibleForBlockSongCommand(permissions: Set<CommandPermission>, userN
 
 
 /**
- * Helper function for the isUserEligibleForXYZCommand functions. Checks if the user is eligible with
- * the command's specific security level. If the value CUSTOM is selected, it checks whether the user
- * is the broadcaster or part of the custom group. If the other two values are selected, it checks
- * the user's permissions instead.
- * @param permissions permissions of current user
- * @param userName username of the user
- * @param commandSecurityLevel variable that holds the command's current security level
- * @param customGroup list of the command's custom usernames
- * @return true, if the user is eligible, else false
+ * Evaluates user eligibility based on a command's configured security level.
+ *
+ * Custom security checks validate broadcaster or custom-group membership,
+ * while predefined levels rely on permission flags.
+ *
+ * @param permissions the user's permission set
+ * @param userName the user's name
+ * @param commandSecurityLevel the command's security configuration
+ * @param customGroup list of custom-authorized usernames
+ * @return true if the user is eligible, false otherwise
  */
 fun isUserEligibleForCommand(
     permissions: Set<CommandPermission>,
@@ -1564,11 +1612,10 @@ const val GITHUB_LATEST_VERSION_LINK = "https://github.com/alexshadowolex/Spotif
 
 
 /**
- * Gets and saves the latest release information from GitHub. The information is saved in BuildInfo.
- * Information that will be saved is:
- *  - latest available version
- *  - release body text
- *  - release assets
+ * Fetches and persists information about the latest GitHub release.
+ *
+ * Stored data includes the latest version number, release notes,
+ * and available release assets.
  */
 suspend fun saveLatestGitHubReleaseInformation() {
     val textBeforeVersionNumber = "v"
@@ -1624,11 +1671,13 @@ suspend fun saveLatestGitHubReleaseInformation() {
 
 
 /**
- * This functions prepares and starts the auto update-script. If the bin-folder is not existing, it will be created.
- * If the specified version of the Update-Jar is not existing, it will be downloaded and older versions of it will
- * be deleted.
- * In the end, the update-script will be executed and the Spotify-Bot will be closed.
- * @return false, if the preparation or start of the auto update was not successful
+ * Prepares and launches the automatic update process.
+ *
+ * Ensures required update files exist, downloads the update JAR if needed,
+ * cleans up outdated versions, and starts the updater before terminating
+ * the current application.
+ *
+ * @return false if preparation or execution fails
  */
 fun prepareAndStartAutoUpdate(): Boolean {
     try {
