@@ -70,6 +70,8 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
         .withEnableHelix(true)
         .withEnableChat(true)
         .withEnableEventSocket(true)
+        //.withDefaultAuthToken(OAuth2Credential("twitch", File("data\\tokens\\alexAccessToken.txt").readText()))
+        //.withDefaultAuthToken(OAuth2Credential("twitch", File("data\\tokens\\klonkAccessToken.txt").readText()))
         .withDefaultAuthToken(oAuth2Credential)
         .withChatAccount(oAuth2Credential)
         .build()
@@ -103,8 +105,6 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
 
     TwitchBotConfig.channelID = channelID
 
-    // TODO this does not work yet, probably cuz the access token needs to be the one of the broadcaster
-    // look more into this later: https://github.com/mitchwadair/tesjs/issues/13
     val sub = SubscriptionTypes.CHANNEL_POINTS_CUSTOM_REWARD_REDEMPTION_ADD
         .prepareSubscription({ builder ->
             builder.broadcasterUserId(TwitchBotConfig.channelID).build()
@@ -115,7 +115,8 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
     val removeSongFromQueueHandler = RemoveSongFromQueueHandler()
 
     eventSocket.eventManager.onEvent(CustomRewardRedemptionAddEvent::class.java) { rewardRedeemEvent ->
-        logger.error("Event came through: ${rewardRedeemEvent.reward.title}")
+        // TODO: Find out the rate limit and build setup jar and update flow for eventSub accessToken
+        // https://id.twitch.tv/oauth2/authorize?client_id=5uivxg0w1bz282u9jmdc04nhchb3ho&response_type=token&redirect_uri=https://www.example.com&scope=channel%3Aread%3Aredemptions+channel%3Aread%3Asubscriptions+channel%3Amanage%3Aredemptions&state=c3ab8aa609ea11e793ae92361f002671
         rewardRedeemEventHandler(rewardRedeemEvent, twitchClient, requestedByQueueHandler)
     }
 
