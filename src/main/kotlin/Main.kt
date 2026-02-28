@@ -16,6 +16,7 @@ import config.BotConfig
 import config.BuildInfo
 import config.SpotifyConfig
 import handler.RequestedByQueueHandler
+import handler.SpotifyClientWorkaroundHandler
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -51,6 +52,7 @@ val httpClient = HttpClient(CIO) {
 }
 
 lateinit var spotifyClient: SpotifyClientApi
+lateinit var spotifyClientWorkaroundHandler: SpotifyClientWorkaroundHandler
 var currentSpotifySong: Track? = null
 var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen.width, Screen.HomeScreen.height)))
 
@@ -98,6 +100,9 @@ suspend fun main() = try {
                     }
                 }.build()
             }
+
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            spotifyClientWorkaroundHandler = SpotifyClientWorkaroundHandler()
 
             logger.info("Spotify client built successfully.")
 

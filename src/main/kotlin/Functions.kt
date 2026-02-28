@@ -1326,10 +1326,12 @@ suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
     logger.info("called addSongToPlaylist")
     var success = true
     try {
-        spotifyClient.playlists.addPlayableToClientPlaylist(
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        success = spotifyClientWorkaroundHandler.addItemsToPlaylist(playlistId, song.uri)
+        /*spotifyClient.playlists.addPlayableToClientPlaylist(
             playlistId,
             song.uri
-        )
+        )*/
     } catch (e: SpotifyException.BadRequestException) {
         logger.error("Something went wrong when adding song to the playlist in addSongToPlaylist: ", e)
         success = false
