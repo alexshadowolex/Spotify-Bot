@@ -1408,24 +1408,29 @@ suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
 /**
  * Retrieves all track IDs from a Spotify playlist.
  *
- * The playlist is fetched in pages of up to 100 tracks until complete.
+ * The playlist is fetched in pages of up to 50 tracks until complete.
  *
  * @param playlistId the playlist ID
  * @return a list of track IDs, or null if retrieval fails
  */
 suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
     val playlistSongIds = mutableListOf<String?>()
-    val limit = 100
+    val limit = 50
     var currentOffset = 0
     var nextLink: String? = ""
 
     while(nextLink != null) {
         val result = try {
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            spotifyClientWorkaroundHandler.getPlaylistItems(playlistId, currentOffset, limit)
+
+            /*
             spotifyClient.playlists.getPlaylistTracks(
                 playlist = playlistId,
                 offset = currentOffset,
                 limit = limit
             )
+            */
         } catch (e: Exception) {
             logger.error("Error while getting playlistTracks in getPlaylistSongIds with playlistId $playlistId: ", e)
             null
