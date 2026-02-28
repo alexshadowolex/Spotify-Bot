@@ -54,7 +54,7 @@ tasks.withType<Jar> {
 }
 
 dependencies {
-    val ktorVersion = "3.3.3"
+    val ktorVersion = "3.4.0"
 
     implementation(compose.desktop.currentOs)
 

@@ -928,13 +928,17 @@ private fun isUrlSpotifyDirectLink(url: Url): Boolean {
  * @param songId the Spotify track ID
  * @return the retrieved Track on success, or null if the request fails
  */
-private suspend fun getSpotifyTrackById(songId: String): Track? {
+private suspend fun getSpotifyTrackById(songId: String): WorkaroundTrack? {
     logger.info("called getSpotifyTrackById with ID: $songId")
     return try {
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        spotifyClientWorkaroundHandler.getTrack(songId)
+        /*
         spotifyClient.tracks.getTrack(
             track = songId,
             market = Market.DE
         )
+         */
     } catch (e: Exception) {
         logger.error("Exception while accessing tracks endpoint of spotify: ", e)
         null
@@ -951,7 +955,7 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
  * @param query the search query string
  * @return the first matching Track on success, or null if none is found or an error occurs
  */
-private suspend fun getSpotifyTrackByQuery(query: String): Track? {
+private suspend fun getSpotifyTrackByQuery(query: String): WorkaroundTrack? {
     logger.info("called getSpotifyTrackByQuery with query: $query")
     if(isUrlSpotifyDirectLink(Url(query))) {
         logger.info("Query is a spotify direct link to something but not to a track. Aborting the search")
@@ -959,6 +963,8 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
     }
 
     return try {
+        spotifyClientWorkaroundHandler.search(query)?.tracks?.firstOrNull()
+        /*
         spotifyClient.search.search(
             query = query,
             searchTypes = arrayOf(
@@ -969,6 +975,7 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
             market = Market.DE,
             limit = 1
         ).tracks?.firstOrNull()
+         */
     } catch (e: Exception) {
         logger.error("Exception while accessing search endpoint of spotify: ", e)
         null

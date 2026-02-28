@@ -1,5 +1,6 @@
 
 import com.adamratzman.spotify.models.Track
+import handler.WorkaroundTrack
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
 import java.util.*
@@ -88,7 +89,7 @@ data class SimplifiedSpotifyPlaybackResponse(
  * @property songRequestResultExplanation a human-readable explanation of the result
  */
 data class SongRequestResult(
-    val track: Track?,
+    val track: WorkaroundTrack?,
     val songRequestResultExplanation: String
 )
 
