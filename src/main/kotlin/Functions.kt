@@ -966,7 +966,8 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
                 SearchApi.SearchType.Album,
                 SearchApi.SearchType.Track
             ),
-            market = Market.DE
+            market = Market.DE,
+            limit = 1
         ).tracks?.firstOrNull()
     } catch (e: Exception) {
         logger.error("Exception while accessing search endpoint of spotify: ", e)
