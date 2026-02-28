@@ -9,13 +9,14 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
-import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
 import com.github.twitch4j.TwitchClient
 import config.BotConfig
 import config.BuildInfo
 import config.SpotifyConfig
 import handler.RequestedByQueueHandler
+import handler.SpotifyClientWorkaroundHandler
+import handler.WorkaroundTrack
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -51,7 +52,8 @@ val httpClient = HttpClient(CIO) {
 }
 
 lateinit var spotifyClient: SpotifyClientApi
-var currentSpotifySong: Track? = null
+lateinit var spotifyClientWorkaroundHandler: SpotifyClientWorkaroundHandler
+var currentSpotifySong: WorkaroundTrack? = null
 var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen.width, Screen.HomeScreen.height)))
 
 
@@ -98,6 +100,9 @@ suspend fun main() = try {
                     }
                 }.build()
             }
+
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            spotifyClientWorkaroundHandler = SpotifyClientWorkaroundHandler()
 
             logger.info("Spotify client built successfully.")
 

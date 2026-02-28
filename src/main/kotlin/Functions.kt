@@ -1,8 +1,5 @@
 import com.adamratzman.spotify.SpotifyException
-import com.adamratzman.spotify.endpoints.pub.SearchApi
 import com.adamratzman.spotify.models.SimpleArtist
-import com.adamratzman.spotify.models.Track
-import com.adamratzman.spotify.utils.Market
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
 import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
 import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
@@ -945,13 +942,17 @@ private fun isUrlSpotifyDirectLink(url: Url): Boolean {
  * @param songId the Spotify track ID
  * @return the retrieved Track on success, or null if the request fails
  */
-private suspend fun getSpotifyTrackById(songId: String): Track? {
+private suspend fun getSpotifyTrackById(songId: String): WorkaroundTrack? {
     logger.info("called getSpotifyTrackById with ID: $songId")
     return try {
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        spotifyClientWorkaroundHandler.getTrack(songId)
+        /*
         spotifyClient.tracks.getTrack(
             track = songId,
             market = Market.DE
         )
+         */
     } catch (e: Exception) {
         logger.error("Exception while accessing tracks endpoint of spotify: ", e)
         null
@@ -968,7 +969,7 @@ private suspend fun getSpotifyTrackById(songId: String): Track? {
  * @param query the search query string
  * @return the first matching Track on success, or null if none is found or an error occurs
  */
-private suspend fun getSpotifyTrackByQuery(query: String): Track? {
+private suspend fun getSpotifyTrackByQuery(query: String): WorkaroundTrack? {
     logger.info("called getSpotifyTrackByQuery with query: $query")
     if(isUrlSpotifyDirectLink(Url(query))) {
         logger.info("Query is a spotify direct link to something but not to a track. Aborting the search")
@@ -976,6 +977,9 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
     }
 
     return try {
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        spotifyClientWorkaroundHandler.search(query)?.tracks?.firstOrNull()
+        /*
         spotifyClient.search.search(
             query = query,
             searchTypes = arrayOf(
@@ -983,8 +987,10 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
                 SearchApi.SearchType.Album,
                 SearchApi.SearchType.Track
             ),
-            market = Market.DE
+            market = Market.DE,
+            limit = 1
         ).tracks?.firstOrNull()
+         */
     } catch (e: Exception) {
         logger.error("Exception while accessing search endpoint of spotify: ", e)
         null
@@ -1000,9 +1006,11 @@ private suspend fun getSpotifyTrackByQuery(query: String): Track? {
  *
  * @return the currently playing Track, or null if unavailable
  */
-suspend fun getCurrentSpotifySong(): Track? {
+suspend fun getCurrentSpotifySong(): WorkaroundTrack? {
     return try {
-        spotifyClient.player.getCurrentlyPlaying()?.item as Track
+        // TODO Change when fixed in Spotify-Kotlin-API
+        //spotifyClient.player.getCurrentlyPlaying()?.item as Track
+        spotifyClientWorkaroundHandler.getCurrentlyPlaying()?.item
     } catch (_: Exception) {
         null
     }
@@ -1130,7 +1138,7 @@ fun isSpotifySongNameGetterEnabled(): Boolean {
  * @param currentTrack the currently playing Spotify track
  * @param currentRequestedByUsername the username that requested the song, or null
  */
-private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUsername: String?) {
+private fun writeCurrentSongTextFiles(currentTrack: WorkaroundTrack, currentRequestedByUsername: String?) {
     try {
         val currentSongInputString = createSongString(currentTrack.name, currentTrack.artists)
         val currentRequestedByString = if(currentRequestedByUsername != null) {
@@ -1161,7 +1169,7 @@ private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUse
  *
  * @param currentTrack the currently playing Spotify track
  */
-private fun downloadAndSaveAlbumImage(currentTrack: Track) {
+private fun downloadAndSaveAlbumImage(currentTrack: WorkaroundTrack) {
     try {
         val images = currentTrack.album.images
         if (!images.isNullOrEmpty()) {
@@ -1339,14 +1347,16 @@ suspend fun isSpotifyPlaying(): Boolean? {
  * @param playlistId the target playlist ID
  * @return true if the operation succeeded, false otherwise
  */
-suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
+suspend fun addSongToPlaylist(song: WorkaroundTrack, playlistId: String): Boolean {
     logger.info("called addSongToPlaylist")
     var success = true
     try {
-        spotifyClient.playlists.addPlayableToClientPlaylist(
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        success = spotifyClientWorkaroundHandler.addItemsToPlaylist(playlistId, song.uri)
+        /*spotifyClient.playlists.addPlayableToClientPlaylist(
             playlistId,
             song.uri
-        )
+        )*/
     } catch (e: SpotifyException.BadRequestException) {
         logger.error("Something went wrong when adding song to the playlist in addSongToPlaylist: ", e)
         success = false
@@ -1423,24 +1433,29 @@ suspend fun isSongInPlaylist(songId: String, playlistId: String): Boolean? {
 /**
  * Retrieves all track IDs from a Spotify playlist.
  *
- * The playlist is fetched in pages of up to 100 tracks until complete.
+ * The playlist is fetched in pages of up to 50 tracks until complete.
  *
  * @param playlistId the playlist ID
  * @return a list of track IDs, or null if retrieval fails
  */
 suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
     val playlistSongIds = mutableListOf<String?>()
-    val limit = 100
+    val limit = 50
     var currentOffset = 0
     var nextLink: String? = ""
 
     while(nextLink != null) {
         val result = try {
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            spotifyClientWorkaroundHandler.getPlaylistItems(playlistId, currentOffset, limit)
+
+            /*
             spotifyClient.playlists.getPlaylistTracks(
                 playlist = playlistId,
                 offset = currentOffset,
                 limit = limit
             )
+            */
         } catch (e: Exception) {
             logger.error("Error while getting playlistTracks in getPlaylistSongIds with playlistId $playlistId: ", e)
             null
@@ -1449,7 +1464,7 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
         nextLink = result.next
         currentOffset += limit
 
-        playlistSongIds.addAll(result.items.map { it.track?.id ?: "" })
+        playlistSongIds.addAll(result.items.map { it.item?.id ?: "" })
     }
 
     return playlistSongIds
@@ -1464,7 +1479,7 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
  * @param song the track to add
  * @return a user-facing status message
  */
-suspend fun handleAddSongCommandFunctionality(song: Track): String {
+suspend fun handleAddSongCommandFunctionality(song: WorkaroundTrack): String {
     return when(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
         true -> {
             "Song ${song.name.addQuotationMarks()} is already in playlist ${getAddSongPlaylistNameString()}"
