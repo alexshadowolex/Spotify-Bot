@@ -52,15 +52,20 @@ class SpotifyClientWorkaroundHandler() {
         val endpoint = "$playlistsEndpoint$playlistId$getPlaylistItemsEndpoint"
         val endpointWithOptions = "$endpoint?offset=$offset&limit=$limit"
 
-        val response = httpClient.get(endpointWithOptions) {
-            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-        }
+        try {
+            val response = httpClient.get(endpointWithOptions) {
+                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+            }
 
-        return if(response.status != HttpStatusCode.OK) {
-            logHttpError(response, endpoint)
-            null
-        } else {
-            json.decodeFromString<PagingObject<WorkaroundPlaylistTrack>>(response.bodyAsText())
+            return if (response.status != HttpStatusCode.OK) {
+                logHttpError(response, endpoint)
+                null
+            } else {
+                json.decodeFromString<PagingObject<WorkaroundPlaylistTrack>>(response.bodyAsText())
+            }
+        } catch (e: Exception) {
+            logger.error("Exception in getPlaylistItems(): ${e.stackTraceToString()}")
+            return null
         }
     }
 
@@ -70,15 +75,20 @@ class SpotifyClientWorkaroundHandler() {
         val endpoint = "$baseUrlToSpotifyApi$getTrackEndpoint/$trackId"
         val endpointWithOptions = "$endpoint?market=${Market.DE}"
 
-        val response = httpClient.get(endpointWithOptions) {
-            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-        }
+        try {
+            val response = httpClient.get(endpointWithOptions) {
+                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+            }
 
-        return if(response.status != HttpStatusCode.OK) {
-            logHttpError(response, endpoint)
-            null
-        } else {
-            json.decodeFromString<WorkaroundTrack>(response.bodyAsText())
+            return if(response.status != HttpStatusCode.OK) {
+                logHttpError(response, endpoint)
+                null
+            } else {
+                json.decodeFromString<WorkaroundTrack>(response.bodyAsText())
+            }
+        } catch (e: Exception) {
+            logger.error("Exception in getTrack(): ${e.stackTraceToString()}")
+            return null
         }
     }
 
@@ -91,15 +101,20 @@ class SpotifyClientWorkaroundHandler() {
         val endpoint = "$baseUrlToSpotifyApi$searchEndpoint"
         val endpointWithOptions = "$endpoint?q=$queryUrlEncoded&type=$typeEncoded&market=${Market.DE}&limit=1"
 
-        val response = httpClient.get(endpointWithOptions) {
-            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-        }
+        try {
+            val response = httpClient.get(endpointWithOptions) {
+                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+            }
 
-        return if(response.status != HttpStatusCode.OK) {
-            logHttpError(response, endpoint)
-            null
-        } else {
-            json.decodeFromString<WorkaroundSpotifySearchResult>(response.bodyAsText())
+            return if(response.status != HttpStatusCode.OK) {
+                logHttpError(response, endpoint)
+                null
+            } else {
+                json.decodeFromString<WorkaroundSpotifySearchResult>(response.bodyAsText())
+            }
+        } catch (e: Exception) {
+            logger.error("Exception in search(): ${e.stackTraceToString()}")
+            return null
         }
     }
 
@@ -114,15 +129,20 @@ class SpotifyClientWorkaroundHandler() {
 
         val endpointWithOptions = "$endpoint?market=${Market.DE}&additional_types=$additionalTypes"
 
-        val response = httpClient.get(endpointWithOptions) {
-            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-        }
+        try {
+            val response = httpClient.get(endpointWithOptions) {
+                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+            }
 
-        return if(response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent) {
-            json.decodeFromString<WorkaroundCurrentlyPlayingObject>(response.bodyAsText())
-        } else {
-            logHttpError(response, endpoint)
-            null
+            return if(response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent) {
+                json.decodeFromString<WorkaroundCurrentlyPlayingObject>(response.bodyAsText())
+            } else {
+                logHttpError(response, endpoint)
+                null
+            }
+        } catch (e: Exception) {
+            logger.error("Exception in getCurrentlyPlaying(): ${e.stackTraceToString()}")
+            return null
         }
     }
 
@@ -130,15 +150,20 @@ class SpotifyClientWorkaroundHandler() {
         spotifyDummyCallToRefreshAccessToken()
         val endpoint = "$playerEndpoint$queueEndpoint"
 
-        val response = httpClient.get(endpoint) {
-            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
-        }
+        try {
+            val response = httpClient.get(endpoint) {
+                header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+            }
 
-        return if(response.status != HttpStatusCode.OK) {
-            logHttpError(response, endpoint)
-            null
-        } else {
-            json.decodeFromString<WorkaroundCurrentUserQueue>(response.bodyAsText())
+            return if (response.status != HttpStatusCode.OK) {
+                logHttpError(response, endpoint)
+                null
+            } else {
+                json.decodeFromString<WorkaroundCurrentUserQueue>(response.bodyAsText())
+            }
+        } catch (e: Exception) {
+            logger.error("Exception in getUsersQueue(): ${e.stackTraceToString()}")
+            return null
         }
     }
 
@@ -155,7 +180,7 @@ class SpotifyClientWorkaroundHandler() {
         try {
             spotifyClient.player.getDevices()
         } catch (e: Exception) {
-            logger.error("Error while accessing devices-endpoint in spotifyDummyCallToRefreshAccessToken: ${e.stackTrace}")
+            logger.error("Error while accessing devices-endpoint in spotifyDummyCallToRefreshAccessToken: ${e.stackTraceToString()}")
         }
     }
 }

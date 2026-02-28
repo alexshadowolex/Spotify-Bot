@@ -178,7 +178,10 @@ class RequestedByQueueHandler {
      * currently playing track) before the request was added
      * @param userName the name of the user who requested the song
      */
-    suspend fun addEntryToRequestedByQueue(queueBeforeWithoutCurrentlyPlaying: List<WorkaroundTrack>, userName: String) {
+    suspend fun addEntryToRequestedByQueue(queueBeforeWithoutCurrentlyPlaying: List<WorkaroundTrack>?, userName: String) {
+        if(queueBeforeWithoutCurrentlyPlaying == null) {
+            return
+        }
         // TODO Remove when fixed in Spotify-Kotlin-API
         //val queueBefore = mutableListOf(currentSpotifySong as Playable)
         val queueBefore = mutableListOf(currentSpotifySong)

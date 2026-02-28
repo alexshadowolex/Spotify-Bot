@@ -50,7 +50,7 @@ val songRequestCommand = Command(
 
             if(isSpotifySongNameGetterEnabled()) {
                 requestedByQueueHandler.addEntryToRequestedByQueue(
-                    queueBefore!!,
+                    queueBefore,
                     messageEvent.user.name
                 )
             }

@@ -30,7 +30,7 @@ val songRequestRedeem: Redeem = Redeem(
         val success = handleSongRequestQuery(twitchClient.chat, query)
         if (success) {
             requestedByQueueHandler.addEntryToRequestedByQueue(
-                queueBefore!!,
+                queueBefore,
                 redeemEvent.redemption.user.displayName
             )
         }
