@@ -12,12 +12,13 @@ import kotlinx.coroutines.launch
 import logger
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import spotifyClient
+import spotifyClientWorkaroundHandler
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class RemoveSongFromQueueHandler {
-    private val songsMarkedForSkipping = mutableSetOf<Track>()
+    private val songsMarkedForSkipping = mutableSetOf<WorkaroundTrack>()
 
     init {
         startRemoveSongFromQueueChecker()
@@ -38,7 +39,7 @@ class RemoveSongFromQueueHandler {
      * @return the matched [Track] if a suitable song was found and marked, or `null` otherwise
      */
 
-    suspend fun addSongToSetMarkedForSkipping(songSearchQuery: String): Track? {
+    suspend fun addSongToSetMarkedForSkipping(songSearchQuery: String): WorkaroundTrack? {
         val track = findTrackInQueue(songSearchQuery)
 
         if(track != null) {
@@ -107,24 +108,30 @@ class RemoveSongFromQueueHandler {
      * @return the closest matching [Track], or `null` if the queue is empty or
      * no suitable match could be determined
      */
-    private suspend fun findTrackInQueue(input: String): Track? {
+    private suspend fun findTrackInQueue(input: String): WorkaroundTrack? {
         val queue = try {
-            spotifyClient.player.getUserQueue().queue
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            //spotifyClient.player.getUserQueue().queue
+            spotifyClientWorkaroundHandler.getUsersQueue()?.queue
         } catch (e: Exception) {
             logger.error("Error while trying to get the user queue in findTrackInQueue: ", e)
             return null
         }
 
-        if(queue.isEmpty()) {
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        if(queue == null || queue.isEmpty()) {
             return null
         }
 
         val inputTokens = tokenize(input.lowercase(Locale.getDefault()))
-        var bestMatch: Track? = null
+        var bestMatch: WorkaroundTrack? = null
         var bestSimilarity = 0
 
         for (song in queue) {
-            val track = song.asTrack ?: continue
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            //val track = song.asTrack ?: continue
+            val track = song
+
             val lowerCaseSongString = createSongString(track.name, track.artists).lowercase(Locale.getDefault())
 
             val songTokens = tokenize(lowerCaseSongString)

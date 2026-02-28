@@ -4,8 +4,8 @@ import config.BotConfig
 import config.TwitchBotConfig
 import createSongString
 import getCurrentSpotifySong
-import handler.Command
 import handleCommandSanityChecksWithoutSecurityLevel
+import handler.Command
 import isSpotifyPlaying
 import sendMessageToTwitchChatAndLogIt
 
