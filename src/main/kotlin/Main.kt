@@ -53,7 +53,7 @@ val httpClient = HttpClient(CIO) {
 
 lateinit var spotifyClient: SpotifyClientApi
 lateinit var spotifyClientWorkaroundHandler: SpotifyClientWorkaroundHandler
-var currentSpotifySong: Track? = null
+var currentSpotifySong: WorkaroundTrack? = null
 var mainWindowState = mutableStateOf(WindowState(size = DpSize(Screen.HomeScreen.width, Screen.HomeScreen.height)))
 
 

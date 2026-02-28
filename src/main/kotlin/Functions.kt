@@ -1,8 +1,5 @@
 import com.adamratzman.spotify.SpotifyException
-import com.adamratzman.spotify.endpoints.pub.SearchApi
 import com.adamratzman.spotify.models.SimpleArtist
-import com.adamratzman.spotify.models.Track
-import com.adamratzman.spotify.utils.Market
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
 import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess
 import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
@@ -963,6 +960,7 @@ private suspend fun getSpotifyTrackByQuery(query: String): WorkaroundTrack? {
     }
 
     return try {
+        // TODO Remove when fixed in Spotify-Kotlin-API
         spotifyClientWorkaroundHandler.search(query)?.tracks?.firstOrNull()
         /*
         spotifyClient.search.search(
@@ -991,9 +989,11 @@ private suspend fun getSpotifyTrackByQuery(query: String): WorkaroundTrack? {
  *
  * @return the currently playing Track, or null if unavailable
  */
-suspend fun getCurrentSpotifySong(): Track? {
+suspend fun getCurrentSpotifySong(): WorkaroundTrack? {
     return try {
-        spotifyClient.player.getCurrentlyPlaying()?.item as Track
+        // TODO Change when fixed in Spotify-Kotlin-API
+        //spotifyClient.player.getCurrentlyPlaying()?.item as Track
+        spotifyClientWorkaroundHandler.getCurrentlyPlaying()?.item
     } catch (_: Exception) {
         null
     }
@@ -1121,7 +1121,7 @@ fun isSpotifySongNameGetterEnabled(): Boolean {
  * @param currentTrack the currently playing Spotify track
  * @param currentRequestedByUsername the username that requested the song, or null
  */
-private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUsername: String?) {
+private fun writeCurrentSongTextFiles(currentTrack: WorkaroundTrack, currentRequestedByUsername: String?) {
     try {
         val currentSongInputString = createSongString(currentTrack.name, currentTrack.artists)
         val currentRequestedByString = if(currentRequestedByUsername != null) {
@@ -1152,7 +1152,7 @@ private fun writeCurrentSongTextFiles(currentTrack: Track, currentRequestedByUse
  *
  * @param currentTrack the currently playing Spotify track
  */
-private fun downloadAndSaveAlbumImage(currentTrack: Track) {
+private fun downloadAndSaveAlbumImage(currentTrack: WorkaroundTrack) {
     try {
         val images = currentTrack.album.images
         if (!images.isNullOrEmpty()) {
@@ -1330,7 +1330,7 @@ suspend fun isSpotifyPlaying(): Boolean? {
  * @param playlistId the target playlist ID
  * @return true if the operation succeeded, false otherwise
  */
-suspend fun addSongToPlaylist(song: Track, playlistId: String): Boolean {
+suspend fun addSongToPlaylist(song: WorkaroundTrack, playlistId: String): Boolean {
     logger.info("called addSongToPlaylist")
     var success = true
     try {
@@ -1462,7 +1462,7 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
  * @param song the track to add
  * @return a user-facing status message
  */
-suspend fun handleAddSongCommandFunctionality(song: Track): String {
+suspend fun handleAddSongCommandFunctionality(song: WorkaroundTrack): String {
     return when(isSongInPlaylist(song.id, SpotifyConfig.playlistIdForAddSongCommand)) {
         true -> {
             "Song ${song.name.addQuotationMarks()} is already in playlist ${getAddSongPlaylistNameString()}"

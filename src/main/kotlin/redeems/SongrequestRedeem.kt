@@ -7,6 +7,7 @@ import handler.Redeem
 import isSongRequestRedeemActive
 import logger
 import spotifyClient
+import spotifyClientWorkaroundHandler
 
 val songRequestRedeem: Redeem = Redeem(
     id = TwitchBotConfig.songRequestRedeemId,
@@ -24,11 +25,13 @@ val songRequestRedeem: Redeem = Redeem(
 
         logger.info("query: $query")
 
-        val queueBefore = spotifyClient.player.getUserQueue().queue
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        //val queueBefore = spotifyClient.player.getUserQueue().queue
+        val queueBefore = spotifyClientWorkaroundHandler.getUsersQueue()?.queue
         val success = handleSongRequestQuery(twitchClient.chat, query)
         if (success) {
             requestedByQueueHandler.addEntryToRequestedByQueue(
-                queueBefore,
+                queueBefore!!,
                 redeemEvent.redemption.user.displayName
             )
         }

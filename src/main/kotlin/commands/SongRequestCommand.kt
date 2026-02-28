@@ -8,7 +8,7 @@ import isSongRequestCommandActive
 import isSpotifySongNameGetterEnabled
 import logger
 import sendMessageToTwitchChatAndLogIt
-import spotifyClient
+import spotifyClientWorkaroundHandler
 import kotlin.time.Duration.Companion.seconds
 
 val songRequestCommand = Command(
@@ -36,7 +36,9 @@ val songRequestCommand = Command(
 
         // The queue has to be saved before successfully adding the song to the queue for the RequestedBy-handler!
         val queueBefore = if(isSpotifySongNameGetterEnabled()) {
-            spotifyClient.player.getUserQueue().queue
+            // TODO Remove when fixed in Spotify-Kotlin-API
+            //spotifyClient.player.getUserQueue().queue
+            spotifyClientWorkaroundHandler.getUsersQueue()?.queue
         } else {
             null
         }

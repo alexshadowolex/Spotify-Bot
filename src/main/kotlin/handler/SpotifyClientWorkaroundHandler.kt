@@ -1,26 +1,9 @@
 package handler
 
-import com.adamratzman.spotify.models.Artist
-import com.adamratzman.spotify.models.CoreObject
-import com.adamratzman.spotify.models.ExternalId
-import com.adamratzman.spotify.models.LinkedTrack
-import com.adamratzman.spotify.models.NeedsApi
-import com.adamratzman.spotify.models.NullablePagingObject
-import com.adamratzman.spotify.models.PagingObject
-import com.adamratzman.spotify.models.Playable
-import com.adamratzman.spotify.models.PlayableUri
-import com.adamratzman.spotify.models.PlaylistTrack
-import com.adamratzman.spotify.models.RelinkingAvailableResponse
-import com.adamratzman.spotify.models.Restrictions
-import com.adamratzman.spotify.models.SimpleAlbum
-import com.adamratzman.spotify.models.SimpleArtist
-import com.adamratzman.spotify.models.SimpleEpisode
-import com.adamratzman.spotify.models.SimplePlaylist
-import com.adamratzman.spotify.models.SimpleShow
-import com.adamratzman.spotify.models.SpotifyImage
-import com.adamratzman.spotify.models.SpotifySearchResult
-import com.adamratzman.spotify.models.Track
+import com.adamratzman.spotify.models.*
+import com.adamratzman.spotify.utils.ExternalUrls
 import com.adamratzman.spotify.utils.Market
+import com.adamratzman.spotify.utils.getExternalUrls
 import httpClient
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -31,7 +14,6 @@ import kotlinx.serialization.json.Json
 import logger
 import spotifyClient
 import java.net.URLEncoder
-import kotlin.collections.plus
 
 // TODO Remove when fixed in Spotify-Kotlin-API https://github.com/adamint/spotify-web-api-kotlin/issues/343
 class SpotifyClientWorkaroundHandler() {
@@ -39,12 +21,17 @@ class SpotifyClientWorkaroundHandler() {
 
     private val baseUrlToSpotifyApi = "https://api.spotify.com/v1/"
     private val playlistsEndpoint = baseUrlToSpotifyApi + "playlists/"
+    private val playerEndpoint = baseUrlToSpotifyApi + "me/player"
+
     private val addItemsToPlaylistEndpoint = "/items"
     private val getPlaylistItemsEndpoint = "/items"
     private val getTrackEndpoint = "/tracks"
     private val searchEndpoint = "/search"
+    private val currentlyPlayingEndpoint = "/currently-playing"
+    private val queueEndpoint = "/queue"
 
     suspend fun addItemsToPlaylist(playlistId: String, trackUri: PlayableUri): Boolean {
+        spotifyDummyCallToRefreshAccessToken()
         val endpoint = "$playlistsEndpoint$playlistId$addItemsToPlaylistEndpoint"
         val response = httpClient.post(endpoint) {
             header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
@@ -61,6 +48,7 @@ class SpotifyClientWorkaroundHandler() {
     }
 
     suspend fun getPlaylistItems(playlistId: String, offset: Int, limit: Int): PagingObject<PlaylistTrack>? {
+        spotifyDummyCallToRefreshAccessToken()
         val endpoint = "$playlistsEndpoint$playlistId$getPlaylistItemsEndpoint"
         val endpointWithOptions = "$endpoint?offset=$offset&limit=$limit"
 
@@ -78,6 +66,7 @@ class SpotifyClientWorkaroundHandler() {
 
 
     suspend fun getTrack(trackId: String): WorkaroundTrack? {
+        spotifyDummyCallToRefreshAccessToken()
         val endpoint = "$baseUrlToSpotifyApi$getTrackEndpoint/$trackId"
         val endpointWithOptions = "$endpoint?market=${Market.DE}"
 
@@ -95,6 +84,7 @@ class SpotifyClientWorkaroundHandler() {
 
 
     suspend fun search(query: String): WorkaroundSpotifySearchResult? {
+        spotifyDummyCallToRefreshAccessToken()
         val queryUrlEncoded = URLEncoder.encode(query, "UTF-8")
         val typeEncoded = "album%2Cartist%2Ctrack"
 
@@ -113,6 +103,45 @@ class SpotifyClientWorkaroundHandler() {
         }
     }
 
+
+    suspend fun getCurrentlyPlaying(): WorkaroundCurrentlyPlayingObject? {
+        spotifyDummyCallToRefreshAccessToken()
+        val endpoint = "$playerEndpoint$currentlyPlayingEndpoint"
+        val additionalTypes = URLEncoder.encode(listOf(
+            CurrentlyPlayingType.Track,
+            CurrentlyPlayingType.Episode
+        ).joinToString(",") { it.identifier }, "UTF-8")
+
+        val endpointWithOptions = "$endpoint?market=${Market.DE}&additional_types=$additionalTypes"
+
+        val response = httpClient.get(endpointWithOptions) {
+            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+        }
+
+        return if(response.status != HttpStatusCode.OK) {
+            logHttpError(response, endpoint)
+            null
+        } else {
+            json.decodeFromString<WorkaroundCurrentlyPlayingObject>(response.bodyAsText())
+        }
+    }
+
+    suspend fun getUsersQueue(): WorkaroundCurrentUserQueue? {
+        spotifyDummyCallToRefreshAccessToken()
+        val endpoint = "$playerEndpoint$queueEndpoint"
+
+        val response = httpClient.get(endpoint) {
+            header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
+        }
+
+        return if(response.status != HttpStatusCode.OK) {
+            logHttpError(response, endpoint)
+            null
+        } else {
+            json.decodeFromString<WorkaroundCurrentUserQueue>(response.bodyAsText())
+        }
+    }
+
     private suspend fun logHttpError(response: HttpResponse, endpoint: String) {
         logger.error(
             "Error while sending Request to endpoint $endpoint\n" +
@@ -121,7 +150,16 @@ class SpotifyClientWorkaroundHandler() {
             response.bodyAsText()
         )
     }
+
+    private suspend fun spotifyDummyCallToRefreshAccessToken() {
+        try {
+            spotifyClient.player.getDevices()
+        } catch (e: Exception) {
+            logger.error("Error while accessing devices-endpoint in spotifyDummyCallToRefreshAccessToken: ${e.stackTrace}")
+        }
+    }
 }
+
 
 @Serializable
 private data class AddItemsToPlaylistBody(
@@ -147,7 +185,6 @@ data class WorkaroundTrack(
     @SerialName("duration_ms") val durationMs: Int,
     val explicit: Boolean,
     val name: String,
-    val popularity: Double,
     @SerialName("preview_url") val previewUrl: String? = null,
     @SerialName("track_number") val trackNumber: Int,
     override val type: String,
@@ -158,9 +195,26 @@ data class WorkaroundTrack(
     val track: Boolean? = null
 ) : Playable {
     val length: Int get() = durationMs
+    val externalUrls: ExternalUrls get() = getExternalUrls(externalUrlsString)
 }
 
 @Serializable
 data class WorkaroundSpotifySearchResult(
     val tracks: PagingObject<WorkaroundTrack>? = null,
+)
+
+@Serializable
+data class WorkaroundCurrentlyPlayingObject(
+    val context: SpotifyContext? = null,
+    val timestamp: Long,
+    @SerialName("progress_ms") val progressMs: Int? = null,
+    @SerialName("is_playing") val isPlaying: Boolean,
+    @SerialName("item")
+    val item: WorkaroundTrack? = null,
+    val actions: PlaybackActions
+)
+
+@Serializable
+data class WorkaroundCurrentUserQueue(
+    @SerialName("queue") val queue: List<WorkaroundTrack>
 )

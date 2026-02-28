@@ -6,6 +6,7 @@ import com.adamratzman.spotify.models.Track
 import currentSpotifySong
 import logger
 import spotifyClient
+import spotifyClientWorkaroundHandler
 
 class RequestedByQueueHandler {
     private val requestedByQueue = mutableListOf<RequestedByEntry>()
@@ -28,7 +29,7 @@ class RequestedByQueueHandler {
      * @param trackBeforeChange the track that was playing before the current track update,
      * or `null` if unavailable
      */
-    fun updateRequestedByQueue(trackBeforeChange: Track?) {
+    fun updateRequestedByQueue(trackBeforeChange: WorkaroundTrack?) {
         currentRequestedByUsername = null
         if(requestedByQueue.isEmpty()) {
             return
@@ -96,7 +97,7 @@ class RequestedByQueueHandler {
      * @param trackBeforeChange the track that was playing before the current track update,
      * or `null` if unavailable
      */
-    private fun updateAmountOfSameTrackInQueueBefore(trackBeforeChange: Track?) {
+    private fun updateAmountOfSameTrackInQueueBefore(trackBeforeChange: WorkaroundTrack?) {
         requestedByQueue.filter {
             it.indexInQueueAndTrack.track == trackBeforeChange
         }.forEach {
@@ -143,16 +144,21 @@ class RequestedByQueueHandler {
      * @return an [IndexInQueueAndTrack] describing the added track and its position,
      * or `null` if no difference could be determined
      */
-    private suspend fun getAddedTrackWithIndex(queueBefore: List<Playable>): IndexInQueueAndTrack? {
-        val queueAfter = mutableListOf(currentSpotifySong as Playable)
-        queueAfter.addAll(spotifyClient.player.getUserQueue().queue)
+    private suspend fun getAddedTrackWithIndex(queueBefore: List<WorkaroundTrack>): IndexInQueueAndTrack? {
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        //val queueAfter = mutableListOf(currentSpotifySong as Playable)
+        //queueAfter.addAll(spotifyClient.player.getUserQueue().queue)
+        val queueAfter = mutableListOf(currentSpotifySong)
+        queueAfter.addAll(spotifyClientWorkaroundHandler.getUsersQueue()?.queue ?: listOf())
 
         for(index in 0..queueBefore.size) {
             val currentTrackBefore = queueBefore.getOrNull(index) ?: break
             val currentTrackAfter = queueAfter.getOrNull(index) ?: break
 
             if (currentTrackBefore != currentTrackAfter) {
-                val currentTrackAfterParsing = currentTrackAfter.asTrack
+                // TODO Remove when fixed in Spotify-Kotlin-API
+                //val currentTrackAfterParsing = currentTrackAfter.asTrack
+                val currentTrackAfterParsing = currentTrackAfter
 
                 if (currentTrackAfterParsing != null) {
                     return IndexInQueueAndTrack(index, currentTrackAfterParsing)
@@ -175,11 +181,13 @@ class RequestedByQueueHandler {
      * currently playing track) before the request was added
      * @param userName the name of the user who requested the song
      */
-    suspend fun addEntryToRequestedByQueue(queueBeforeWithoutCurrentlyPlaying: List<Playable>, userName: String) {
-        val queueBefore = mutableListOf(currentSpotifySong as Playable)
+    suspend fun addEntryToRequestedByQueue(queueBeforeWithoutCurrentlyPlaying: List<WorkaroundTrack>, userName: String) {
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        //val queueBefore = mutableListOf(currentSpotifySong as Playable)
+        val queueBefore = mutableListOf(currentSpotifySong)
         queueBefore.addAll(queueBeforeWithoutCurrentlyPlaying)
 
-        val indexInQueueAndTrack = getAddedTrackWithIndex(queueBefore)
+        val indexInQueueAndTrack = getAddedTrackWithIndex(queueBefore as List<WorkaroundTrack>)
 
         if(indexInQueueAndTrack != null) {
             val amountOfSameTrackBefore = getAmountOfSameTrackInQueue(
@@ -224,7 +232,7 @@ class RequestedByQueueHandler {
 
 data class IndexInQueueAndTrack (
     var indexInQueue: Int,
-    val track: Track
+    val track: WorkaroundTrack
 )
 
 data class RequestedByEntry (
