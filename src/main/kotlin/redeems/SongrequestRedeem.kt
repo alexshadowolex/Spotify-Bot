@@ -6,7 +6,6 @@ import handleSongRequestQuery
 import handler.Redeem
 import isSongRequestRedeemActive
 import logger
-import spotifyClient
 import spotifyClientWorkaroundHandler
 
 val songRequestRedeem: Redeem = Redeem(

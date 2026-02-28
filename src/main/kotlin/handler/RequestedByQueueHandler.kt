@@ -1,11 +1,8 @@
 package handler
 
 import addQuotationMarks
-import com.adamratzman.spotify.models.Playable
-import com.adamratzman.spotify.models.Track
 import currentSpotifySong
 import logger
-import spotifyClient
 import spotifyClientWorkaroundHandler
 
 class RequestedByQueueHandler {
@@ -224,9 +221,11 @@ class RequestedByQueueHandler {
      */
     private fun getAmountOfSameTrackInQueue(
         currentTrack: IndexInQueueAndTrack,
-        queue: List<Playable>
+        queue: List<WorkaroundTrack>
     ): Int {
-        return queue.subList(0, currentTrack.indexInQueue).count { it.asTrack == currentTrack.track }
+        // TODO Remove when fixed in Spotify-Kotlin-API
+        //return queue.subList(0, currentTrack.indexInQueue).count { it.asTrack == currentTrack.track }
+        return queue.subList(0, currentTrack.indexInQueue).count { it == currentTrack.track }
     }
 }
 

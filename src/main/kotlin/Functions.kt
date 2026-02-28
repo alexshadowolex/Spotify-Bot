@@ -1447,7 +1447,7 @@ suspend fun getPlaylistSongIds(playlistId: String): List<String?>? {
         nextLink = result.next
         currentOffset += limit
 
-        playlistSongIds.addAll(result.items.map { it.track?.id ?: "" })
+        playlistSongIds.addAll(result.items.map { it.item?.id ?: "" })
     }
 
     return playlistSongIds

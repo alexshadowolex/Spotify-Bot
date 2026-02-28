@@ -9,7 +9,6 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.models.Token
-import com.adamratzman.spotify.models.Track
 import com.adamratzman.spotify.spotifyClientApi
 import com.github.twitch4j.TwitchClient
 import config.BotConfig
@@ -17,6 +16,7 @@ import config.BuildInfo
 import config.SpotifyConfig
 import handler.RequestedByQueueHandler
 import handler.SpotifyClientWorkaroundHandler
+import handler.WorkaroundTrack
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*

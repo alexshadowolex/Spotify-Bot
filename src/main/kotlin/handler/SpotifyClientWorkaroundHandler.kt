@@ -47,7 +47,7 @@ class SpotifyClientWorkaroundHandler() {
         }
     }
 
-    suspend fun getPlaylistItems(playlistId: String, offset: Int, limit: Int): PagingObject<PlaylistTrack>? {
+    suspend fun getPlaylistItems(playlistId: String, offset: Int, limit: Int): PagingObject<WorkaroundPlaylistTrack>? {
         spotifyDummyCallToRefreshAccessToken()
         val endpoint = "$playlistsEndpoint$playlistId$getPlaylistItemsEndpoint"
         val endpointWithOptions = "$endpoint?offset=$offset&limit=$limit"
@@ -60,7 +60,7 @@ class SpotifyClientWorkaroundHandler() {
             logHttpError(response, endpoint)
             null
         } else {
-            json.decodeFromString<PagingObject<PlaylistTrack>>(response.bodyAsText())
+            json.decodeFromString<PagingObject<WorkaroundPlaylistTrack>>(response.bodyAsText())
         }
     }
 
@@ -118,11 +118,11 @@ class SpotifyClientWorkaroundHandler() {
             header("Authorization", "Bearer ${spotifyClient.token.accessToken}")
         }
 
-        return if(response.status != HttpStatusCode.OK) {
+        return if(response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent) {
+            json.decodeFromString<WorkaroundCurrentlyPlayingObject>(response.bodyAsText())
+        } else {
             logHttpError(response, endpoint)
             null
-        } else {
-            json.decodeFromString<WorkaroundCurrentlyPlayingObject>(response.bodyAsText())
         }
     }
 
@@ -174,9 +174,9 @@ data class WorkaroundSimpleAlbum(
 @Serializable
 data class WorkaroundTrack(
     @SerialName("external_urls") val externalUrlsString: Map<String, String>,
-    override val href: String,
-    override val id: String,
-    override val uri: PlayableUri,
+    val href: String,
+    val id: String,
+    val uri: PlayableUri,
 
     val album: WorkaroundSimpleAlbum,
     val artists: List<SimpleArtist>,
@@ -187,16 +187,27 @@ data class WorkaroundTrack(
     val name: String,
     @SerialName("preview_url") val previewUrl: String? = null,
     @SerialName("track_number") val trackNumber: Int,
-    override val type: String,
+    val type: String,
     @SerialName("is_local") val isLocal: Boolean? = null,
     val restrictions: Restrictions? = null,
 
     val episode: Boolean? = null,
     val track: Boolean? = null
-) : Playable {
+) {
     val length: Int get() = durationMs
     val externalUrls: ExternalUrls get() = getExternalUrls(externalUrlsString)
 }
+
+@Serializable
+data class WorkaroundPlaylistTrack(
+    @SerialName("primary_color") val primaryColor: String? = null,
+    @SerialName("added_at") val addedAt: String? = null,
+    @SerialName("added_by") val addedBy: SpotifyPublicUser? = null,
+    @SerialName("is_local") val isLocal: Boolean? = null,
+    val item: WorkaroundTrack? = null,
+    @SerialName("video_thumbnail") val videoThumbnail: VideoThumbnail? = null
+)
+
 
 @Serializable
 data class WorkaroundSpotifySearchResult(
