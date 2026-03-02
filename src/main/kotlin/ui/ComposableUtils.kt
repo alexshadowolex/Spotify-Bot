@@ -431,6 +431,8 @@ fun dropDownStringPropertiesList(
                                     text = getHeaderContent(customGroupEntry)
                                 )
                             }
+
+                            sectionDivider()
                         }
 
                         Row {
@@ -448,6 +450,7 @@ fun dropDownStringPropertiesList(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .align(Alignment.CenterVertically)
                             ) {
                                 Row(
                                     modifier = Modifier
