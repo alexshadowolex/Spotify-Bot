@@ -211,10 +211,14 @@ fun hyperlink(
  * immediately to the provided [SnapshotStateList], and user feedback is shown
  * using snackbars. Optional lowercase normalization can be applied to inputs.
  *
+ * The optional parameter `getHeaderContent` defines a function that dynamically
+ * generates the header for each list entry.
+ *
  * @param entries the mutable list of string entries to manage
  * @param textFieldTitle the label shown for the text field and dropdown
  * @param scaffoldState the scaffold state used to display snackbars
  * @param lowercaseInput whether newly entered values should be converted to lowercase
+ * @param getHeaderContent
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -222,7 +226,8 @@ fun dropDownStringPropertiesList(
     entries: SnapshotStateList<String>,
     textFieldTitle: String,
     scaffoldState: ScaffoldState,
-    lowercaseInput: Boolean
+    lowercaseInput: Boolean,
+    getHeaderContent: ((String) -> String)? = null
 ) {
     val defaultIndex = -1
     var editIndex by remember { mutableStateOf(defaultIndex) }
@@ -419,61 +424,76 @@ fun dropDownStringPropertiesList(
                         .fillMaxWidth()
                         .padding(top = 5.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(widthPercentage)
-                    ) {
-                        Text(
-                            text = customGroupEntry,
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.End)
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    // edit entry
-                                    editIndex = index
-                                    isEditModeEnabled = true
-                                    expanded = false
-                                    textFieldContent.value = entries[index]
-                                    logger.info("Started editing entry ${entries[index]} of $textFieldTitle")
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Edit,
-                                    contentDescription = "edit_icon",
-                                    tint = Color.Unspecified
+                    Column {
+                        if(getHeaderContent != null) {
+                            Row {
+                                Text(
+                                    text = getHeaderContent(customGroupEntry)
                                 )
                             }
 
-                            IconButton(
-                                onClick = {
-                                    // delete entry
-                                    val entry = entries[index]
-                                    backgroundCoroutineScope.launch {
-                                        scaffoldState.snackbarHostState.showSnackbar(
-                                            message = "Removed entry ${entry.addQuotationMarks()}"
+                            sectionDivider()
+                        }
+
+                        Row {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(widthPercentage)
+                            ) {
+                                Text(
+                                    text = customGroupEntry,
+                                    modifier = Modifier
+                                        .align(Alignment.Start)
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterVertically)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .align(Alignment.End)
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            // edit entry
+                                            editIndex = index
+                                            isEditModeEnabled = true
+                                            expanded = false
+                                            textFieldContent.value = entries[index]
+                                            logger.info("Started editing entry ${entries[index]} of $textFieldTitle")
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Edit,
+                                            contentDescription = "edit_icon",
+                                            tint = Color.Unspecified
                                         )
                                     }
-                                    entries.removeAt(index)
-                                    textFieldContent.value = entries.toList().joinToString(",")
-                                    logger.info("Removed entry $entry of $textFieldTitle")
+
+                                    IconButton(
+                                        onClick = {
+                                            // delete entry
+                                            val entry = entries[index]
+                                            backgroundCoroutineScope.launch {
+                                                scaffoldState.snackbarHostState.showSnackbar(
+                                                    message = "Removed entry ${entry.addQuotationMarks()}"
+                                                )
+                                            }
+                                            entries.removeAt(index)
+                                            textFieldContent.value = entries.toList().joinToString(",")
+                                            logger.info("Removed entry $entry of $textFieldTitle")
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Delete,
+                                            contentDescription = "delete_icon",
+                                            tint = Color.Unspecified
+                                        )
+                                    }
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Delete,
-                                    contentDescription = "delete_icon",
-                                    tint = Color.Unspecified
-                                )
                             }
                         }
                     }
