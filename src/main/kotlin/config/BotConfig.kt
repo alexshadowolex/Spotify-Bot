@@ -328,6 +328,18 @@ object BotConfig {
             savePropertiesToFile()
         }
 
+    var isPraiseAlexFunctionalityEnabled = getPropertyValue(
+        properties,
+        propertyName = "isPraiseAlexFunctionalityEnabled",
+        propertiesFileRelativePath = botConfigFile.path,
+        setPropertyIfNotExisting = false
+    ).toBoolean()
+        set(value) {
+            field = value
+            properties.setProperty("isPraiseAlexFunctionalityEnabled", value.toString())
+            savePropertiesToFile()
+        }
+
     var isPauseResumeCommandEnabled = getPropertyValue(
         properties,
         propertyName = "isPauseResumeCommandEnabled",

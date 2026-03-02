@@ -109,7 +109,11 @@ fun setupTwitchBot(requestedByQueueHandler: RequestedByQueueHandler): TwitchClie
     twitchClient.eventManager.onEvent(ChannelMessageEvent::class.java) { messageEvent ->
         val message = messageEvent.message
 
-        if(messageEvent.user.name == ALEX_TWITCH_USER_NAME && !wasAlexAlreadyPraised) {
+        if(
+            messageEvent.user.name == ALEX_TWITCH_USER_NAME &&
+            !wasAlexAlreadyPraised &&
+            BotConfig.isPraiseAlexFunctionalityEnabled
+        ) {
             praiseAlex(twitchClient.chat)
         }
 

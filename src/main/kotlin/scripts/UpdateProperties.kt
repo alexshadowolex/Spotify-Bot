@@ -65,7 +65,8 @@ private val propertiesFilesToProperties = listOf(
         // Since Version: 2.0.6
         Pair("isPauseResumeCommandEnabled", "true"),
         Pair("pauseResumeCommandSecurityLevel", "BROADCASTER"),
-        Pair("customGroupUserNamesPauseResumeCommand", "")
+        Pair("customGroupUserNamesPauseResumeCommand", ""),
+        Pair("isPraiseAlexFunctionalityEnabled", "true"),
     )
 )
 

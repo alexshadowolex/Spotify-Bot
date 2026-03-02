@@ -125,6 +125,11 @@ var isFollowerOnlyModeEnabled = mutableStateOf(false)
         field = value
         BotConfig.isFollowerOnlyModeEnabled = value.value
     }
+var isPraiseAlexFunctionalityEnabled = mutableStateOf(false)
+    set(value) {
+        field = value
+        BotConfig.isPraiseAlexFunctionalityEnabled = value.value
+    }
 private var isPauseResumeCommandEnabled = mutableStateOf(false)
     set(value) {
         field = value
@@ -217,6 +222,16 @@ fun generalSettingsScreen() {
                             true,
                             null,
                             isFollowerOnlyModeEnabled
+                        )
+
+                        sectionDivider()
+
+
+                        toggleFunctionalityRow(
+                            "Praise Alex with a meme when he joins ",
+                            true,
+                            null,
+                            isPraiseAlexFunctionalityEnabled
                         )
 
                         sectionDivider()
@@ -664,6 +679,7 @@ fun initializeGeneralFlagVariables() {
     blockSongCommandSecurityLevel = remember { mutableStateOf(BotConfig.blockSongCommandSecurityLevel) }
     customGroupUserNamesBlockSongCommand = remember { BotConfig.customGroupUserNamesBlockSongCommand.toMutableStateList() }
     isFollowerOnlyModeEnabled = remember { mutableStateOf(BotConfig.isFollowerOnlyModeEnabled) }
+    isPraiseAlexFunctionalityEnabled = remember { mutableStateOf(BotConfig.isPraiseAlexFunctionalityEnabled) }
     isPauseResumeCommandEnabled = remember { mutableStateOf(BotConfig.isPauseResumeCommandEnabled) }
     pauseResumeCommandSecurityLevel = remember { mutableStateOf(BotConfig.pauseResumeCommandSecurityLevel) }
     customGroupUserNamesPauseResumeCommand = remember { BotConfig.customGroupUserNamesPauseResumeCommand.toMutableStateList() }
