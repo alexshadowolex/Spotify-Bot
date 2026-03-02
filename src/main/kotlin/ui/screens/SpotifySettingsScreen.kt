@@ -8,7 +8,12 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import backgroundCoroutineScope
 import config.SpotifyConfig
+import getSongIdFromSpotifyDirectLink
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import spotifyClientWorkaroundHandler
 import toDoublePropertiesString
 import ui.dropDownStringPropertiesList
 import ui.propertiesTextField
@@ -83,7 +88,28 @@ fun spotifySettingsScreen() {
                     entries = blockedSongLinks,
                     textFieldTitle = "Blocked Song Links",
                     scaffoldState = scaffoldState,
-                    lowercaseInput = false
+                    lowercaseInput = false,
+                    getHeaderContent = { trackLink ->
+                        val trackId = getSongIdFromSpotifyDirectLink(trackLink)
+                        if(trackId == null) {
+                            ""
+                        } else {
+                            val trackName = runBlocking {
+                                spotifyClientWorkaroundHandler.getTrack(trackId)?.name
+                            } ?: ""
+
+                            val maximumTrackNameLength = 40
+                            val cutoffString = "..."
+                            if(trackName.length <= maximumTrackNameLength) {
+                                trackName
+                            } else {
+                                trackName.substring(
+                                    startIndex = 0,
+                                    endIndex = maximumTrackNameLength
+                                ) + cutoffString
+                            }
+                        }
+                    }
                 )
 
                 sectionDivider()
