@@ -227,7 +227,7 @@ fun dropDownStringPropertiesList(
     textFieldTitle: String,
     scaffoldState: ScaffoldState,
     lowercaseInput: Boolean,
-    getHeaderContent: ((String) -> String)? = null
+    getHeaderContent: (suspend (String) -> String)? = null
 ) {
     val defaultIndex = -1
     var editIndex by remember { mutableStateOf(defaultIndex) }
@@ -427,8 +427,12 @@ fun dropDownStringPropertiesList(
                     Column {
                         if(getHeaderContent != null) {
                             Row {
+                                val headerContent = remember {mutableStateOf("Name loading...")}
+                                backgroundCoroutineScope.launch {
+                                    headerContent.value = getHeaderContent(customGroupEntry)
+                                }
                                 Text(
-                                    text = getHeaderContent(customGroupEntry)
+                                    text = headerContent.value
                                 )
                             }
 

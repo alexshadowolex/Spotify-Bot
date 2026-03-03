@@ -94,9 +94,7 @@ fun spotifySettingsScreen() {
                         if(trackId == null) {
                             ""
                         } else {
-                            val trackName = runBlocking {
-                                spotifyClientWorkaroundHandler.getTrack(trackId)?.name
-                            } ?: ""
+                            val trackName = spotifyClientWorkaroundHandler.getTrack(trackId)?.name ?: ""
 
                             val maximumTrackNameLength = 40
                             val cutoffString = "..."
