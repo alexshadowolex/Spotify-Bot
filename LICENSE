@@ -1,0 +1,42 @@
+Simple Non-Commercial Software License (SNCSL) — 2026
+Copyright (c) 2022-2026 alexshadowolex
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software **for non-commercial purposes only**,
+subject to the following conditions:
+
+1. Non-Commercial Use Only
+   - Commercial use of the Software is strictly prohibited.
+     "Commercial" means any use primarily intended for commercial advantage
+     or monetary compensation, or any use by a for-profit entity or service.
+   - If you are unsure whether your intended use is commercial, do not use
+     the Software without obtaining appropriate legal advice or prior written
+     permission from the copyright holder.
+
+2. Attribution
+   - Redistributions of the Software, in source or binary form, must retain
+     the above copyright notice, this permission notice, and the following
+     disclaimer in all copies or substantial portions of the Software.
+
+3. Third-Party API Compliance
+   - This Software uses the Spotify API. Use of this Software is subject to
+     the Spotify Developer Terms and any restrictions imposed by Spotify.
+     You may not rely on this License to grant rights that are prohibited by
+     third-party terms. Compliance with upstream API terms is your responsibility.
+
+4. No Trademark or Branding Rights
+   - This License does not grant any rights to use the project name(s),
+     logos, or other branding except as required to reproduce the Software.
+
+5. No Warranty; Limitation of Liability
+   - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+     OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+   - IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+     ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+     TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+By using, copying, modifying, or distributing the Software you agree to be
+bound by the terms of this License.

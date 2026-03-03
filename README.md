@@ -3,6 +3,17 @@ Spotify Bot for everyone to use. The main functionality is to have users add son
 Though the Bot is free to use, consider giving credit on your twitch via command or panel.<br>
 Created by [alexshadowolex](https://www.twitch.tv/alexshadowolex)
 
+## Non-Commercial Use & Spotify API
+
+**Important – Non-Commercial Only.**  
+This project is provided for hobby, personal, and non-commercial use only. Commercial use of this software (including but not limited to: using the bot as part of a paid service, in a monetized product, or in a for-profit environment) is **prohibited**.
+
+This restriction is necessary because the project integrates with the Spotify API. Use of the Spotify API is subject to Spotify's Developer Terms of Service and other policies, which may limit commercial uses. It is your responsibility to ensure that your use of this software complies with Spotify’s terms and all applicable third-party terms.
+
+**License:** This repository is distributed under the *Simple Non-Commercial Software License (SNCSL)*. See the `LICENSE` file for full terms. In short: you may use, copy, modify and redistribute the software for **non-commercial** purposes only, and you must retain the copyright and license notice.
+
+**No warranty / No liability:** Use the software at your own risk. The author disclaims all warranties and liabilities. See `LICENSE` for details.
+
 ## Statistics
 The builds of this app could do anything, but they don't. They do exactly what it says they do. But don't trust me, trust the number of already performed downloads with 0 complaints afterwards:<br>
 
@@ -260,7 +271,7 @@ If you don't have the redeem ID, you have 2 possible solutions:<br>
 
 
 ## Additional Information
-* Use any compiled binary (.jar-files) at your own risk. They could be doing anything without you knowing it. Either you trust me and my builds or not. I will take no responsibility for anything.
+* Use any compiled binaries (.jar-files) at your own risk. They could do anything without you knowing it. I take no responsibility for damages, data loss, or legal consequences resulting from using this project or its binaries. See LICENSE for the full disclaimer.
 * If you change the properties' values directly in the properties files, while the bot is running, they will not be applied until next start up and might even be overwritten.
 * It is not recommended to overwrite properties directly in the properties files since almost all of them can be changed in the UI. But feel free to go wild! 
 * Make sure to check on releases, if there are newer versions of the project-setup- or setup-token-jar, if needed.
