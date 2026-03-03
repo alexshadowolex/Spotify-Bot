@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import config.TwitchBotConfig
 import handler.commands
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import ui.hyperlink
 import ui.versionAndCreditsRow
 
@@ -31,44 +33,68 @@ fun homeScreen() {
                 modifier = Modifier
                     .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
             ) {
+                val hyperlinkHeight = 2.em
+
                 val issuesHyperlinkText = "Spotify Bot Issues"
                 // I don't know what the specific length value is referring to. The divider "2.1" is a hardcoded and
                 // guessed number which I don't understand. Since this will only be temporarily visible, I will
                 // leave it like this for now and remove it later.
                 val issuesHyperlinkWidth = (issuesHyperlinkText.length / 2.1).em
-                val issuesHyperlinkHeight = 1.2.em
                 val issuesHyperLinkId = "issuesHyperLinkId"
+
+                val discordHyperlinkText = "Discord Server"
+                val discordHyperlinkWidth = (discordHyperlinkText.length / 2.1).em
+                val discordHyperLinkId = "discordHyperLinkId"
 
                 val inlineContentMap = mapOf(
                     issuesHyperLinkId to InlineTextContent(
-                        Placeholder(issuesHyperlinkWidth, issuesHyperlinkHeight, PlaceholderVerticalAlign.Center)) {
+                        Placeholder(issuesHyperlinkWidth, hyperlinkHeight, PlaceholderVerticalAlign.Center)) {
                             hyperlink(
                                 hyperlinkText = issuesHyperlinkText,
                                 hyperlinkAddress = "https://github.com/alexshadowolex/Spotify-Bot/issues",
-                                useUnderline = true
+                                useUnderline = false
                             )
+                    },
+                    discordHyperLinkId to InlineTextContent(
+                        Placeholder(discordHyperlinkWidth, hyperlinkHeight, PlaceholderVerticalAlign.Center)) {
+                        hyperlink(
+                            hyperlinkText = discordHyperlinkText,
+                            hyperlinkAddress = "https://discord.gg/sM9B6CbZsy",
+                            useUnderline = false
+                        )
                     }
                 )
 
+
+                val dateForLiveChanges = Instant.parse("2026-03-03T00:00:00.000Z")
+                val today = Clock.System.now()
                 Text(
                     text = buildAnnotatedString {
                         append(
-                            "Hello ${TwitchBotConfig.channel} you beautiful person and valued user! " +
-                            "Thank you for trusting in my app and using it to enhance your stream's experience with Spotify!\n\n" +
-                            "Report bugs or enhancements here: "
+                            "Hello ${TwitchBotConfig.channel} and thanks for trusting the Spotify Bot!\n\n" +
+                            "!!NEW!!: There's now a Discord server for everything related to the bot - " +
+                            "join to stay updated and share feedback: "
+                        )
+
+                        appendInlineContent(discordHyperLinkId)
+
+                        append(
+                            "\n\nSpotify announced major API changes in February 2026, " +
+                                if(today < dateForLiveChanges) {
+                                    "going"
+                                } else {
+                                    "which went"
+                                } + " " +
+                            "live on March 9th 2026. This version includes necessary adjustments and workarounds " +
+                            "to remain compatible.\n" +
+                            "Due to the scope of these API changes, some edge cases may still appear. If something " +
+                            "doesn’t behave as expected, please tell me on Discord or open an issue on GitHub here: "
                         )
 
                         appendInlineContent(issuesHyperLinkId)
 
                         append(
-                            "\n\n" +
-                            "Important notice:\n" +
-                            "From the next version on (probably version v2.0.6), you will be able to auto-update the bot by just ONE click. " +
-                            "Well two, if you count the confirmation click.\n" +
-                            "Make sure to check the new and fresh look of the new-version-window and find the new button called \"Update\". " +
-                            "Of course only, when version v.2.0.6 is released. Though I do produce a lot of magic with building this bot, " +
-                            "I ain't no wizard!\n\n" +
-                            "With that said - have fun and enjoy :)"
+                            "\n\nThanks for your support and patience during this transition - and enjoy! :)"
                         )
                     },
                     inlineContent = inlineContentMap,
