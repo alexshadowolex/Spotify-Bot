@@ -1,4 +1,13 @@
 # Spotify Bot
+
+> [!NOTE]
+> 🔄 **Spotify API Update (March 2026)**
+> This release includes adjustments to address the Spotify API changes introduced in March 2026.
+> Testing is currently ongoing.
+> If you experience issues related to the API update, please report them via GitHub Issues.
+
+![API Update Status](https://img.shields.io/badge/Spotify%20API-Compatibility%20Update%20(March%202026)-orange)
+
 Spotify Bot for everyone to use. The main functionality is to have users add songs to the queue (via redeem or command). Additional functionality can be found below or be requested.<br>
 Though the Bot is free to use, consider giving credit on your twitch via command or panel.<br>
 Created by [alexshadowolex](https://www.twitch.tv/alexshadowolex)
@@ -39,10 +48,10 @@ The builds of this app could do anything, but they don't. They do exactly what i
 6. [Additional Information](#additional-information)
 
 ## Current Versions
-* Spotify-Bot.jar: v2.0.5 [Download from Release v2.0.5](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.5/Spotify.Bot-windows-x64-2.0.5.jar)
+* Spotify-Bot.jar: v2.1.0 [Download from Release v2.1.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.1.0/Spotify.Bot-windows-x64-2.1.0.jar)
 * SetupToken.jar: v4 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupToken_v4.jar)
 * SetupProject.jar: v2 [Download from Release v2.0.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupProject_v2.jar)
-* UpdateProperties.jar: v2.0.3 [Download from Release v2.0.4](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.4/UpdateProperties_2-0-3.jar)
+* UpdateProperties.jar: v2.1.0 [Download from Release v2.1.0](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.1.0/UpdateProperties_2-1-0.jar)
 * Update.jar: v1 [Download from Release v2.0.5](https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.5/Update_v1.jar)
 
 ## How to set up
@@ -206,9 +215,18 @@ The file, that will always be included, is the new Bot version. Download it and 
   * BROADCASTER: Only the broadcaster
   * MODERATOR: Owner and Moderators
   * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames For Block Song Command under General Settings.<br>
+* Pause/Resume Command -> Can be toggled off (switch in UI under "General Settings").<br>
+  Command names: "pauseresume", "pr", "pause", "resume", "play"<br>
+  Command pause or resume the current playback, depending on whether it is active.<br>
+  This functionality can be restricted to be used only by certain user groups:
+  * BROADCASTER: Only the broadcaster
+  * MODERATOR: Owner and Moderators
+  * CUSTOM: Custom group of users, specified per username in list Custom Group Usernames For Pause/Resume Command under General Settings.<br>
 
 ## Contents of data-files explained
-The files consist of the following content:
+
+<details>
+<summary>Contents of data-files explained (click to expand)</summary>
 ````
 data\tokens\twitchtoken.txt: only the twitch token, nothing else
 ````
@@ -237,6 +255,10 @@ data\properties\botConfig.properties:
     ->blockSongCommandSecurityLevel=<security level that decides, who can use the block song command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
     ->customGroupUserNamesBlockSongCommand=<custom group of users for the block song command, when "CUSTOM" is selected. List of usernames, seperated by ",">
     ->isFollowerOnlyModeEnabled=<true or false. If this is true, the follower only mode is enabled>
+    ->isPauseResumeCommandEnabled=<true or false. If this is true, the pause/resume command is enabled>
+    ->pauseResumeCommandSecurityLevel=<security level that decides, who can use the pause/resume command. Possible values: BROADCASTER, MODERATOR, CUSTOM>
+    ->customGroupUserNamesPauseResumeCommand=<custom group of users for the pause/resume command, when "CUSTOM" is selected. List of usernames, seperated by ",">
+    ->isPraiseAlexFunctionalityEnabled=<true or false. If this is true, the bot greets the creator once per bot-start in twitch-chat with a funny message (harmless), if he types his first message>
 ````
 ````
 data\properties\twitchBotConfig.properties:
@@ -257,6 +279,7 @@ data\properties\spotifyConfig.properties:
     ->blockedSongLinks=<Spotify direct links of songs that are blocked and will not be added to the queue, seperated by ",">
     ->blockedSongArtists=<Names of artists that are blocked and their songs will not be added to the queue, seperated by ",">
 ````
+</details>
 <br>
 Following properties aren’t changeable in the UI:
 
