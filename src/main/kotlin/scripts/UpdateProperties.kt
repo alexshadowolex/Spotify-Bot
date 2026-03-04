@@ -6,9 +6,9 @@ import java.nio.file.Paths
 import java.time.format.DateTimeFormatter
 import kotlin.system.exitProcess
 
-// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-0-3.jar
+// Compile with: kotlinc UpdateProperties.kt -include-runtime -d UpdateProperties_2-1-0.jar
 
-private const val latestVersion = "2.0.3"
+private const val latestVersion = "2.1.0"
 private const val LOG_DIRECTORY = "logs\\update"
 
 // In Version 2.0.0, almost all properties got renamed to camel case spelling. That's why all of them are noted down as
@@ -62,7 +62,7 @@ private val propertiesFilesToProperties = listOf(
         Pair("customGroupUserNamesBlockSongCommand", ""),
         // Since Version: 2.0.3
         Pair("isFollowerOnlyModeEnabled", "false"),
-        // Since Version: 2.0.6
+        // Since Version: 2.1.0
         Pair("isPauseResumeCommandEnabled", "true"),
         Pair("pauseResumeCommandSecurityLevel", "BROADCASTER"),
         Pair("customGroupUserNamesPauseResumeCommand", ""),
