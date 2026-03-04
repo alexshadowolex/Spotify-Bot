@@ -4,7 +4,7 @@
 > 🔄 **Spotify API Update (March 2026)**
 > This release includes adjustments to address the Spotify API changes introduced in March 2026.
 > Testing is currently ongoing.
-> If you experience issues related to the API update, please report them via GitHub Issues.
+> If you experience issues related to the API update, please report them via Discord or GitHub Issues.
 
 ![API Update Status](https://img.shields.io/badge/Spotify%20API-Compatibility%20Update%20(March%202026)-orange)
 
@@ -225,8 +225,6 @@ The file, that will always be included, is the new Bot version. Download it and 
 
 ## Contents of data-files explained
 
-<details>
-<summary>Contents of data-files explained (click to expand)</summary>
 ````
 data\tokens\twitchtoken.txt: only the twitch token, nothing else
 ````
@@ -279,7 +277,6 @@ data\properties\spotifyConfig.properties:
     ->blockedSongLinks=<Spotify direct links of songs that are blocked and will not be added to the queue, seperated by ",">
     ->blockedSongArtists=<Names of artists that are blocked and their songs will not be added to the queue, seperated by ",">
 ````
-</details>
 <br>
 Following properties aren’t changeable in the UI:
 
