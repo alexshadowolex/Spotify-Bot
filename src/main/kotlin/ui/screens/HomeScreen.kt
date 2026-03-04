@@ -43,7 +43,7 @@ fun homeScreen() {
                 val issuesHyperLinkId = "issuesHyperLinkId"
 
                 val discordHyperlinkText = "Discord Server"
-                val discordHyperlinkWidth = (discordHyperlinkText.length / 2.1).em
+                val discordHyperlinkWidth = (discordHyperlinkText.length / 3).em
                 val discordHyperLinkId = "discordHyperLinkId"
 
                 val inlineContentMap = mapOf(
@@ -79,7 +79,7 @@ fun homeScreen() {
                         appendInlineContent(discordHyperLinkId)
 
                         append(
-                            "\n\nSpotify announced major API changes in February 2026, " +
+                            "\nSpotify announced major API changes in February 2026, " +
                                 if(today < dateForLiveChanges) {
                                     "going"
                                 } else {
@@ -88,13 +88,14 @@ fun homeScreen() {
                             "live on March 9th 2026. This version includes necessary adjustments and workarounds " +
                             "to remain compatible.\n" +
                             "Due to the scope of these API changes, some edge cases may still appear. If something " +
-                            "doesn’t behave as expected, please tell me on Discord or open an issue on GitHub here: "
+                            "doesn’t behave as expected, please consider turning that feature off (if necessary and " +
+                            "possible) and tell me on Discord or open an issue on GitHub here: "
                         )
 
                         appendInlineContent(issuesHyperLinkId)
 
                         append(
-                            "\n\nThanks for your support and patience during this transition - and enjoy! :)"
+                            "\nThanks for your support and patience during this transition - and enjoy! :)"
                         )
                     },
                     inlineContent = inlineContentMap,
