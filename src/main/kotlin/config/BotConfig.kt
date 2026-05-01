@@ -370,6 +370,11 @@ object BotConfig {
         )
         exitProcess(-1)
     }
+        set(value) {
+            field = value
+            properties.setProperty("pauseResumeCommandSecurityLevel", value.toString())
+            savePropertiesToFile()
+        }
 
     var customGroupUserNamesPauseResumeCommand: List<String> = getPropertyValue(
         properties,
