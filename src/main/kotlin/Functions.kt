@@ -16,6 +16,7 @@ import config.SpotifyConfig
 import config.TwitchBotConfig
 import handler.*
 import io.ktor.client.request.*
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
@@ -1319,6 +1320,7 @@ suspend fun isSpotifyPlaying(): Boolean? {
             logger.error("An error occurred while accessing player endpoint. Code: ${response.status}. " +
                     "Message: ${response.bodyAsText()}"
             )
+            checkAndNotifyForInvalidRefreshToken()
             null
         }
     }
@@ -1622,6 +1624,41 @@ suspend fun getCurrentDeviceId(): String? {
     } catch (_: Exception) {
         logger.warn("No device found in getCurrentDeviceId")
         null
+    }
+}
+
+
+suspend fun checkAndNotifyForInvalidRefreshToken() {
+    val endpoint = "https://accounts.spotify.com/api/token"
+
+    val response = try {
+        httpClient.post(endpoint) {
+            header("Content-Type", "application/x-www-form-urlencoded")
+            setBody("grant_type=refresh_token&refresh_token=${spotifyClient.token.refreshToken!!}&client_id=${SpotifyConfig.spotifyClientId}")
+        }
+    } catch (e: Exception) {
+        logger.error("Error while testing for API-Token validity in checkAndNotifyForInvalidRefreshToken: ${e.stackTraceToString()}")
+        null
+    }
+
+    if(response == null || response.status == HttpStatusCode.BadRequest) {
+        val message = "The validity of the refresh token has expired and needs to be renewed for another 6 months.\n" +
+            "Currently, there is no built in workflow to fix that. That will be implemented in the next version!\n\n" +
+            "In the mean time: Please close the Spotify-Bot and execute the latest Version v4 of the SetupToken.jar. If you don't have it locally saved, you can download it from this link:\n" +
+            "https://github.com/alexshadowolex/Spotify-Bot/releases/download/v2.0.0/SetupToken_v4.jar\n" +
+            "This link will also be in the last log-file so you can copy and paste it.\n\n" +
+            "When you execute the SetupToken.jar, a browser window will open. Maybe you have to login to your Spotify-Account in that window.\n" +
+            "Afterwards, example.com will open and you can copy the code behind \"?code=\", paste it into the text field and click the button.\n\n" +
+            "This will refresh the Tokens and afterwards you can use the Spotify-Bot again."
+        showErrorMessageWindow(
+            message = message,
+            title = "Refresh Token expired!"
+        )
+        logger.error("Response code: ${response?.status ?: "null"}. Response body: ${response?.bodyAsText() ?: "null"}")
+        logger.info("Displayed the error message in window: $message")
+        exitProcess(-1)
+    } else {
+        logger.error("Response in checkAndNotifyForInvalidRefreshToken was not null and not BadRequest. Response code: ${response.status}. Response body: ${response.bodyAsText()}")
     }
 }
 

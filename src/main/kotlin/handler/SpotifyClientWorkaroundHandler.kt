@@ -1,5 +1,6 @@
 package handler
 
+import checkAndNotifyForInvalidRefreshToken
 import com.adamratzman.spotify.models.*
 import com.adamratzman.spotify.utils.ExternalUrls
 import com.adamratzman.spotify.utils.Market
@@ -177,11 +178,7 @@ class SpotifyClientWorkaroundHandler() {
     }
 
     private suspend fun spotifyDummyCallToRefreshAccessToken() {
-        try {
-            spotifyClient.player.getDevices()
-        } catch (e: Exception) {
-            logger.error("Error while accessing devices-endpoint in spotifyDummyCallToRefreshAccessToken: ${e.stackTraceToString()}")
-        }
+        checkAndNotifyForInvalidRefreshToken()
     }
 }
 

@@ -89,6 +89,7 @@ suspend fun main() = try {
                         logger.info("Spotify token refreshed")
                     }
                     afterTokenRefresh = {
+                        checkAndNotifyForInvalidRefreshToken()
                         it.token.refreshToken = initialToken.refreshToken
                         try {
                             File("data\\tokens\\spotifyToken.json").writeText(
